@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNB Français - Révisions</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .tag { background: #3498db; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8em; }
+        audio { width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Révisions DNB Français</h1>
+    <div id="app">Chargement des leçons...</div>
 
+    <script>
+        // REMPLACEZ LE LIEN CI-DESSOUS PAR VOTRE LIEN GOOGLE SHEETS "PUBLIÉ"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOeIkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
+
+        Papa.parse(sheetUrl, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                let data = results.data;
+                let html = "";
+                data.forEach(row => {
+                    html += `
+                        <div class="card">
+                            <span class="tag">${row.Categorie}</span>
+                            <h3>${row.Titre}</h3>
+                            <p>${row.Contenu}</p>
+                            ${row.Audio ? `<audio controls src="${row.Audio}"></audio>` : ''}
+                        </div>
+                    `;
+                });
+                document.getElementById('app').innerHTML = html;
+            }
+        });
+    </script>
+</body>
+</html>

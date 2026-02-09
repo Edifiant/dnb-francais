@@ -8,11 +8,11 @@
     <style>
         body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e1e8ed; }
-        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
-        .tag { background: #3498db; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
-        h3 { margin: 15px 0 10px 0; color: #1a1a1a; font-size: 1.2em; }
-        p { color: #4a4a4a; line-height: 1.5; margin: 0; }
+        h1 { color: #2c3e50; text-align: center; }
+        .tag { background: #3498db; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75em; font-weight: bold; }
+        h3 { margin: 10px 0; }
         #app { max-width: 600px; margin: 0 auto; }
+        .error { color: red; background: #ffdada; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -27,20 +27,35 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
+                console.log("Données reçues :", results.data); // Pour voir les erreurs dans la console F12
                 let data = results.data;
                 let html = "";
+                
+                if (data.length === 0) {
+                    document.getElementById('app').innerHTML = "<p class='error'>Le fichier est vide ou mal publié.</p>";
+                    return;
+                }
+
                 data.forEach(row => {
-                    if(row.Titre && row.Titre.trim() !== "") { 
+                    // On cherche Titre ou titre (souple sur la majuscule)
+                    let titre = row.Titre || row.titre;
+                    let contenu = row.Contenu || row.contenu;
+                    let categorie = row.Categorie || row.categorie || row.Catégorie || 'Révision';
+
+                    if(titre) { 
                         html += `
                             <div class="card">
-                                <span class="tag">${row.Categorie || 'Révision'}</span>
-                                <h3>${row.Titre}</h3>
-                                <p>${row.Contenu || ''}</p>
+                                <span class="tag">${categorie}</span>
+                                <h3>${titre}</h3>
+                                <p>${contenu || ''}</p>
                             </div>
                         `;
                     }
                 });
-                document.getElementById('app').innerHTML = html || "Aucune leçon trouvée.";
+                document.getElementById('app').innerHTML = html || "<p class='error'>Vérifiez que vos colonnes s'appellent : Titre, Categorie, Contenu</p>";
+            },
+            error: function() {
+                document.getElementById('app').innerHTML = "<p class='error'>Impossible de contacter Google Sheets.</p>";
             }
         });
     </script>

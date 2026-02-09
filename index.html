@@ -6,29 +6,27 @@
     <title>DNB Français - Flashcards</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 { text-align: center; color: #1877f2; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; transition: 0.2s; }
-        .card:active { transform: scale(0.98); }
-        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
-        .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; color: #333; }
-        .reponse { display: none; margin-top: 15px; padding: 12px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .instruction { text-align: center; font-size: 0.9em; color: #666; margin-bottom: 20px; font-style: italic; }
-        .error-box { color: #721c24; background: #f8d7da; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #f5c6cb; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 650px; margin: 0 auto; }
+        h1 { text-align: center; color: #1877f2; font-size: 1.8em; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; position: relative; }
+        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .question { display: block; margin-top: 12px; font-weight: 600; font-size: 1.1em; line-height: 1.4; }
+        .reponse { display: none; margin-top: 15px; padding: 15px; background: #f0fff4; border-left: 5px solid #4caf50; border-radius: 8px; color: #1b5e20; font-weight: bold; }
+        .instruction { text-align: center; font-size: 0.9em; color: #666; margin-bottom: 25px; }
+        .error-box { color: #721c24; background: #f8d7da; padding: 20px; border-radius: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Révisions DNB Français</h1>
-        <p class="instruction">Appuyez sur une carte pour révéler la réponse !</p>
-        <div id="app">Chargement des données...</div>
+        <p class="instruction">Appuyez sur une question pour voir si vous avez juste !</p>
+        <div id="app">Connexion au grimoire des leçons...</div>
     </div>
 
     <script>
-        // LIEN FORCÉ (Vérifié sur image_92fb5a)
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
+        // LIEN AVEC ID D'ONGLET (gid=0 pour le premier onglet)
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?gid=0&single=true&output=csv";
 
         function loadData() {
             Papa.parse(sheetUrl, {
@@ -40,31 +38,39 @@
                     let html = "";
                     
                     if (!data || data.length === 0) {
-                        document.getElementById('app').innerHTML = "<div class='error-box'>Le tableau semble vide.</div>";
+                        document.getElementById('app').innerHTML = "<div class='error-box'>Le tableau est vide ou mal lu.</div>";
                         return;
                     }
 
                     data.forEach((row, index) => {
-                        if(row.Titre) {
-                            // Sélection intelligente de la réponse (Col B, C, D ou E selon Col F)
-                            let r = row.Contenu; 
-                            if (row.Bonne_Réponse === "A") r = row.Categorie;
-                            if (row.Bonne_Réponse === "C") r = row.Audio;
-                            if (row.Bonne_Réponse === "D") r = row.Réponse_D;
+                        // On vérifie que la ligne a bien un Titre (Col A)
+                        if(row.Titre || row.titre) {
+                            let q = row.Titre || row.titre;
+                            let th = row.Thème || row.theme || row.Thème || "Général";
+                            
+                            // Logique de réponse basée sur ta colonne F (Bonne_Réponse)
+                            let r = "Non définie";
+                            let choix = (row.Bonne_Réponse || "").trim().toUpperCase();
+                            
+                            if (choix === "A") r = row.Categorie || row.categorie;
+                            else if (choix === "B") r = row.Contenu || row.contenu;
+                            else if (choix === "C") r = row.Audio || row.audio;
+                            else if (choix === "D") r = row.Réponse_D || row.Reponse_D;
+                            else r = row.Contenu || row.contenu || "Voir votre cours";
 
                             html += `
                                 <div class="card" onclick="toggle(${index})">
-                                    <span class="theme-tag">${row.Thème || 'Général'}</span>
-                                    <span class="question">${row.Titre}</span>
+                                    <span class="theme-tag">${th}</span>
+                                    <span class="question">${q}</span>
                                     <div id="rep-${index}" class="reponse">✅ RÉPONSE : ${r}</div>
                                 </div>
                             `;
                         }
                     });
-                    document.getElementById('app').innerHTML = html;
+                    document.getElementById('app').innerHTML = html || "<div class='error-box'>Aucune question valide trouvée.</div>";
                 },
                 error: function() {
-                    document.getElementById('app').innerHTML = "<div class='error-box'>❌ Erreur : Impossible de lire le Google Sheets.<br><small>Assurez-vous qu'il est bien 'Publié sur le Web' au format CSV.</small></div>";
+                    document.getElementById('app').innerHTML = "<div class='error-box'>❌ Erreur de connexion au Sheets.<br>Vérifiez que le fichier est bien 'Publié sur le Web'.</div>";
                 }
             });
         }

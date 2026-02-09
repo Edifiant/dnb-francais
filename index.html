@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB Français - Révisions Interactives</title>
+    <title>DNB Français - Flashcards</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #1c1e21; }
-        .container { max-width: 700px; margin: 0 auto; }
-        h1 { text-align: center; color: #1877f2; margin-bottom: 30px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e4e6eb; position: relative; overflow: hidden; }
-        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; display: inline-block; margin-bottom: 10px; }
-        .question { font-size: 1.1em; font-weight: 600; line-height: 1.4; margin-bottom: 15px; display: block; }
-        .reponse-box { background: #f8f9fa; border-left: 4px solid #42b72a; padding: 10px 15px; border-radius: 4px; margin-top: 10px; }
-        .reponse-label { font-size: 0.85em; color: #65676b; font-weight: bold; display: block; margin-bottom: 5px; }
-        .error { color: #d32f2f; background: #fdecea; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #f5c2c7; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; color: #1877f2; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; border: 1px solid #ddd; }
+        .card:hover { transform: translateY(-3px); }
+        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.7em; font-weight: bold; text-transform: uppercase; }
+        .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
+        .reponse { display: none; margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #2e7d32; font-weight: bold; }
+        .instruction { text-align: center; font-size: 0.8em; color: #888; margin-bottom: 20px; }
+        .error { color: red; background: #fee; padding: 15px; border-radius: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Révisions DNB Français</h1>
-        <div id="app">Chargement des questions...</div>
+        <p class="instruction">Clique sur une carte pour voir la réponse !</p>
+        <div id="app">Chargement...</div>
     </div>
 
     <script>
-        // Ton lien public exact (celui de l'image 92fb5a)
+        // LIEN FIXE ET CORRIGÉ
         const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
 
         Papa.parse(sheetUrl, {
@@ -32,36 +34,20 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                let data = results.data;
                 let html = "";
-                
-                if (data.length === 0) {
-                    document.getElementById('app').innerHTML = "<div class='error'>Aucune donnée trouvée. Vérifiez la publication du Sheets.</div>";
-                    return;
-                }
+                results.data.forEach((row, index) => {
+                    if(row.Titre) {
+                        // Logique de sélection de la réponse selon ta colonne F
+                        let r = row.Contenu; // Par défaut
+                        if (row.Bonne_Réponse === "A") r = row.Categorie;
+                        if (row.Bonne_Réponse === "C") r = row.Audio;
+                        if (row.Bonne_Réponse === "D") r = row.Réponse_D;
 
-                data.forEach(row => {
-                    // On adapte le code à tes colonnes réelles (Image 944518)
-                    let question = row.Titre; 
-                    let theme = row.Thème || row.Theme || "Révision";
-                    let bonneReponse = "";
-
-                    // Logique pour trouver la bonne réponse selon ta colonne 'Bonne_Réponse'
-                    if (row.Bonne_Réponse === "A") bonneReponse = row.Categorie; // Ta col B
-                    else if (row.Bonne_Réponse === "B") bonneReponse = row.Contenu; // Ta col C
-                    else if (row.Bonne_Réponse === "C") bonneReponse = row.Audio; // Ta col D
-                    else if (row.Bonne_Réponse === "D") bonneReponse = row.Réponse_D; // Ta col E
-                    else bonneReponse = row.Contenu; // Par défaut
-
-                    if(question) { 
                         html += `
-                            <div class="card">
-                                <span class="theme-tag">${theme}</span>
-                                <span class="question">${question}</span>
-                                <div class="reponse-box">
-                                    <span class="reponse-label">RÉPONSE CORRECTE :</span>
-                                    <strong>${bonneReponse}</strong>
-                                </div>
+                            <div class="card" onclick="toggle(${index})">
+                                <span class="theme-tag">${row.Thème || 'Divers'}</span>
+                                <span class="question">${row.Titre}</span>
+                                <div id="rep-${index}" class="reponse">✅ Réponse : ${r}</div>
                             </div>
                         `;
                     }
@@ -69,9 +55,14 @@
                 document.getElementById('app').innerHTML = html;
             },
             error: function() {
-                document.getElementById('app').innerHTML = "<div class='error'>Erreur de connexion. Vérifiez que le lien finit bien par output=csv</div>";
+                document.getElementById('app').innerHTML = "<div class='error'>Lien Google Sheets introuvable. Vérifiez la publication.</div>";
             }
         });
+
+        function toggle(id) {
+            let div = document.getElementById('rep-' + id);
+            div.style.display = (div.style.display === 'block') ? 'none' : 'block';
+        }
     </script>
 </body>
 </html>

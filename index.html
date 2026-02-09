@@ -7,9 +7,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* Correction ici : box-shadow au lieu de shadow */
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         h1 { color: #2c3e50; text-align: center; }
-        .tag { background: #3498db; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8em; }
+        .tag { background: #3498db; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8em; font-weight: bold; }
+        h3 { margin: 10px 0 5px 0; }
         audio { width: 100%; margin-top: 10px; }
     </style>
 </head>
@@ -18,24 +20,28 @@
     <div id="app">Chargement des leçons...</div>
 
     <script>
-        // REMPLACEZ LE LIEN CI-DESSOUS PAR VOTRE LIEN GOOGLE SHEETS "PUBLIÉ"
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOe1kKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
+        // Lien corrigé (elk au lieu de eIk)
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
 
         Papa.parse(sheetUrl, {
             download: true,
             header: true,
+            skipEmptyLines: true, // Évite les bugs si tu as des lignes vides
             complete: function(results) {
                 let data = results.data;
                 let html = "";
                 data.forEach(row => {
-                    html += `
-                        <div class="card">
-                            <span class="tag">${row.Categorie}</span>
-                            <h3>${row.Titre}</h3>
-                            <p>${row.Contenu}</p>
-                            ${row.Audio ? `<audio controls src="${row.Audio}"></audio>` : ''}
-                        </div>
-                    `;
+                    // On vérifie que la ligne n'est pas vide avant de créer une carte
+                    if(row.Titre) { 
+                        html += `
+                            <div class="card">
+                                <span class="tag">${row.Categorie || 'Révision'}</span>
+                                <h3>${row.Titre}</h3>
+                                <p>${row.Contenu}</p>
+                                ${row.Audio ? `<audio controls src="${row.Audio}"></audio>` : ''}
+                            </div>
+                        `;
+                    }
                 });
                 document.getElementById('app').innerHTML = html;
             }

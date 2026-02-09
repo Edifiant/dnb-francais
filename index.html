@@ -25,8 +25,8 @@
     </div>
 
     <script>
-        // LIEN SPÉCIFIQUE À L'ONGLET QUIZ_GRAMMAIRE (gid=0)
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pubhtml?gid=1679242234&single=true";
+        // LIEN CORRIGÉ (Finissant par output=csv)
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?gid=1679242234&single=true&output=csv";
 
         Papa.parse(sheetUrl, {
             download: true,
@@ -34,14 +34,17 @@
             skipEmptyLines: true,
             complete: function(results) {
                 let html = "";
+                if (results.data.length === 0) {
+                    document.getElementById('app').innerHTML = "<div class='error-box'>Le tableau est vide.</div>";
+                    return;
+                }
+                
                 results.data.forEach((row, index) => {
-                    // On vérifie que la ligne contient une question
                     if(row.Titre || row.titre) {
                         let question = row.Titre || row.titre;
                         let theme = row.Thème || row.theme || "Grammaire";
                         let explication = row.Explication || row.explication || "";
                         
-                        // Logique de réponse basée sur votre colonne F (Bonne_Réponse)
                         let r = "Réponse non définie";
                         let codeReponse = (row.Bonne_Réponse || "").trim().toUpperCase();
                         
@@ -63,10 +66,10 @@
                         `;
                     }
                 });
-                document.getElementById('app').innerHTML = html || "<div class='error-box'>Aucune donnée trouvée dans l'onglet.</div>";
+                document.getElementById('app').innerHTML = html || "<div class='error-box'>Données illisibles.</div>";
             },
             error: function() {
-                document.getElementById('app').innerHTML = "<div class='error-box'>❌ Impossible de charger l'onglet Grammaire. Vérifiez la publication.</div>";
+                document.getElementById('app').innerHTML = "<div class='error-box'>❌ Erreur de chargement. Vérifiez que l'onglet est publié en CSV.</div>";
             }
         });
 

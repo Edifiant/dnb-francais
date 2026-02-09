@@ -13,18 +13,19 @@
         .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
         .reponse { display: none; margin-top: 15px; padding: 12px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; }
-        .explication { font-size: 0.9em; color: #666; font-weight: normal; margin-top: 5px; display: block; font-style: italic; }
+        .explication { font-size: 0.9em; color: #666; font-weight: normal; margin-top: 8px; display: block; font-style: italic; border-top: 1px solid #c8e6c9; padding-top: 5px; }
         .error-box { color: #721c24; background: #f8d7da; padding: 20px; border-radius: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Révisions DNB Français</h1>
+        <p style="text-align:center; font-size:0.9em; color:#666;">Appuyez sur une question pour voir la réponse et l'explication.</p>
         <div id="app">Connexion aux fiches de révision...</div>
     </div>
 
     <script>
-        // REMPLACEZ CE LIEN par celui obtenu à l'étape 1 (celui de Quiz_Grammaire)
+        // LIEN SPÉCIFIQUE À L'ONGLET QUIZ_GRAMMAIRE (gid=0)
         const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?gid=0&single=true&output=csv";
 
         Papa.parse(sheetUrl, {
@@ -34,27 +35,35 @@
             complete: function(results) {
                 let html = "";
                 results.data.forEach((row, index) => {
-                    if(row.Titre) {
-                        // Détermine la réponse selon la colonne F
-                        let r = row.Contenu; 
-                        let choix = (row.Bonne_Réponse || "").trim().toUpperCase();
-                        if (choix === "A") r = row.Categorie;
-                        if (choix === "C") r = row.Audio;
-                        if (choix === "D") r = row.Réponse_D;
+                    // On vérifie que la ligne contient une question
+                    if(row.Titre || row.titre) {
+                        let question = row.Titre || row.titre;
+                        let theme = row.Thème || row.theme || "Grammaire";
+                        let explication = row.Explication || row.explication || "";
+                        
+                        // Logique de réponse basée sur votre colonne F (Bonne_Réponse)
+                        let r = "Réponse non définie";
+                        let codeReponse = (row.Bonne_Réponse || "").trim().toUpperCase();
+                        
+                        if (codeReponse === "A") r = row.Categorie || row.categorie;
+                        else if (codeReponse === "B") r = row.Contenu || row.contenu;
+                        else if (codeReponse === "C") r = row.Audio || row.audio;
+                        else if (codeReponse === "D") r = row.Réponse_D || row.Reponse_D;
+                        else r = row.Contenu || row.contenu || "Erreur de configuration";
 
                         html += `
                             <div class="card" onclick="toggle(${index})">
-                                <span class="theme-tag">${row.Thème || 'Grammaire'}</span>
-                                <span class="question">${row.Titre}</span>
+                                <span class="theme-tag">${theme}</span>
+                                <span class="question">${question}</span>
                                 <div id="rep-${index}" class="reponse">
                                     ✅ RÉPONSE : ${r}
-                                    <span class="explication">${row.Explication || ''}</span>
+                                    ${explication ? `<span class="explication">ℹ️ ${explication}</span>` : ''}
                                 </div>
                             </div>
                         `;
                     }
                 });
-                document.getElementById('app').innerHTML = html || "Aucune donnée trouvée.";
+                document.getElementById('app').innerHTML = html || "<div class='error-box'>Aucune donnée trouvée dans l'onglet.</div>";
             },
             error: function() {
                 document.getElementById('app').innerHTML = "<div class='error-box'>❌ Impossible de charger l'onglet Grammaire. Vérifiez la publication.</div>";

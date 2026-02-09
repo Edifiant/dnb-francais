@@ -9,60 +9,72 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; }
         h1 { text-align: center; color: #1877f2; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; border: 1px solid #ddd; }
-        .card:hover { transform: translateY(-3px); }
-        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.7em; font-weight: bold; text-transform: uppercase; }
-        .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
-        .reponse { display: none; margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #2e7d32; font-weight: bold; }
-        .instruction { text-align: center; font-size: 0.8em; color: #888; margin-bottom: 20px; }
-        .error { color: red; background: #fee; padding: 15px; border-radius: 10px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; transition: 0.2s; }
+        .card:active { transform: scale(0.98); }
+        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; color: #333; }
+        .reponse { display: none; margin-top: 15px; padding: 12px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .instruction { text-align: center; font-size: 0.9em; color: #666; margin-bottom: 20px; font-style: italic; }
+        .error-box { color: #721c24; background: #f8d7da; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Révisions DNB Français</h1>
-        <p class="instruction">Clique sur une carte pour voir la réponse !</p>
-        <div id="app">Chargement...</div>
+        <p class="instruction">Appuyez sur une carte pour révéler la réponse !</p>
+        <div id="app">Chargement des données...</div>
     </div>
 
     <script>
-        // LIEN FIXE ET CORRIGÉ
+        // LIEN FORCÉ (Vérifié sur image_92fb5a)
         const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1n9KqyfjgKWa1bN2WOelkKdhWzOHDUqSQPfg1y7oDYreg6Rp8Mnezl6c2oJXHPQ/pub?output=csv";
 
-        Papa.parse(sheetUrl, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                let html = "";
-                results.data.forEach((row, index) => {
-                    if(row.Titre) {
-                        // Logique de sélection de la réponse selon ta colonne F
-                        let r = row.Contenu; // Par défaut
-                        if (row.Bonne_Réponse === "A") r = row.Categorie;
-                        if (row.Bonne_Réponse === "C") r = row.Audio;
-                        if (row.Bonne_Réponse === "D") r = row.Réponse_D;
-
-                        html += `
-                            <div class="card" onclick="toggle(${index})">
-                                <span class="theme-tag">${row.Thème || 'Divers'}</span>
-                                <span class="question">${row.Titre}</span>
-                                <div id="rep-${index}" class="reponse">✅ Réponse : ${r}</div>
-                            </div>
-                        `;
+        function loadData() {
+            Papa.parse(sheetUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    let data = results.data;
+                    let html = "";
+                    
+                    if (!data || data.length === 0) {
+                        document.getElementById('app').innerHTML = "<div class='error-box'>Le tableau semble vide.</div>";
+                        return;
                     }
-                });
-                document.getElementById('app').innerHTML = html;
-            },
-            error: function() {
-                document.getElementById('app').innerHTML = "<div class='error'>Lien Google Sheets introuvable. Vérifiez la publication.</div>";
-            }
-        });
+
+                    data.forEach((row, index) => {
+                        if(row.Titre) {
+                            // Sélection intelligente de la réponse (Col B, C, D ou E selon Col F)
+                            let r = row.Contenu; 
+                            if (row.Bonne_Réponse === "A") r = row.Categorie;
+                            if (row.Bonne_Réponse === "C") r = row.Audio;
+                            if (row.Bonne_Réponse === "D") r = row.Réponse_D;
+
+                            html += `
+                                <div class="card" onclick="toggle(${index})">
+                                    <span class="theme-tag">${row.Thème || 'Général'}</span>
+                                    <span class="question">${row.Titre}</span>
+                                    <div id="rep-${index}" class="reponse">✅ RÉPONSE : ${r}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    document.getElementById('app').innerHTML = html;
+                },
+                error: function() {
+                    document.getElementById('app').innerHTML = "<div class='error-box'>❌ Erreur : Impossible de lire le Google Sheets.<br><small>Assurez-vous qu'il est bien 'Publié sur le Web' au format CSV.</small></div>";
+                }
+            });
+        }
 
         function toggle(id) {
             let div = document.getElementById('rep-' + id);
             div.style.display = (div.style.display === 'block') ? 'none' : 'block';
         }
+
+        loadData();
     </script>
 </body>
 </html>

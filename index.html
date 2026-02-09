@@ -27,7 +27,7 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                console.log("Données reçues :", results.data); // Pour voir les erreurs dans la console F12
+                console.log("Données reçues :", results.data);
                 let data = results.data;
                 let html = "";
                 
@@ -37,7 +37,7 @@
                 }
 
                 data.forEach(row => {
-                    // On cherche Titre ou titre (souple sur la majuscule)
+                    // On récupère les colonnes peu importe la casse (Titre ou titre)
                     let titre = row.Titre || row.titre;
                     let contenu = row.Contenu || row.contenu;
                     let categorie = row.Categorie || row.categorie || row.Catégorie || 'Révision';
@@ -52,7 +52,8 @@
                         `;
                     }
                 });
-                document.getElementById('app').innerHTML = html || "<p class='error'>Vérifiez que vos colonnes s'appellent : Titre, Categorie, Contenu</p>";
+                // On affiche le résultat ou un message si rien n'est trouvé
+                document.getElementById('app').innerHTML = html || "<p class='error'>Vérifiez les noms de vos colonnes : Titre, Categorie, Contenu</p>";
             },
             error: function() {
                 document.getElementById('app').innerHTML = "<p class='error'>Impossible de contacter Google Sheets.</p>";

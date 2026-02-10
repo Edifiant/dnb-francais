@@ -171,20 +171,31 @@
     }
 
     function check(click, correct, id) {
-        const fb = document.getElementById('fb-' + id);
-        const ex = document.getElementById('ex-' + id);
-        
-        fb.style.display = "block";
-        if(ex) ex.style.display = "block";
+    const fb = document.getElementById('fb-' + id);
+    const ex = document.getElementById('ex-' + id);
+    
+    fb.style.display = "block";
 
-        if(click === correct) {
-            fb.innerText = "✅ Bravo ! C'est la bonne réponse.";
-            fb.className = "feedback correct";
-        } else {
-            fb.innerText = "❌ Ce n'est pas correct. Relis bien l'explication.";
-            fb.className = "feedback wrong";
+    if (click === correct) {
+        // LA BONNE RÉPONSE EST COCHÉE
+        fb.innerText = "✅ Bravo ! C'est la bonne réponse.";
+        fb.className = "feedback correct";
+        
+        // On n'affiche l'explication QUE SI c'est juste
+        if (ex) {
+            ex.style.display = "block";
+        }
+    } else {
+        // MAUVAISE RÉPONSE
+        fb.innerText = "❌ Ce n'est pas correct. Réessaye !";
+        fb.className = "feedback wrong";
+        
+        // On cache l'explication si elle était ouverte
+        if (ex) {
+            ex.style.display = "none";
         }
     }
+}
 
     // Premier chargement
     loadData(sections[0].gid, menu.firstChild);

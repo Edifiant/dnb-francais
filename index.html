@@ -37,65 +37,10 @@
             <input type="text" id="searchBar" placeholder="🔍 Rechercher une notion..." onkeyup="filterCards()">
         </div>
         <div class="nav-menu" id="menu"></div>
-        <div id="app">Initialisation...</div>
+        <div id="app">Chargement...</div>
     </div>
 
     <script>
-        // CONFIGURATION GID CORRIGÉE (Vérifiée d'après vos précédents messages)
-        const categories = [
-            { name: "Grammaire", gid: "1679242234" },
-            { name: "Conjugaison", gid: "1987121612" },
-            { name: "Figures Style", gid: "1943336125" },
-            { name: "Fiches", gid: "1143879514" },
-            { name: "Dictées", gid: "2137570262" },
-            { name: "Vocabulaire", gid: "710791745" },
-            { name: "Auteurs", gid: "951178030" }
-        ];
-
-        const baseUrl = "<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB Français - Révisions</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <style>
-        :root { --bg: #f0f2f5; --card: white; --text: #333; --primary: #1877f2; }
-        .dark { --bg: #18191a; --card: #242526; --text: #e4e6eb; --primary: #4599ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; transition: 0.3s; margin:0;}
-        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .search-container { margin-bottom: 20px; }
-        #searchBar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; background: var(--card); color: var(--text); }
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
-        .nav-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid #ccc; background: var(--card); color: var(--text); cursor: pointer; font-weight: bold; font-size: 0.85em; }
-        .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .action-btn { padding: 8px 15px; border-radius: 10px; border: none; cursor: pointer; background: #666; color: white; font-weight: bold; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
-        .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
-        .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
-        .reponse { display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; white-space: pre-wrap; }
-        .dark .reponse { background: #1b2e1c; color: #81c784; }
-        .explication { font-size: 0.9em; opacity: 0.8; font-weight: normal; margin-top: 10px; display: block; font-style: italic; border-top: 1px solid #ccc; padding-top: 8px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header"><h1>📚 Révisions DNB Français</h1></div>
-        <div class="controls">
-            <button class="action-btn" onclick="document.body.classList.toggle('dark')">🌙 Mode Nuit</button>
-            <button class="action-btn" style="background:#4caf50" onclick="shuffleCurrent()">🎲 Mélanger</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchBar" placeholder="🔍 Rechercher une notion..." onkeyup="filterCards()">
-        </div>
-        <div class="nav-menu" id="menu"></div>
-        <div id="app">Initialisation...</div>
-    </div>
-
-    <script>
-        // CONFIGURATION GID CORRIGÉE (Vérifiée d'après vos précédents messages)
         const categories = [
             { name: "Grammaire", gid: "1679242234" },
             { name: "Conjugaison", gid: "1987121612" },
@@ -109,6 +54,7 @@
         const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
         let currentData = [];
 
+        // Génération du menu
         const menuDiv = document.getElementById('menu');
         categories.forEach((cat, index) => {
             let btn = document.createElement('button');
@@ -120,24 +66,15 @@
 
         function loadCategory(gid, btn) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add(active);
-            document.getElementById('searchBar').value = "";
-            document.getElementById('app').innerHTML = "Chargement des données...";
-
+            btn.classList.add('active');
+            document.getElementById('app').innerHTML = "Chargement...";
             Papa.parse(baseUrl + gid, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    // Nettoyage des données pour éviter les lignes vides
-                    currentData = results.data.filter(row => {
-                        const keys = Object.values(row).join("").trim();
-                        return keys.length > 0;
-                    });
+                    currentData = results.data;
                     renderCards(currentData);
-                },
-                error: function() {
-                    document.getElementById('app').innerHTML = "Erreur : Impossible de contacter Google Sheets.";
                 }
             });
         }
@@ -156,19 +93,21 @@
         function renderCards(data) {
             let html = "";
             data.forEach((row, index) => {
-                // Système de détection automatique des colonnes
+                // Détection intelligente : On cherche la question dans n'importe quelle colonne
                 let q = row.Titre || row.Question || row.Mot || row.Auteur || Object.values(row)[0];
-                let tag = row.Thème || row.Catégorie || row.Siècle || "Révision";
-                let expli = row.Explication || row.Points_Vigilance || row.Exemple || "";
+                if(!q || q.includes("GUIDE")) return; // Ignore les lignes d'entête inutiles
+
+                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
+                let expli = row.Explication || row.Points_Vigilance || row.Exemple || row.Courant || "";
                 
-                // Calcul de la réponse selon le format Quiz ou Fiche
-                let r = "Cliquez pour voir";
+                // Détection de la réponse
+                let r = "";
                 let code = (row.Bonne_Réponse || "").trim().toUpperCase();
                 if (code === "A") r = row.Categorie || row.Réponse_A;
                 else if (code === "B") r = row.Contenu || row.Réponse_B;
                 else if (code === "C") r = row.Audio || row.Réponse_C;
                 else if (code === "D") r = row.Réponse_D;
-                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Pas de réponse définie";
+                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Cliquez pour voir";
 
                 html += `
                     <div class="card" onclick="toggle(${index})">
@@ -180,97 +119,12 @@
                         </div>
                     </div>`;
             });
-            document.getElementById('app').innerHTML = html || "Aucune fiche trouvée dans cette rubrique.";
+            document.getElementById('app').innerHTML = html || "Aucune donnée trouvée.";
         }
 
         function toggle(id) {
             const div = document.getElementById('rep-' + id);
-            div.style.display = (div.style.display === 'block') ? 'none' : 'block';
-        }
-
-        loadCategory(categories[0].gid, document.querySelector('.nav-btn'));
-    </script>
-</body>
-</html>&gid=";
-        let currentData = [];
-
-        const menuDiv = document.getElementById('menu');
-        categories.forEach((cat, index) => {
-            let btn = document.createElement('button');
-            btn.className = 'nav-btn' + (index === 0 ? ' active' : '');
-            btn.innerText = cat.name;
-            btn.onclick = () => loadCategory(cat.gid, btn);
-            menuDiv.appendChild(btn);
-        });
-
-        function loadCategory(gid, btn) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add(active);
-            document.getElementById('searchBar').value = "";
-            document.getElementById('app').innerHTML = "Chargement des données...";
-
-            Papa.parse(baseUrl + gid, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    // Nettoyage des données pour éviter les lignes vides
-                    currentData = results.data.filter(row => {
-                        const keys = Object.values(row).join("").trim();
-                        return keys.length > 0;
-                    });
-                    renderCards(currentData);
-                },
-                error: function() {
-                    document.getElementById('app').innerHTML = "Erreur : Impossible de contacter Google Sheets.";
-                }
-            });
-        }
-
-        function shuffleCurrent() {
-            currentData.sort(() => Math.random() - 0.5);
-            renderCards(currentData);
-        }
-
-        function filterCards() {
-            const term = document.getElementById('searchBar').value.toLowerCase();
-            const filtered = currentData.filter(row => JSON.stringify(row).toLowerCase().includes(term));
-            renderCards(filtered);
-        }
-
-        function renderCards(data) {
-            let html = "";
-            data.forEach((row, index) => {
-                // Système de détection automatique des colonnes
-                let q = row.Titre || row.Question || row.Mot || row.Auteur || Object.values(row)[0];
-                let tag = row.Thème || row.Catégorie || row.Siècle || "Révision";
-                let expli = row.Explication || row.Points_Vigilance || row.Exemple || "";
-                
-                // Calcul de la réponse selon le format Quiz ou Fiche
-                let r = "Cliquez pour voir";
-                let code = (row.Bonne_Réponse || "").trim().toUpperCase();
-                if (code === "A") r = row.Categorie || row.Réponse_A;
-                else if (code === "B") r = row.Contenu || row.Réponse_B;
-                else if (code === "C") r = row.Audio || row.Réponse_C;
-                else if (code === "D") r = row.Réponse_D;
-                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Pas de réponse définie";
-
-                html += `
-                    <div class="card" onclick="toggle(${index})">
-                        <span class="theme-tag">${tag}</span>
-                        <span class="question">${q}</span>
-                        <div id="rep-${index}" class="reponse">
-                            <b>RÉPONSE :</b><br>${r}
-                            ${expli ? `<span class="explication">ℹ️ ${expli}</span>` : ''}
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('app').innerHTML = html || "Aucune fiche trouvée dans cette rubrique.";
-        }
-
-        function toggle(id) {
-            const div = document.getElementById('rep-' + id);
-            div.style.display = (div.style.display === 'block') ? 'none' : 'block';
+            if(div) div.style.display = (div.style.display === 'block') ? 'none' : 'block';
         }
 
         loadCategory(categories[0].gid, document.querySelector('.nav-btn'));

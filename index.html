@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brevet Français - Mega App</title>
+    <title>Mon Cahier de Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
@@ -13,15 +13,15 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         .container { max-width: 850px; margin: 0 auto; }
 
-        /* Menu */
+        /* Menu de Navigation */
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center; }
         .nav-btn { 
             padding: 10px 18px; border-radius: 20px; border: none; background: white;
-            cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;
         }
         .nav-btn.active { background: var(--bleu); color: white; }
 
-        /* Style Bristol (Générique) */
+        /* Style Fiche Bristol */
         .fiche-bristol {
             background: var(--bristol); border: 1px solid #ddd; margin-bottom: 30px;
             padding: 40px 30px 40px 70px; position: relative;
@@ -31,31 +31,12 @@
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 55px; bottom: 0; width: 2px; background: var(--marge); }
         .fiche-bristol h2 { margin: 0 0 0.5rem 0; color: var(--bleu); border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
 
-        /* --- STYLE SPÉCIFIQUE AUTEURS --- */
-        .auteur-card { border-left: 10px solid var(--violet) !important; padding-left: 60px !important; }
-        .badge-siecle { 
-            background: var(--violet); color: white; padding: 0px 15px; 
-            border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-bottom: 10px;
-        }
-        
-        /* PORTRAIT DE L'AUTEUR (C'est ici qu'on met le style !) */
+        /* Style Spécifique Auteurs */
         .auteur-portrait {
-            width: 100px;
-            height: 130px;
-            object-fit: cover;
-            float: right;
-            margin-left: 20px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 3px solid white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 2;
+            width: 100px; height: 130px; object-fit: cover; float: right;
+            margin-left: 20px; border-radius: 8px; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-
-        .timeline-container { margin-top: 25px; background: #eee; height: 10px; border-radius: 5px; position: relative; clear: both; }
-        .timeline-bar { height: 100%; background: var(--violet); border-radius: 5px; transition: 1s; }
-        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-top: 5px; }
+        .badge-info { background: var(--violet); color: white; padding: 2px 12px; border-radius: 15px; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; line-height: 1.5; }
 
         /* Style Quiz */
         .card-quiz { background: white; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; margin-bottom: 20px; }
@@ -64,19 +45,15 @@
         .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
         .correct { background: #d4edda; color: #155724; }
         .wrong { background: #f8d7da; color: #721c24; }
-        .expli-box { margin-top: 15px; padding: 15px; background: #f0f7ff; border-left: 5px solid var(--bleu); display: none; }
-        
-        @media (max-width: 500px) {
-            .auteur-portrait { width: 70px; height: 90px; margin-left: 10px; }
-        }
+        .expli-box { margin-top: 15px; padding: 15px; background: #f0f7ff; border-left: 5px solid var(--bleu); display: none; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align:center; color:#2c3e50;">🇫🇷 Révisions Brevet Français</h1>
+    <h1 style="text-align:center;">📖 Mon Cahier de Révisions</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Chargement des données...</div>
+    <div id="app">Sélectionnez une catégorie...</div>
 </div>
 
 <script>
@@ -86,7 +63,7 @@
         { name: "Figures Style", gid: "1943336125" },
         { name: "Fiches", gid: "1143879514" },
         { name: "Vocabulaire", gid: "710791745" },
-        { name: "Dictées", gid: "2137570262" },
+        { name: "Dictées", gid: "586561849" },
         { name: "Auteurs", gid: "951178030" }
     ];
 
@@ -97,7 +74,7 @@
 
     sections.forEach((s, i) => {
         const btn = document.createElement('button');
-        btn.className = 'nav-btn' + (i===0 ? ' active' : '');
+        btn.className = 'nav-btn';
         btn.innerText = s.name;
         btn.onclick = () => loadData(s.gid, btn);
         menu.appendChild(btn);
@@ -106,90 +83,68 @@
     function loadData(gid, btn) {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "Mise à jour...";
+        app.innerHTML = "Chargement...";
         Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
     }
 
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            const type = (row.Type || row.type || "").trim().toUpperCase();
-            
-            // --- LOGIQUE AUTEURS ---
-            if (row.Auteur) {
-                const siecle = row.Siècle || "";
-                let progress = 0;
-                if(siecle.includes("XVII")) progress = 25;
-                else if(siecle.includes("XVIII")) progress = 50;
-                else if(siecle.includes("XIX")) progress = 75;
-                else if(siecle.includes("XX")) progress = 100;
-
-                const imgUrl = row.Image || row.image || "";
-
-                html += `
-                <div class="fiche-bristol auteur-card">
-                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
-                    <div class="badge-siecle">${siecle} siècle</div>
-                    <h2>${row.Auteur}</h2>
-                    <div class="auteur-info-texte">
-                        <strong>📚 Œuvre majeure :</strong> ${row.Œuvre || "Non précisée"}<br>
-                        <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "Classique"}
-                    </div>
-                    <div class="timeline-container">
-                        <div class="timeline-bar" style="width: ${progress}%"></div>
-                    </div>
-                    <div class="timeline-labels">
-                        <span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span>
-                    </div>
-                </div>`;
-            }
-            // --- LOGIQUE DICTÉES (NOUVEAU) ---
-            else if (row.Texte && row.Points_Vigilance) {
+            // --- 1. CAS DES DICTÉES ---
+            if (row.Texte && row.Points_Vigilance) {
                 html += `
                 <div class="fiche-bristol">
-                    <div class="badge-siecle" style="background:var(--orange)">Niveau : ${row.Niveau}</div>
+                    <div class="badge-info" style="background:var(--orange)">Niveau : ${row.Niveau}</div>
                     <h2>${row.Titre}</h2>
-                    <div style="white-space: pre-wrap; margin-top:10px;">
-                        <strong>Le texte :</strong><br>${row.Texte}
-                        <br><br>
-                        <div style="background:#fff5f5; padding:10px; border-radius:5px; border:1px dashed var(--marge);">
+                    <div style="line-height: 1.6; margin-top:10px;">
+                        <p><strong>📝 Texte de la dictée :</strong><br>${row.Texte}</p>
+                        <div style="background:#fff5f5; padding:15px; border-radius:8px; border:1px dashed var(--marge); color:#b91c1c;">
                             <strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}
                         </div>
                     </div>
                 </div>`;
             }
-            // --- LOGIQUE COURS / VOCABULAIRE ---
-            else if (type === "COURS" || row.Définition) {
-                const titre = row.Titre || row.Mot || "Leçon";
-                const contenu = row.Contenu || row.Définition || "";
+            // --- 2. CAS DES AUTEURS ---
+            else if (row.Auteur) {
+                const imgUrl = row.Image || "";
                 html += `
                 <div class="fiche-bristol">
-                    <h2>${titre}</h2>
-                    <div style="white-space: pre-wrap;">${contenu}</div>
+                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
+                    <div class="badge-info">${row.Siècle || ""} siècle</div>
+                    <h2>${row.Auteur}</h2>
+                    <div style="line-height: 1.8;">
+                        <strong>📚 Œuvre :</strong> ${row.Œuvre || "N/A"}<br>
+                        <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}
+                    </div>
+                    <div style="clear:both;"></div>
                 </div>`;
-            } 
-            // --- LOGIQUE QUIZ ---
-            else if (row.Question) {
-                const rA = row.Réponse_A || ""; const rB = row.Réponse_B || "";
-                const rC = row.Réponse_C || ""; const rD = row.Réponse_D || "";
+            }
+            // --- 3. CAS DES COURS / FICHES ---
+            else if (row.Type === "COURS" || row.Définition) {
+                html += `
+                <div class="fiche-bristol">
+                    <h2>${row.Titre || row.Mot}</h2>
+                    <div style="white-space: pre-wrap; line-height: 1.6;">${row.Contenu || row.Définition}</div>
+                </div>`;
+            }
+            // --- 4. CAS DES QUIZ ---
+            else if (row.Question || row.Type === "QUIZ") {
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                const expli = row.Explication || "";
-
                 html += `
                 <div class="card-quiz">
-                    <p><strong>${row.Question}</strong></p>
+                    <p><strong>${row.Titre || row.Question}</strong></p>
                     <div class="btn-grid">
-                        ${rA ? `<button class="opt-btn" onclick="check('A','${bonne}',${i})">${rA}</button>` : ''}
-                        ${rB ? `<button class="opt-btn" onclick="check('B','${bonne}',${i})">${rB}</button>` : ''}
-                        ${rC ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">${rC}</button>` : ''}
-                        ${rD ? `<button class="opt-btn" onclick="check('D','${bonne}',${i})">${rD}</button>` : ''}
+                        <button class="opt-btn" onclick="check('A','${bonne}',${i})">${row.Réponse_A || row.Categorie}</button>
+                        <button class="opt-btn" onclick="check('B','${bonne}',${i})">${row.Réponse_B || row.Contenu}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">${row.Réponse_C}</button>` : ''}
+                        ${row.Réponse_D ? `<button class="opt-btn" onclick="check('D','${bonne}',${i})">${row.Réponse_D}</button>` : ''}
                     </div>
                     <div id="fb-${i}" class="feedback"></div>
-                    ${expli ? `<div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${expli}</div>` : ''}
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
-        app.innerHTML = html;
+        app.innerHTML = html || "Aucune donnée trouvée dans cet onglet.";
     }
 
     function check(click, correct, id) {
@@ -204,8 +159,6 @@
             if(ex) ex.style.display = "none";
         }
     }
-
-    loadData(sections[0].gid, menu.firstChild);
 </script>
 </body>
 </html>

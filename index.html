@@ -74,6 +74,11 @@
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
 
+        /* TIMELINE RESTAURÉE */
+        .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
+        .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
+
         /* STYLE QUIZ */
         .card-quiz { 
             background: var(--quiz-bg); padding: 30px; border-radius: 16px; 
@@ -123,7 +128,7 @@
     // --- VARIABLES DE JEU ---
     let currentScore = 0;
     let maxQuizScore = 0;
-    let answeredQuestions = new Set(); // Pour mémoriser les questions répondues
+    let answeredQuestions = new Set(); 
 
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
@@ -157,13 +162,12 @@
     });
 
     function loadData(gid, btn) {
-        // Reset jeu
         currentScore = 0;
         maxQuizScore = 0;
         answeredQuestions.clear();
         finalBox.style.display = "none";
         scoreBoard.innerHTML = "🎓 Score: 0 / 0";
-        scoreBoard.style.opacity = "0.5"; // Moins visible si pas de quiz
+        scoreBoard.style.opacity = "0.5"; 
 
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -186,24 +190,38 @@
                         <div class="vigilance-box"><strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}</div>
                     </div></div>`;
             }
-            // --- AUTEURS ---
+            // --- AUTEURS (AVEC FRISE RESTAURÉE) ---
             else if (row.Auteur) {
+                // Calcul du siècle pour la barre de progression
+                const siecle = row.Siècle || "";
+                let progress = 10; // Minimum visuel
+                if(siecle.includes("XVII")) progress = 35;
+                else if(siecle.includes("XVIII")) progress = 55;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 95;
+
                 html += `<div class="fiche-bristol">
                     ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
-                    <div class="badge-info">🕰️ ${row.Siècle || "?"} siècle</div><br>
+                    <div class="badge-info">🕰️ ${siecle} siècle</div><br>
                     <h2>${row.Auteur}</h2>
                     <div class="info-highlight"><span>📖</span> <strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
                     <div class="info-highlight" style="border-left-color: var(--vert);"><span>🎨</span> <strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
+                    
+                    <div class="timeline-container">
+                        <div class="timeline-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                    <div style="clear:both;"></div>
                 </div>`;
             }
             // --- FICHES ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2><div style="white-space: pre-wrap; margin-top:10px; color: var(--texte-sec);">${row.Contenu || row.Définition}</div></div>`;
             }
-            // --- QUIZ (Détection automatique pour le score) ---
+            // --- QUIZ ---
             else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true;
-                maxQuizScore++; // On compte le nombre total de questions
+                maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 
                 html += `
@@ -223,7 +241,6 @@
 
         app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
 
-        // Mise à jour de l'affichage du score
         if (hasQuiz) {
             scoreBoard.style.opacity = "1";
             scoreBoard.innerHTML = `🎓 Score: 0 / ${maxQuizScore}`;
@@ -233,14 +250,12 @@
     }
 
     function check(click, correct, id) {
-        // Sécurité : si déjà répondu, on arrête
         if (answeredQuestions.has(id)) return;
         answeredQuestions.add(id);
 
         const btnClicked = document.getElementById(`btn-${id}-${click}`);
         const expli = document.getElementById(`ex-${id}`);
 
-        // Désactiver tous les boutons de la question
         ['A', 'B', 'C', 'D'].forEach(letter => {
             const b = document.getElementById(`btn-${id}-${letter}`);
             if(b) b.disabled = true;
@@ -249,26 +264,18 @@
         if (click === correct) {
             currentScore++;
             btnClicked.classList.add('success');
-            // Petit effet de confetti si bonne réponse
             confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
         } else {
             btnClicked.classList.add('error');
-            // Montrer la bonne réponse en vert
             const btnCorrect = document.getElementById(`btn-${id}-${correct}`);
             if(btnCorrect) btnCorrect.classList.add('success');
         }
-
-        // Afficher explication
         if(expli) expli.style.display = "block";
-
-        // Mettre à jour le score global
         updateScoreBoard();
     }
 
     function updateScoreBoard() {
         scoreBoard.innerHTML = `🎓 Score: ${currentScore} / ${maxQuizScore}`;
-        
-        // Si tout est répondu, afficher le bilan
         if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) {
             showFinalResult();
         }
@@ -291,8 +298,6 @@
             <button class="nav-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>
         `;
         finalBox.style.display = "block";
-        
-        // Auto scroll vers le bas pour voir le résultat
         setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
     }
 

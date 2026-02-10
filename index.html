@@ -16,7 +16,7 @@
             --opt-bg: #f8fafc; --opt-hover: #eff6ff;
         }
 
-        /* --- MODE SOMBRE (Variables surchargées) --- */
+        /* --- MODE SOMBRE --- */
         body.dark-mode {
             --bg: #0f172a; --bristol: #1e293b; --marge: #be123c; --ligne: #334155;
             --bleu: #60a5fa; --violet: #a78bfa; --vert: #34d399; --orange: #fbbf24;
@@ -41,17 +41,34 @@
         }
         .theme-toggle:hover { transform: scale(1.1); border-color: var(--violet); }
 
-        /* Menu de Navigation */
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
+        /* Menu de Navigation COLORÉ */
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { 
-            padding: 12px 20px; border-radius: 50px; border: 2px solid transparent; 
-            background: var(--nav-bg); color: var(--nav-text); cursor: pointer; font-weight: 600; 
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.2s ease;
+            /* On utilise la variable --btn-color définie en JS */
+            padding: 12px 24px; border-radius: 50px; 
+            border: 2px solid var(--btn-color); /* Bordure de la couleur du thème */
+            background: var(--nav-bg); 
+            color: var(--btn-color); /* Texte de la couleur du thème */
+            cursor: pointer; font-weight: 700; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); 
+            transition: all 0.2s ease;
         }
-        .nav-btn:hover { transform: translateY(-2px); border-color: var(--bleu); }
-        .nav-btn.active { background: var(--bleu); color: white; transform: scale(1.05); }
+        
+        .nav-btn:hover { 
+            transform: translateY(-2px); 
+            background: var(--btn-color); 
+            color: white; /* Au survol, le texte devient blanc et le fond coloré */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .nav-btn.active { 
+            background: var(--btn-color); 
+            color: white; 
+            transform: scale(1.05); 
+            box-shadow: 0 4px 12px var(--btn-color); /* Petite lueur colorée */
+        }
 
-        /* Style Fiche Bristol Premium */
+        /* Style Fiche Bristol */
         .fiche-bristol {
             background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px;
             padding: 45px 35px 45px 80px; position: relative;
@@ -85,7 +102,7 @@
             color: var(--texte);
         }
 
-        /* Timeline Auteurs */
+        /* Timeline */
         .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
@@ -96,10 +113,9 @@
             border: 1px dashed var(--marge); border-left: 6px solid var(--marge); 
             margin-top: 20px; line-height: 1.6; color: #991b1b;
         }
-        /* Ajustement mode sombre pour la boite rouge */
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; border-color: #f87171; }
 
-        /* Quiz Modernisé et Coloré */
+        /* Quiz */
         .card-quiz { 
             background: var(--quiz-bg); padding: 30px; border-radius: 16px; 
             border: 1px solid var(--card-border); border-top: 8px solid var(--violet); 
@@ -130,7 +146,6 @@
         }
         body.dark-mode .expli-box { background: #172554; color: #e0f2fe; }
 
-        /* Override spécifique pour le titre H1 qui était hardcodé */
         h1.main-title { text-align:center; font-size: 2.5rem; margin: 20px 0 40px 0; color: #0f172a; }
         body.dark-mode h1.main-title { color: #f1f5f9; }
 
@@ -149,28 +164,22 @@
 </div>
 
 <script>
-    // --- GESTION DU MODE SOMBRE ---
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
         body.classList.toggle('dark-mode');
-        
-        if (body.classList.contains('dark-mode')) {
-            btn.innerText = "☀️";
-        } else {
-            btn.innerText = "🌙";
-        }
+        btn.innerText = body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
 
-    // --- CODE EXISTANT ---
+    // --- COULEURS AJOUTÉES ICI ---
     const sections = [
-        { name: "Grammaire", gid: "1679242234" },
-        { name: "Conjugaison", gid: "1987121612" },
-        { name: "Figures Style", gid: "1943336125" },
-        { name: "Fiches", gid: "1143879514" },
-        { name: "Vocabulaire", gid: "710791745" },
-        { name: "Dictées", gid: "586561849" },
-        { name: "Auteurs", gid: "951178030" }
+        { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },     // Bleu
+        { name: "Conjugaison", gid: "1987121612", color: "#f97316" },   // Orange
+        { name: "Figures Style", gid: "1943336125", color: "#ec4899" }, // Rose
+        { name: "Fiches", gid: "1143879514", color: "#10b981" },        // Vert
+        { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },    // Violet
+        { name: "Dictées", gid: "586561849", color: "#eab308" },        // Jaune/Or
+        { name: "Auteurs", gid: "951178030", color: "#06b6d4" }         // Cyan
     ];
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
@@ -181,6 +190,9 @@
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
         btn.innerText = s.name;
+        // On injecte la couleur spécifique au bouton via une variable CSS
+        btn.style.setProperty('--btn-color', s.color);
+        
         btn.onclick = () => loadData(s.gid, btn);
         menu.appendChild(btn);
     });
@@ -195,7 +207,6 @@
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            // --- LOGIQUE DICTÉES ---
             if (row.Texte && row.Points_Vigilance) {
                 html += `
                 <div class="fiche-bristol">
@@ -203,13 +214,10 @@
                     <h2>${row.Titre || "Dictée"}</h2>
                     <div style="margin-top:20px;">
                         <div style="background: var(--opt-bg); padding: 20px; border-radius: 10px; line-height: 1.8; border: 1px solid var(--card-border);">${row.Texte}</div>
-                        <div class="vigilance-box">
-                            <strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}
-                        </div>
+                        <div class="vigilance-box"><strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}</div>
                     </div>
                 </div>`;
             }
-            // --- LOGIQUE AUTEURS ---
             else if (row.Auteur) {
                 const siecle = row.Siècle || "";
                 let progress = 0;
@@ -217,7 +225,6 @@
                 else if(siecle.includes("XVIII")) progress = 50;
                 else if(siecle.includes("XIX")) progress = 75;
                 else if(siecle.includes("XX")) progress = 100;
-
                 const imgUrl = row.Image || row.image || "";
                 html += `
                 <div class="fiche-bristol">
@@ -228,14 +235,11 @@
                         <div class="info-highlight"><span>📖</span> <strong>Œuvre clé :</strong> <em>${row.Œuvre || "N/A"}</em></div>
                         <div class="info-highlight" style="border-left-color: var(--vert);"><span>🎨</span> <strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
                     </div>
-                    <div class="timeline-container">
-                        <div class="timeline-bar" style="width: ${progress}%"></div>
-                    </div>
+                    <div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div>
                     <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
                     <div style="clear:both;"></div>
                 </div>`;
             }
-            // --- LOGIQUE COURS / FICHES ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `
                 <div class="fiche-bristol">
@@ -243,15 +247,11 @@
                     <div style="white-space: pre-wrap; margin-top:10px; color: var(--texte-sec);">${row.Contenu || row.Définition}</div>
                 </div>`;
             }
-            // --- LOGIQUE QUIZ ---
             else if (row.Question || row.Type === "QUIZ") {
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `
                 <div class="card-quiz">
-                    <div class="quiz-header">
-                        <span class="quiz-tag">🧠 Entraînement</span>
-                        <span class="quiz-number">Question ${i + 1}</span>
-                    </div>
+                    <div class="quiz-header"><span class="quiz-tag">🧠 Entraînement</span><span class="quiz-number">Question ${i + 1}</span></div>
                     <div class="quiz-title">${row.Titre || row.Question}</div>
                     <div class="btn-grid">
                         <button class="opt-btn" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || row.Categorie}</button>

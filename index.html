@@ -143,6 +143,21 @@
                     </div>
                 </div>`;
             }
+            // --- LOGIQUE DICTÉES (NOUVEAU) ---
+            else if (row.Texte && row.Points_Vigilance) {
+                html += `
+                <div class="fiche-bristol">
+                    <div class="badge-siecle" style="background:var(--orange)">Niveau : ${row.Niveau}</div>
+                    <h2>${row.Titre}</h2>
+                    <div style="white-space: pre-wrap; margin-top:10px;">
+                        <strong>Le texte :</strong><br>${row.Texte}
+                        <br><br>
+                        <div style="background:#fff5f5; padding:10px; border-radius:5px; border:1px dashed var(--marge);">
+                            <strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}
+                        </div>
+                    </div>
+                </div>`;
+            }
             // --- LOGIQUE COURS / VOCABULAIRE ---
             else if (type === "COURS" || row.Définition) {
                 const titre = row.Titre || row.Mot || "Leçon";

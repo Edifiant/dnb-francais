@@ -3,60 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Cahier de Révisions</title>
+    <title>Mon Cahier de Révisions Premium</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
-            --bg: #f4f7f6; --bristol: #ffffff; --marge: #ff8585; --ligne: #e1e9f4;
-            --bleu: #1877f2; --violet: #673ab7; --vert: #27ae60; --orange: #f39c12;
+            --bg: #f8fafc; --bristol: #ffffff; --marge: #fb7185; --ligne: #f1f5f9;
+            --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --orange: #f59e0b;
+            --texte: #1e293b;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); }
         .container { max-width: 850px; margin: 0 auto; }
 
-        /* Menu de Navigation */
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center; }
+        /* Navigation Style "Pillules" */
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { 
-            padding: 10px 18px; border-radius: 20px; border: none; background: white;
-            cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;
+            padding: 12px 20px; border-radius: 50px; border: 2px solid transparent; 
+            background: white; cursor: pointer; font-weight: 600; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.2s ease;
         }
-        .nav-btn.active { background: var(--bleu); color: white; }
+        .nav-btn:hover { transform: translateY(-2px); border-color: var(--bleu); }
+        .nav-btn.active { background: var(--bleu); color: white; transform: scale(1.05); }
 
-        /* Style Fiche Bristol */
+        /* Fiche Bristol Améliorée */
         .fiche-bristol {
-            background: var(--bristol); border: 1px solid #ddd; margin-bottom: 30px;
-            padding: 40px 30px 40px 70px; position: relative;
+            background: var(--bristol); border: 1px solid #e2e8f0; margin-bottom: 30px;
+            padding: 40px 30px 40px 80px; position: relative;
             background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
-            background-size: 100% 2.4rem; line-height: 2.4rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background-size: 100% 2.6rem; line-height: 2.6rem; 
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
-        .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 55px; bottom: 0; width: 2px; background: var(--marge); }
-        .fiche-bristol h2 { margin: 0 0 0.5rem 0; color: var(--bleu); border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
-
-        /* Style Spécifique Auteurs */
+        .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
+        
+        /* Éléments Auteurs */
         .auteur-portrait {
-            width: 100px; height: 130px; object-fit: cover; float: right;
-            margin-left: 20px; border-radius: 8px; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 110px; height: 140px; object-fit: cover; float: right;
+            margin-left: 20px; border-radius: 12px; border: 4px solid white;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2); transform: rotate(2deg);
         }
-        .badge-info { background: var(--violet); color: white; padding: 2px 12px; border-radius: 15px; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; line-height: 1.5; }
+        .badge-info { 
+            background: var(--violet); color: white; padding: 4px 16px; 
+            border-radius: 20px; font-size: 0.85rem; font-weight: bold;
+            display: inline-block; margin-bottom: 12px; line-height: 1;
+        }
+        .fiche-bristol h2 { 
+            margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem;
+            letter-spacing: -0.025em; border-bottom: 3px solid var(--bleu); 
+            display: inline-block; line-height: 1.1; 
+        }
+        .info-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; }
 
-        /* Style Quiz */
-        .card-quiz { background: white; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; margin-bottom: 20px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .opt-btn { padding: 12px; border: 1px solid #eee; border-radius: 8px; background: #fdfdfd; cursor: pointer; font-weight: 600; }
-        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
-        .correct { background: #d4edda; color: #155724; }
-        .wrong { background: #f8d7da; color: #721c24; }
-        .expli-box { margin-top: 15px; padding: 15px; background: #f0f7ff; border-left: 5px solid var(--bleu); display: none; line-height: 1.5; }
+        /* Style Dictées / Points de vigilance */
+        .vigilance-box {
+            background: #fff1f2; padding: 20px; border-radius: 12px; 
+            border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.5;
+        }
+
+        /* Quiz */
+        .card-quiz { background: white; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .opt-btn { 
+            padding: 16px; border: 2px solid #f1f5f9; border-radius: 12px; 
+            background: #f8fafc; cursor: pointer; font-weight: 600; text-align: left;
+            transition: all 0.2s;
+        }
+        .opt-btn:hover { background: #eff6ff; border-color: var(--bleu); color: var(--bleu); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align:center;">📖 Mon Cahier de Révisions</h1>
+    <h1 style="text-align:center; font-size: 2.2rem; margin-bottom: 40px; color: #0f172a;">🎓 Objectif Brevet</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Sélectionnez une catégorie...</div>
+    <div id="app">Prêt pour les révisions ?</div>
 </div>
 
 <script>
+    // Configuration identique à la tienne
     const sections = [
         { name: "Grammaire", gid: "1679242234" },
         { name: "Conjugaison", gid: "1987121612" },
@@ -68,7 +89,6 @@
     ];
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
-
     const app = document.getElementById('app');
     const menu = document.getElementById('menu');
 
@@ -83,68 +103,68 @@
     function loadData(gid, btn) {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "Chargement...";
+        app.innerHTML = "<div style='text-align:center;'>✨ Ouverture du grimoire...</div>";
         Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
     }
 
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            // --- 1. CAS DES DICTÉES ---
+            // --- 1. DICTÉES ---
             if (row.Texte && row.Points_Vigilance) {
                 html += `
                 <div class="fiche-bristol">
-                    <div class="badge-info" style="background:var(--orange)">Niveau : ${row.Niveau}</div>
+                    <div class="badge-info" style="background:var(--orange)">📝 Dictée - ${row.Niveau}</div>
                     <h2>${row.Titre}</h2>
-                    <div style="line-height: 1.6; margin-top:10px;">
-                        <p><strong>📝 Texte de la dictée :</strong><br>${row.Texte}</p>
-                        <div style="background:#fff5f5; padding:15px; border-radius:8px; border:1px dashed var(--marge); color:#b91c1c;">
-                            <strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}
+                    <div style="line-height: 1.8; margin-top:15px;">
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px;">${row.Texte}</div>
+                        <div class="vigilance-box">
+                            <strong>⚡ Points de vigilance :</strong><br>${row.Points_Vigilance}
                         </div>
                     </div>
                 </div>`;
             }
-            // --- 2. CAS DES AUTEURS ---
-else if (row.Auteur) {
-    const imgUrl = row.Image || "";
-    html += `
-    <div class="fiche-bristol">
-        ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
-        <div class="badge-info">${row.Siècle || ""} siècle</div>
-        <h2>${row.Auteur}</h2>
-        <div style="line-height: 1.8;">
-            <strong>📚 Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em><br>
-            <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}
-        </div>
-        <div style="clear:both;"></div>
-    </div>`;
-}
-            // --- 3. CAS DES COURS / FICHES ---
+            // --- 2. AUTEURS ---
+            else if (row.Auteur) {
+                const imgUrl = row.Image || "";
+                html += `
+                <div class="fiche-bristol">
+                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
+                    <div class="badge-info">🕰️ ${row.Siècle || ""} siècle</div><br>
+                    <h2>${row.Auteur}</h2>
+                    <div style="line-height: 2.2;">
+                        <div class="info-row"><span>📖</span> <span><em>${row.Œuvre || "N/A"}</em></span></div>
+                        <div class="info-row"><span>🎨</span> <span>${row.Courant || row.Mouvement || "N/A"}</span></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>`;
+            }
+            // --- 3. COURS / VOCABULAIRE ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `
                 <div class="fiche-bristol">
                     <h2>${row.Titre || row.Mot}</h2>
-                    <div style="white-space: pre-wrap; line-height: 1.6;">${row.Contenu || row.Définition}</div>
+                    <div style="white-space: pre-wrap; line-height: 2.4;">${row.Contenu || row.Définition}</div>
                 </div>`;
             }
-            // --- 4. CAS DES QUIZ ---
+            // --- 4. QUIZ ---
             else if (row.Question || row.Type === "QUIZ") {
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `
                 <div class="card-quiz">
-                    <p><strong>${row.Titre || row.Question}</strong></p>
+                    <p style="font-size: 1.2rem;"><strong>${row.Titre || row.Question}</strong></p>
                     <div class="btn-grid">
-                        <button class="opt-btn" onclick="check('A','${bonne}',${i})">${row.Réponse_A || row.Categorie}</button>
-                        <button class="opt-btn" onclick="check('B','${bonne}',${i})">${row.Réponse_B || row.Contenu}</button>
-                        ${row.Réponse_C ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">${row.Réponse_C}</button>` : ''}
-                        ${row.Réponse_D ? `<button class="opt-btn" onclick="check('D','${bonne}',${i})">${row.Réponse_D}</button>` : ''}
+                        <button class="opt-btn" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || row.Categorie}</button>
+                        <button class="opt-btn" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || row.Contenu}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                        ${row.Réponse_D ? `<button class="opt-btn" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
                     <div id="fb-${i}" class="feedback"></div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Le saviez-vous ?</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
-        app.innerHTML = html || "Aucune donnée trouvée dans cet onglet.";
+        app.innerHTML = html;
     }
 
     function check(click, correct, id) {
@@ -152,10 +172,10 @@ else if (row.Auteur) {
         const ex = document.getElementById('ex-' + id);
         fb.style.display = "block";
         if(click === correct) {
-            fb.innerText = "✅ Bravo !"; fb.className = "feedback correct";
-            if(ex) ex.style.display = "block";
+            fb.innerHTML = "✨ Excellent !"; fb.className = "feedback correct";
+            if(ex) { ex.style.display = "block"; ex.style.animation = "fadeIn 0.5s"; }
         } else {
-            fb.innerText = "❌ Mauvaise réponse. Réessaye !"; fb.className = "feedback wrong";
+            fb.innerHTML = "🧐 Pas tout à fait... Réessaie !"; fb.className = "feedback wrong";
             if(ex) ex.style.display = "none";
         }
     }

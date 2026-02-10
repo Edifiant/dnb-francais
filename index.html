@@ -12,9 +12,12 @@
         .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         
         .header { text-align: center; margin-bottom: 20px; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         
-        /* Menu de navigation */
+        /* Barre de recherche */
+        .search-container { margin-bottom: 20px; }
+        #searchBar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; background: var(--card); color: var(--text); }
+
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
         .nav-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid #ccc; background: var(--card); color: var(--text); cursor: pointer; font-weight: bold; font-size: 0.85em; transition: 0.2s; }
         .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -40,13 +43,16 @@
             <button class="action-btn" style="background:#4caf50" onclick="shuffleCurrent()">🎲 Mélanger</button>
         </div>
 
+        <div class="search-container">
+            <input type="text" id="searchBar" placeholder="🔍 Rechercher une notion, un auteur, un mot..." onkeyup="filterCards()">
+        </div>
+
         <div class="nav-menu" id="menu"></div>
 
-        <div id="app">Chargement des rubriques...</div>
+        <div id="app">Chargement...</div>
     </div>
 
     <script>
-        // CONFIGURATION : Remplacez les GID par ceux de votre tableau
         const categories = [
             { name: "Grammaire", gid: "1679242234" },
             { name: "Conjugaison", gid: "1987121612" },
@@ -58,10 +64,8 @@
         ];
 
         const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
-        
         let currentData = [];
 
-        // Génération du menu
         const menuDiv = document.getElementById('menu');
         categories.forEach((cat, index) => {
             let btn = document.createElement('button');
@@ -74,7 +78,8 @@
         function loadCategory(gid, btn) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('app').innerHTML = "Chargement des questions...";
+            document.getElementById('searchBar').value = ""; // Reset recherche
+            document.getElementById('app').innerHTML = "Chargement...";
 
             Papa.parse(baseUrl + gid, {
                 download: true,
@@ -82,26 +87,31 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     currentData = results.data.filter(row => row.Titre || row.Question || row.Mot || row.Auteur);
-                    renderCards();
+                    renderCards(currentData);
                 }
             });
         }
 
         function shuffleCurrent() {
             currentData.sort(() => Math.random() - 0.5);
-            renderCards();
+            renderCards(currentData);
         }
 
-        function renderCards() {
-            let html = "";
-            currentData.forEach((row, index) => {
-                // Détection du texte principal (Question, Titre ou Mot)
-                let q = row.Titre || row.Question || row.Mot || row.Auteur || "Sans titre";
-                
-                // Détection du tag (Thème, Catégorie ou Niveau)
-                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
+        function filterCards() {
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+            const filtered = currentData.filter(row => {
+                const text = (row.Titre || row.Question || row.Mot || row.Auteur || "").toLowerCase();
+                const theme = (row.Thème || row.Catégorie || "").toLowerCase();
+                return text.includes(searchTerm) || theme.includes(searchTerm);
+            });
+            renderCards(filtered);
+        }
 
-                // Logique de réponse
+        function renderCards(data) {
+            let html = "";
+            data.forEach((row, index) => {
+                let q = row.Titre || row.Question || row.Mot || row.Auteur || "Sans titre";
+                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
                 let r = "";
                 let code = (row.Bonne_Réponse || "").trim().toUpperCase();
                 
@@ -109,9 +119,8 @@
                 else if (code === "B") r = row.Contenu || row.Réponse_B;
                 else if (code === "C") r = row.Audio || row.Réponse_C;
                 else if (code === "D") r = row.Réponse_D;
-                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Voir détails";
+                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Détails";
 
-                // Info complémentaire
                 let expli = row.Explication || row.Points_Vigilance || row.Exemple || row.Courant || "";
 
                 html += `
@@ -122,10 +131,9 @@
                             ✅ RÉPONSE :<br>${r}
                             ${expli ? `<span class="explication">ℹ️ ${expli}</span>` : ''}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
-            document.getElementById('app').innerHTML = html || "Aucune donnée trouvée.";
+            document.getElementById('app').innerHTML = html || "Aucun résultat trouvé.";
         }
 
         function toggle(id) {
@@ -133,7 +141,6 @@
             div.style.display = (div.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Chargement initial
         loadCategory(categories[0].gid, document.querySelector('.nav-btn'));
     </script>
 </body>

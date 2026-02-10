@@ -11,13 +11,11 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; transition: 0.3s; margin:0;}
         .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         .header { text-align: center; margin-bottom: 20px; }
-        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .search-container { margin-bottom: 20px; }
-        #searchBar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; background: var(--card); color: var(--text); }
+        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        #searchBar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px; background: var(--card); color: var(--text); }
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
         .nav-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid #ccc; background: var(--card); color: var(--text); cursor: pointer; font-weight: bold; font-size: 0.85em; }
         .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .action-btn { padding: 8px 15px; border-radius: 10px; border: none; cursor: pointer; background: #666; color: white; font-weight: bold; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
         .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
@@ -28,14 +26,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>📚 Révisions DNB Français</h1></div>
+        <div class="header"><h1>📚 DNB Français</h1></div>
         <div class="controls">
-            <button class="action-btn" onclick="document.body.classList.toggle('dark')">🌙 Mode Nuit</button>
-            <button class="action-btn" style="background:#4caf50" onclick="shuffleCurrent()">🎲 Mélanger</button>
+            <button onclick="document.body.classList.toggle('dark')" style="padding:8px 15px; border-radius:10px; cursor:pointer;">🌙 Mode Nuit</button>
+            <button onclick="shuffleCurrent()" style="padding:8px 15px; border-radius:10px; cursor:pointer; background:#4caf50; color:white; border:none;">🎲 Mélanger</button>
         </div>
-        <div class="search-container">
-            <input type="text" id="searchBar" placeholder="🔍 Rechercher une notion..." onkeyup="filterCards()">
-        </div>
+        <input type="text" id="searchBar" placeholder="🔍 Rechercher (ex: Molière, COD, Homophones...)" onkeyup="filterCards()">
         <div class="nav-menu" id="menu"></div>
         <div id="app">Chargement...</div>
     </div>
@@ -54,7 +50,6 @@
         const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
         let currentData = [];
 
-        // Génération du menu
         const menuDiv = document.getElementById('menu');
         categories.forEach((cat, index) => {
             let btn = document.createElement('button');
@@ -67,21 +62,14 @@
         function loadCategory(gid, btn) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('app').innerHTML = "Chargement...";
+            document.getElementById('app').innerHTML = "Connexion au tableur...";
             Papa.parse(baseUrl + gid, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     currentData = results.data;
                     renderCards(currentData);
                 }
             });
-        }
-
-        function shuffleCurrent() {
-            currentData.sort(() => Math.random() - 0.5);
-            renderCards(currentData);
         }
 
         function filterCards() {
@@ -90,24 +78,31 @@
             renderCards(filtered);
         }
 
+        function shuffleCurrent() {
+            currentData.sort(() => Math.random() - 0.5);
+            renderCards(currentData);
+        }
+
         function renderCards(data) {
             let html = "";
             data.forEach((row, index) => {
-                // Détection intelligente : On cherche la question dans n'importe quelle colonne
+                // Identification de la question
                 let q = row.Titre || row.Question || row.Mot || row.Auteur || Object.values(row)[0];
-                if(!q || q.includes("GUIDE")) return; // Ignore les lignes d'entête inutiles
+                if (!q || q.includes("GUIDE")) return;
 
-                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
-                let expli = row.Explication || row.Points_Vigilance || row.Exemple || row.Courant || "";
-                
-                // Détection de la réponse
+                // Identification de la réponse (Calibré sur vos colonnes réelles)
                 let r = "";
-                let code = (row.Bonne_Réponse || "").trim().toUpperCase();
-                if (code === "A") r = row.Categorie || row.Réponse_A;
-                else if (code === "B") r = row.Contenu || row.Réponse_B;
-                else if (code === "C") r = row.Audio || row.Réponse_C;
+                const code = (row.Bonne_Réponse || "").trim().toUpperCase();
+                
+                if (code === "A") r = row.Réponse_A || row.Categorie;
+                else if (code === "B") r = row.Réponse_B || row.Contenu;
+                else if (code === "C") r = row.Réponse_C || row.Audio;
                 else if (code === "D") r = row.Réponse_D;
-                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Cliquez pour voir";
+                else r = row.Contenu || row.Définition || row.Œuvre || row.Texte || "Cliquez pour voir";
+
+                // Identification de l'explication et du tag
+                let ex = row.Explication || row.Exemple || row.Points_Vigilance || "";
+                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
 
                 html += `
                     <div class="card" onclick="toggle(${index})">
@@ -115,11 +110,11 @@
                         <span class="question">${q}</span>
                         <div id="rep-${index}" class="reponse">
                             <b>RÉPONSE :</b><br>${r}
-                            ${expli ? `<span class="explication">ℹ️ ${expli}</span>` : ''}
+                            ${ex ? `<span class="explication">ℹ️ ${ex}</span>` : ''}
                         </div>
                     </div>`;
             });
-            document.getElementById('app').innerHTML = html || "Aucune donnée trouvée.";
+            document.getElementById('app').innerHTML = html || "Aucune fiche trouvée.";
         }
 
         function toggle(id) {

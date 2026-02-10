@@ -62,14 +62,26 @@
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; margin-top: 8px; font-weight: 600; }
 
-        /* Dictées */
+        /* Dictées Interactives */
+        .dictee-texte { 
+            display: none; background: #f8fafc; padding: 20px; border-radius: 10px; 
+            line-height: 1.8; border: 1px solid #e2e8f0; margin: 15px 0;
+            animation: fadeIn 0.4s ease;
+        }
+        .btn-reveal {
+            background: var(--orange); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px;
+            transition: 0.3s; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-reveal:hover { background: #d97706; }
+        
         .vigilance-box {
             background: #fff1f2; padding: 20px; border-radius: 12px; 
             border: 1px dashed var(--marge); border-left: 6px solid var(--marge); 
             margin-top: 20px; line-height: 1.6; color: #991b1b;
         }
 
-        /* Quiz Modernisé et Coloré */
+        /* Quiz Modernisé */
         .card-quiz { 
             background: white; padding: 30px; border-radius: 16px; 
             border: 1px solid #e2e8f0; border-top: 8px solid var(--violet); 
@@ -135,28 +147,41 @@
     function loadData(gid, btn) {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "<div style='text-align:center; padding: 50px;'>✨ Analyse des parchemins en cours...</div>";
+        app.innerHTML = "<div style='text-align:center; padding: 50px;'>✨ Analyse des parchemins...</div>";
         Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
+    }
+
+    function toggleDictee(id) {
+        const txt = document.getElementById('txt-' + id);
+        const btn = document.getElementById('btn-' + id);
+        if (txt.style.display === "none" || txt.style.display === "") {
+            txt.style.display = "block";
+            btn.innerHTML = "🙈 Masquer le texte";
+        } else {
+            txt.style.display = "none";
+            btn.innerHTML = "👁️ Voir le texte de la dictée";
+        }
     }
 
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            // --- LOGIQUE DICTÉES ---
+            // --- DICTÉES ---
             if (row.Texte && row.Points_Vigilance) {
                 html += `
                 <div class="fiche-bristol">
                     <div class="badge-info" style="background:var(--orange)">📝 Dictée - Niveau ${row.Niveau || "?"}</div><br>
                     <h2>${row.Titre || "Dictée"}</h2>
                     <div style="margin-top:20px;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; line-height: 1.8; border: 1px solid #e2e8f0;">${row.Texte}</div>
+                        <button class="btn-reveal" id="btn-${i}" onclick="toggleDictee(${i})">👁️ Voir le texte de la dictée</button>
+                        <div class="dictee-texte" id="txt-${i}">${row.Texte}</div>
                         <div class="vigilance-box">
-                            <strong>⚡ Points de vigilance :</strong><br>${row.Points_Vigilance}
+                            <strong>⚡ Points de vigilance (À lire avant !) :</strong><br>${row.Points_Vigilance}
                         </div>
                     </div>
                 </div>`;
             }
-            // --- LOGIQUE AUTEURS ---
+            // --- AUTEURS ---
             else if (row.Auteur) {
                 const siecle = row.Siècle || "";
                 let progress = 0;
@@ -164,7 +189,6 @@
                 else if(siecle.includes("XVIII")) progress = 50;
                 else if(siecle.includes("XIX")) progress = 75;
                 else if(siecle.includes("XX")) progress = 100;
-
                 const imgUrl = row.Image || row.image || "";
                 html += `
                 <div class="fiche-bristol">
@@ -182,7 +206,7 @@
                     <div style="clear:both;"></div>
                 </div>`;
             }
-            // --- LOGIQUE COURS / FICHES ---
+            // --- COURS ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `
                 <div class="fiche-bristol">
@@ -190,7 +214,7 @@
                     <div style="white-space: pre-wrap; margin-top:10px; color: #334155;">${row.Contenu || row.Définition}</div>
                 </div>`;
             }
-            // --- LOGIQUE QUIZ ---
+            // --- QUIZ ---
             else if (row.Question || row.Type === "QUIZ") {
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `

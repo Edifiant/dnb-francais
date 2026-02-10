@@ -69,9 +69,16 @@
             margin-top: 20px; line-height: 1.6; color: #991b1b;
         }
 
-        /* Quiz Modernisé */
-        .card-quiz { background: white; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .quiz-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: #0f172a; }
+        /* Quiz Modernisé et Coloré */
+        .card-quiz { 
+            background: white; padding: 30px; border-radius: 16px; 
+            border: 1px solid #e2e8f0; border-top: 8px solid var(--violet); 
+            margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); 
+        }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .quiz-tag { color: var(--violet); font-weight: bold; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .quiz-number { background: #f3e8ff; color: var(--violet); padding: 2px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .quiz-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: #0f172a; line-height: 1.4; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .opt-btn { 
             padding: 16px; border: 2px solid #f1f5f9; border-radius: 12px; 
@@ -188,6 +195,10 @@
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `
                 <div class="card-quiz">
+                    <div class="quiz-header">
+                        <span class="quiz-tag">🧠 Entraînement</span>
+                        <span class="quiz-number">Question ${i + 1}</span>
+                    </div>
                     <div class="quiz-title">${row.Titre || row.Question}</div>
                     <div class="btn-grid">
                         <button class="opt-btn" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || row.Categorie}</button>
@@ -208,10 +219,10 @@
         const ex = document.getElementById('ex-' + id);
         fb.style.display = "block";
         if(click === correct) {
-            fb.innerHTML = "✨ BRAVO ! Bonne réponse."; fb.className = "feedback correct";
+            fb.innerHTML = "✨ EXCELLENT !"; fb.className = "feedback correct";
             if(ex) ex.style.display = "block";
         } else {
-            fb.innerHTML = "🧐 Pas tout à fait... Réessaye !"; fb.className = "feedback wrong";
+            fb.innerHTML = "🧐 Pas encore... Réessaye !"; fb.className = "feedback wrong";
             if(ex) ex.style.display = "none";
         }
     }

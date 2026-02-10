@@ -3,47 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Révisions Brevet - Français</title>
+    <title>Objectif Brevet - Révisions Français</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --bristol: #fff; --bleu: #1877f2; --marge: #ff8585; --ligne: #e1e9f4; --violet: #673ab7; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        
-        /* Menu */
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .nav-btn { padding: 10px 20px; border-radius: 20px; border: none; background: white; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav-btn.active { background: var(--bleu); color: white; }
-
-        /* Style Bristol (Cours) */
-        .card-cours {
-            background: var(--bristol); border: 1px solid #ccc; border-radius: 4px;
-            padding: 40px 30px 40px 65px; margin-bottom: 30px; position: relative;
-            background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
-            background-size: 100% 2.2rem; line-height: 2.2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        :root {
+            --bg: #f4f7f6;
+            --bristol: #ffffff;
+            --marge: #ff8585;
+            --ligne: #e1e9f4;
+            --bleu: #1877f2;
+            --violet: #673ab7;
+            --vert: #27ae60;
+            --rouge: #e74c3c;
         }
-        .card-cours::before { content: ""; position: absolute; top: 0; left: 50px; bottom: 0; width: 2px; background: var(--marge); }
-        .card-cours h2 { color: var(--bleu); margin: 0 0 10px 0; border-bottom: 2px solid var(--bleu); display: inline-block; line-height: 1.2; }
 
-        /* Style Quiz */
-        .card-quiz { background: white; padding: 25px; border-radius: 12px; border: 2px solid #ddd; margin-bottom: 20px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .opt-btn { padding: 15px; border: 2px solid #eee; border-radius: 10px; cursor: pointer; background: #f8f9fa; font-weight: bold; transition: 0.2s; font-size: 1rem; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        /* --- NAVIGATION --- */
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
+        .nav-btn { 
+            padding: 12px 20px; border-radius: 25px; border: none; background: white;
+            cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.3s;
+        }
+        .nav-btn.active { background: var(--bleu); color: white; transform: translateY(-2px); }
+
+        /* --- STYLE BRISTOL (COURS) --- */
+        .fiche-bristol {
+            background: var(--bristol);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            padding: 45px 35px 45px 70px;
+            position: relative;
+            background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
+            background-size: 100% 2.4rem;
+            line-height: 2.4rem;
+        }
+        .fiche-bristol::before {
+            content: ""; position: absolute; top: 0; left: 55px; bottom: 0;
+            width: 2px; background: var(--marge);
+        }
+        .fiche-bristol h2 {
+            margin: 0 0 1rem 0; color: var(--bleu); font-size: 1.7rem;
+            border-bottom: 4px solid var(--bleu); display: inline-block; line-height: 1.2;
+        }
+
+        /* --- STYLE QUIZ --- */
+        .card-quiz {
+            background: white; padding: 25px; border-radius: 15px;
+            border: 2px solid #e0e0e0; margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .quiz-header { color: var(--violet); font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .opt-btn {
+            padding: 15px; border: 2px solid #f0f0f0; border-radius: 10px;
+            background: #fdfdfd; cursor: pointer; font-weight: 600; font-size: 1rem; transition: 0.2s;
+        }
         .opt-btn:hover { border-color: var(--violet); background: #f3f0ff; }
         
-        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
-        .correct { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-        .wrong { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        /* Feedbacks et Explications */
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
+        .correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .expli-box {
+            margin-top: 15px; padding: 15px; background: #f0f7ff;
+            border-left: 5px solid var(--bleu); border-radius: 5px;
+            display: none; line-height: 1.5; color: #444; font-size: 0.95rem;
+        }
+        .expli-titre { font-weight: bold; color: var(--bleu); display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h1 style="text-align:center; color: #2c3e50;">🎓 Parcours Révisions Brevet</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Chargement des fichiers...</div>
+    <div id="app">Chargement des fiches...</div>
 </div>
 
 <script>
+    // Configuration des onglets (GID à vérifier dans votre URL Google Sheets)
     const sections = [
         { name: "Grammaire", gid: "1679242234" },
         { name: "Conjugaison", gid: "1987121612" },
@@ -56,6 +99,7 @@
     const app = document.getElementById('app');
     const menu = document.getElementById('menu');
 
+    // Création du menu
     sections.forEach((s, i) => {
         const btn = document.createElement('button');
         btn.className = 'nav-btn' + (i===0 ? ' active' : '');
@@ -67,7 +111,7 @@
     function loadData(gid, btn) {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "Mise à jour de la page...";
+        app.innerHTML = "<p style='text-align:center;'>Préparation de la leçon...</p>";
 
         Papa.parse(spreadsheetUrl + gid, {
             download: true,
@@ -80,36 +124,46 @@
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
+            // Nettoyage des données pour éviter les erreurs de colonnes
             const type = (row.Type || row.type || "").trim().toUpperCase();
             const titre = row.Titre || row.Question || "Notion";
             const texte = row.Contenu || row.Texte || "";
+            const explication = row.Explication || row.explication || "";
 
             if (type === "COURS") {
                 html += `
-                <div class="card-cours">
+                <div class="fiche-bristol">
                     <h2>${titre}</h2>
-                    <div style="white-space: pre-wrap;">${texte}</div>
+                    <div style="white-space: pre-wrap; font-size:1.2rem;">${texte}</div>
                 </div>`;
             } else {
-                // RÉCUPÉRATION DES 4 RÉPONSES
                 const rA = row.Réponse_A || "";
                 const rB = row.Réponse_B || "";
                 const rC = row.Réponse_C || "";
-                const rD = row.Réponse_D || ""; // AJOUT DE LA RÉPONSE D
+                const rD = row.Réponse_D || "";
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
 
                 html += `
                 <div class="card-quiz">
-                    <p style="color:var(--violet); font-weight:bold; font-size:0.8rem; margin-bottom:5px;">QUIZ</p>
-                    <p><strong>${titre}</strong></p>
-                    ${texte ? `<p style="color:#666; font-size:0.95rem;">${texte}</p>` : ''}
+                    <div class="quiz-header">Exercice d'application</div>
+                    <p style="font-size: 1.15rem;"><strong>${titre}</strong></p>
+                    ${texte ? `<p style="color:#555;">${texte}</p>` : ''}
+                    
                     <div class="btn-grid">
                         ${rA ? `<button class="opt-btn" onclick="check('A','${bonne}',${i})">${rA}</button>` : ''}
                         ${rB ? `<button class="opt-btn" onclick="check('B','${bonne}',${i})">${rB}</button>` : ''}
                         ${rC ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">${rC}</button>` : ''}
                         ${rD ? `<button class="opt-btn" onclick="check('D','${bonne}',${i})">${rD}</button>` : ''}
                     </div>
+
                     <div id="fb-${i}" class="feedback"></div>
+                    
+                    ${explication ? `
+                        <div id="ex-${i}" class="expli-box">
+                            <span class="expli-titre">💡 Explication :</span>
+                            ${explication}
+                        </div>
+                    ` : ''}
                 </div>`;
             }
         });
@@ -117,15 +171,22 @@
     }
 
     function check(click, correct, id) {
-        const div = document.getElementById('fb-'+id);
-        div.style.display = "block";
+        const fb = document.getElementById('fb-' + id);
+        const ex = document.getElementById('ex-' + id);
+        
+        fb.style.display = "block";
+        if(ex) ex.style.display = "block";
+
         if(click === correct) {
-            div.innerText = "✅ Excellent !"; div.className = "feedback correct";
+            fb.innerText = "✅ Bravo ! C'est la bonne réponse.";
+            fb.className = "feedback correct";
         } else {
-            div.innerText = "❌ Ce n'est pas la bonne réponse."; div.className = "feedback wrong";
+            fb.innerText = "❌ Ce n'est pas correct. Relis bien l'explication.";
+            fb.className = "feedback wrong";
         }
     }
 
+    // Premier chargement
     loadData(sections[0].gid, menu.firstChild);
 </script>
 </body>

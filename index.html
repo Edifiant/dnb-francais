@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Objectif Brevet - Mega App</title>
+    <title>Objectif Brevet - Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
@@ -17,63 +17,67 @@
             --texte: #f1f5f9; --card-border: #475569;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: all 0.3s; }
-        .container { max-width: 850px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: all 0.3s ease; }
+        .container { max-width: 800px; margin: 0 auto; }
 
-        .search-container { margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
+        /* Barre de Recherche */
+        .search-box { margin-bottom: 20px; width: 100%; }
         #searchBar { 
-            width: 100%; padding: 15px 20px; border-radius: 30px; border: 2px solid var(--bleu);
-            background: var(--bristol); color: var(--texte); font-size: 1rem; outline: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box;
+            width: 100%; padding: 12px 20px; border-radius: 25px; border: 2px solid var(--bleu);
+            background: var(--bristol); color: var(--texte); outline: none; box-sizing: border-box;
         }
 
+        /* Menu */
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; justify-content: center; }
         .nav-btn { 
-            padding: 10px 18px; border-radius: 20px; border: none; background: var(--bristol);
-            cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: var(--texte);
+            padding: 8px 15px; border-radius: 15px; border: 1px solid var(--card-border); 
+            background: var(--bristol); cursor: pointer; color: var(--texte); font-weight: bold;
         }
-        .nav-btn.active { background: var(--bleu); color: white; }
+        .nav-btn.active { background: var(--bleu); color: white; border-color: var(--bleu); }
 
+        /* Fiches */
         .fiche-bristol {
-            background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px;
-            padding: 45px 35px 45px 80px; position: relative; border-radius: 12px;
+            background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 25px;
+            padding: 30px 30px 30px 60px; position: relative; border-radius: 8px;
             background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
-            background-size: 100% 2.6rem; line-height: 2.6rem; box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+            background-size: 100% 2.5rem; line-height: 2.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
-        .fiche-bristol h2 { color: var(--bleu); border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; margin: 0 0 1rem 0; }
+        .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 45px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.5; }
+        
+        /* Quiz */
+        .card-quiz { 
+            background: var(--bristol); padding: 25px; border-radius: 12px; 
+            border: 1px solid var(--card-border); border-top: 6px solid var(--violet); 
+            margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { padding: 12px; border-radius: 8px; border: 1px solid var(--ligne); background: var(--bg); color: var(--texte); cursor: pointer; text-align: left; }
+        
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; font-weight: bold; text-align: center; }
+        .correct { background: var(--vert) !important; color: white; }
+        .wrong { background: var(--marge) !important; color: white; }
 
-        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid white; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transform: rotate(2deg); }
-        .badge-info { background: var(--violet); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; line-height: 1; margin-bottom: 10px; }
-        .info-highlight { background: rgba(124, 58, 237, 0.1); padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--violet); line-height: 1.5; margin-top: 15px; }
+        /* Mode Sombre */
+        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--bleu); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 1000; font-size: 20px; }
 
-        .btn-reveal { background: var(--orange); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 10px 0; }
-        .dictee-texte { display: none; background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px; border: 1px dashed var(--card-border); margin-top: 10px; line-height: 1.6; }
-
-        .card-quiz { background: var(--bristol); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt-btn { padding: 15px; border: 2px solid var(--ligne); border-radius: 10px; background: var(--bg); color: var(--texte); cursor: pointer; font-weight: 600; text-align: left; }
-        .opt-btn:hover { border-color: var(--bleu); }
-        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-weight: bold; }
-        .correct { background: var(--vert) !important; color: white !important; }
-        .wrong { background: var(--marge) !important; color: white !important; }
-
-        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--bleu); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; }
-
-        @media (max-width: 600px) { .fiche-bristol { padding-left: 50px; } .fiche-bristol::before { left: 40px; } .btn-grid { grid-template-columns: 1fr; } .auteur-portrait { width: 80px; height: 110px; } }
+        /* Divers */
+        .btn-reveal { background: var(--orange); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin: 10px 0; font-weight: bold; }
+        .hidden-text { display: none; background: rgba(0,0,0,0.05); padding: 15px; border-radius: 5px; line-height: 1.6; margin: 10px 0; border: 1px dashed var(--card-border); }
+        h2 { margin-top: 0; color: var(--bleu); border-bottom: 2px solid var(--bleu); display: inline-block; line-height: 1.2; }
+        .auteur-img { width: 80px; height: 100px; object-fit: cover; float: right; border-radius: 5px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="text-align:center;">🇫🇷 Objectif Brevet</h1>
-    
-    <div class="search-container">
-        <input type="text" id="searchBar" placeholder="🔍 Rechercher un auteur, un mot, une règle..." onkeyup="filterData()">
+    <h1 style="text-align: center;">🎓 Objectif Brevet</h1>
+
+    <div class="search-box">
+        <input type="text" id="searchBar" placeholder="🔍 Rechercher un mot, un auteur, une règle..." onkeyup="filterData()">
     </div>
 
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Initialisation du grimoire...</div>
+    <div id="app">Chargement des données...</div>
 </div>
 
 <button class="dark-toggle" onclick="toggleDarkMode()">🌓</button>
@@ -92,23 +96,32 @@
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
     let currentData = [];
 
+    // --- FONCTIONS DE BASE ---
     function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 
     function filterData() {
-        const term = document.getElementById('searchBar').value.toLowerCase();
-        const filtered = currentData.filter(row => {
-            return Object.values(row).some(val => String(val).toLowerCase().includes(term));
-        });
+        const val = document.getElementById('searchBar').value.toLowerCase();
+        const filtered = currentData.filter(row => JSON.stringify(row).toLowerCase().includes(val));
         render(filtered);
     }
 
-    const app = document.getElementById('app');
-    const menu = document.getElementById('menu');
+    function toggleReveal(id) {
+        const el = document.getElementById('reveal-' + id);
+        const btn = document.getElementById('btn-' + id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+            btn.innerText = "👁️ Voir le texte";
+        } else {
+            el.style.display = 'block';
+            btn.innerText = "🙈 Masquer le texte";
+        }
+    }
 
-    // Génération du menu
+    // --- NAVIGATION ---
+    const menu = document.getElementById('menu');
     sections.forEach((s, i) => {
         const btn = document.createElement('button');
-        btn.className = 'nav-btn' + (i===0 ? ' active' : '');
+        btn.className = 'nav-btn' + (i === 0 ? ' active' : '');
         btn.innerText = s.name;
         btn.onclick = () => loadData(s.gid, btn);
         menu.appendChild(btn);
@@ -118,12 +131,9 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('searchBar').value = "";
-        app.innerHTML = "Chargement des parchemins...";
         
         Papa.parse(spreadsheetUrl + gid, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
+            download: true, header: true, skipEmptyLines: true,
             complete: (results) => {
                 currentData = results.data;
                 render(currentData);
@@ -131,86 +141,74 @@
         });
     }
 
-    function toggleDictee(id) {
-        const txt = document.getElementById('txt-' + id);
-        const btn = document.getElementById('btn-' + id);
-        if (txt.style.display === 'none' || txt.style.display === '') {
-            txt.style.display = 'block';
-            btn.innerText = "🙈 Masquer le texte";
-        } else {
-            txt.style.display = 'none';
-            btn.innerText = "👁️ Voir le texte";
-        }
-    }
-
+    // --- AFFICHAGE ---
     function render(data) {
         let html = "";
-        if (data.length === 0) {
-            app.innerHTML = "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+        if (!data || data.length === 0) {
+            document.getElementById('app').innerHTML = "Aucune donnée trouvée.";
             return;
         }
 
         data.forEach((row, i) => {
-            // 1. DICTÉES
-            if (row.Texte && row.Points_Vigilance) {
+            // Cas 1 : DICTÉE (Si la colonne "Texte" existe)
+            if (row.Texte) {
                 html += `<div class="fiche-bristol">
-                    <div class="badge-info" style="background:var(--orange)">📝 Dictée - ${row.Niveau || "Brevet"}</div><br>
-                    <h2>${row.Titre || "Exercice"}</h2><br>
-                    <button class="btn-reveal" id="btn-${i}" onclick="toggleDictee(${i})">👁️ Voir le texte</button>
-                    <div class="dictee-texte" id="txt-${i}">${row.Texte}</div>
-                    <div class="info-highlight" style="border-color:var(--marge)"><strong>⚠️ Vigilance :</strong><br>${row.Points_Vigilance}</div>
+                    <span style="color:var(--orange); font-weight:bold;">📝 DICTÉE</span><br>
+                    <h2>${row.Titre || "Sans titre"}</h2><br>
+                    <button class="btn-reveal" id="btn-${i}" onclick="toggleReveal(${i})">👁️ Voir le texte</button>
+                    <div class="hidden-text" id="reveal-${i}">${row.Texte}</div>
+                    <div style="line-height:1.4; margin-top:10px; color:var(--marge);"><strong>⚠️ Vigilance :</strong> ${row.Points_Vigilance || "Aucune"}</div>
                 </div>`;
-            }
-            // 2. QUIZ (On vérifie s'il y a une Question)
+            } 
+            // Cas 2 : QUIZ (Si la colonne "Question" existe)
             else if (row.Question) {
-                const bonne = (row.Bonne_Réponse || row.Bonne_Reponse || "").trim().toUpperCase();
+                const ans = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `<div class="card-quiz">
-                    <div class="badge-info">🧠 Entraînement</div>
-                    <div style="margin:15px 0; font-weight:bold; line-height:1.4; font-size:1.1rem;">${row.Question}</div>
+                    <span style="color:var(--violet); font-weight:bold;">🧠 QUIZ</span>
+                    <p style="font-weight:bold;">${row.Question}</p>
                     <div class="btn-grid">
-                        <button class="opt-btn" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || row.Reponse_A}</button>
-                        <button class="opt-btn" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || row.Reponse_B}</button>
+                        <button class="opt-btn" onclick="check('A','${ans}',${i})">A. ${row.Réponse_A || "..."}</button>
+                        <button class="opt-btn" onclick="check('B','${ans}',${i})">B. ${row.Réponse_B || "..."}</button>
                     </div>
                     <div id="fb-${i}" class="feedback"></div>
                 </div>`;
             }
-            // 3. AUTEURS
+            // Cas 3 : AUTEURS (Si la colonne "Auteur" existe)
             else if (row.Auteur) {
-                const imgUrl = row.Image || row.image || "";
                 html += `<div class="fiche-bristol">
-                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
-                    <div class="badge-info">🕰️ ${row.Siècle || "?"}e siècle</div><br>
-                    <h2>${row.Auteur}</h2>
-                    <div class="info-highlight"><strong>📖 Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
-                    <div class="info-highlight" style="border-color:var(--vert)"><strong>🎨 Courant :</strong> ${row.Courant || "N/A"}</div>
-                    <div style="clear:both;"></div>
+                    ${row.Image ? `<img src="${row.Image}" class="auteur-img">` : ""}
+                    <span style="color:var(--violet); font-weight:bold;">🕰️ ${row.Siècle || "?"}e siècle</span><br>
+                    <h2>${row.Auteur}</h2><br>
+                    <div style="line-height:1.5;">
+                        <strong>📖 Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em><br>
+                        <strong>🎨 Courant :</strong> ${row.Courant || "N/A"}
+                    </div>
                 </div>`;
             }
-            // 4. COURS / PAR DEFAUT
+            // Cas 4 : COURS PAR DÉFAUT
             else {
                 html += `<div class="fiche-bristol">
-                    <h2>${row.Titre || row.Mot || "Leçon"}</h2>
-                    <div style="white-space: pre-wrap; margin-top:10px;">${row.Contenu || row.Définition || "Contenu non disponible."}</div>
+                    <h2>${row.Titre || row.Mot || "Leçon"}</h2><br>
+                    <div style="line-height:1.6; white-space:pre-wrap;">${row.Contenu || row.Définition || "Contenu vide."}</div>
                 </div>`;
             }
         });
-        app.innerHTML = html;
+        document.getElementById('app').innerHTML = html;
     }
 
     function check(click, correct, id) {
         const fb = document.getElementById('fb-' + id);
         fb.style.display = "block";
-        if(click === correct) { 
-            fb.innerText = "✨ Bravo ! Bonne réponse."; 
-            fb.className = "feedback correct"; 
-        } else { 
-            fb.innerText = "🧐 Ce n'est pas ça... Réessaye !"; 
-            fb.className = "feedback wrong"; 
+        if (click === correct) {
+            fb.innerText = "✅ Bravo !"; fb.className = "feedback correct";
+        } else {
+            fb.innerText = "❌ Réessaye !"; fb.className = "feedback wrong";
         }
     }
 
-    // Chargement initial
+    // Lancement au démarrage
     loadData(sections[0].gid, menu.firstChild);
 </script>
+
 </body>
 </html>

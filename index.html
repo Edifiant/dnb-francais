@@ -3,80 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNB Français - Flashcards</title>
+    <title>DNB Français - Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 650px; margin: 0 auto; }
-        h1 { text-align: center; color: #1877f2; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+        :root { --bg: #f0f2f5; --card: white; --text: #333; --primary: #1877f2; }
+        .dark { --bg: #18191a; --card: #242526; --text: #e4e6eb; --primary: #4599ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; transition: 0.3s; margin:0;}
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        
+        /* Menu de navigation */
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
+        .nav-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid #ccc; background: var(--card); color: var(--text); cursor: pointer; font-weight: bold; font-size: 0.85em; transition: 0.2s; }
+        .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .action-btn { padding: 8px 15px; border-radius: 10px; border: none; cursor: pointer; background: #666; color: white; font-weight: bold; }
+
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
         .theme-tag { background: #e7f3ff; color: #1877f2; padding: 4px 10px; border-radius: 10px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         .question { display: block; margin-top: 10px; font-weight: 600; font-size: 1.1em; }
-        .reponse { display: none; margin-top: 15px; padding: 12px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; }
-        .explication { font-size: 0.9em; color: #666; font-weight: normal; margin-top: 8px; display: block; font-style: italic; border-top: 1px solid #c8e6c9; padding-top: 5px; }
-        .error-box { color: #721c24; background: #f8d7da; padding: 20px; border-radius: 10px; text-align: center; }
+        .reponse { display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 5px; color: #1b5e20; font-weight: bold; white-space: pre-wrap; }
+        .dark .reponse { background: #1b2e1c; color: #81c784; }
+        .explication { font-size: 0.9em; opacity: 0.8; font-weight: normal; margin-top: 10px; display: block; font-style: italic; border-top: 1px solid #ccc; padding-top: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Révisions DNB Français</h1>
-        <p style="text-align:center; font-size:0.9em; color:#666;">Appuyez sur une question pour voir la réponse et l'explication.</p>
-        <div id="app">Connexion aux fiches de révision...</div>
+        <div class="header">
+            <h1>📚 Révisions DNB Français</h1>
+        </div>
+
+        <div class="controls">
+            <button class="action-btn" onclick="document.body.classList.toggle('dark')">🌙 Mode Nuit</button>
+            <button class="action-btn" style="background:#4caf50" onclick="shuffleCurrent()">🎲 Mélanger</button>
+        </div>
+
+        <div class="nav-menu" id="menu"></div>
+
+        <div id="app">Chargement des rubriques...</div>
     </div>
 
     <script>
-        // LIEN CORRIGÉ (Finissant par output=csv)
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?gid=1679242234&single=true&output=csv";
+        // CONFIGURATION : Remplacez les GID par ceux de votre tableau
+        const categories = [
+            { name: "Grammaire", gid: "1679242234" },
+            { name: "Conjugaison", gid: "1987121612" },
+            { name: "Figures Style", gid: "1943336125" },
+            { name: "Fiches", gid: "1143879514" },
+            { name: "Dictées", gid: "2137570262" },
+            { name: "Vocabulaire", gid: "710791745" },
+            { name: "Auteurs", gid: "951178030" }
+        ];
 
-        Papa.parse(sheetUrl, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                let html = "";
-                if (results.data.length === 0) {
-                    document.getElementById('app').innerHTML = "<div class='error-box'>Le tableau est vide.</div>";
-                    return;
-                }
-                
-                results.data.forEach((row, index) => {
-                    if(row.Titre || row.titre) {
-                        let question = row.Titre || row.titre;
-                        let theme = row.Thème || row.theme || "Grammaire";
-                        let explication = row.Explication || row.explication || "";
-                        
-                        let r = "Réponse non définie";
-                        let codeReponse = (row.Bonne_Réponse || "").trim().toUpperCase();
-                        
-                        if (codeReponse === "A") r = row.Categorie || row.categorie;
-                        else if (codeReponse === "B") r = row.Contenu || row.contenu;
-                        else if (codeReponse === "C") r = row.Audio || row.audio;
-                        else if (codeReponse === "D") r = row.Réponse_D || row.Reponse_D;
-                        else r = row.Contenu || row.contenu || "Erreur de configuration";
+        const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
+        
+        let currentData = [];
 
-                        html += `
-                            <div class="card" onclick="toggle(${index})">
-                                <span class="theme-tag">${theme}</span>
-                                <span class="question">${question}</span>
-                                <div id="rep-${index}" class="reponse">
-                                    ✅ RÉPONSE : ${r}
-                                    ${explication ? `<span class="explication">ℹ️ ${explication}</span>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                document.getElementById('app').innerHTML = html || "<div class='error-box'>Données illisibles.</div>";
-            },
-            error: function() {
-                document.getElementById('app').innerHTML = "<div class='error-box'>❌ Erreur de chargement. Vérifiez que l'onglet est publié en CSV.</div>";
-            }
+        // Génération du menu
+        const menuDiv = document.getElementById('menu');
+        categories.forEach((cat, index) => {
+            let btn = document.createElement('button');
+            btn.className = 'nav-btn' + (index === 0 ? ' active' : '');
+            btn.innerText = cat.name;
+            btn.onclick = () => loadCategory(cat.gid, btn);
+            menuDiv.appendChild(btn);
         });
+
+        function loadCategory(gid, btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('app').innerHTML = "Chargement des questions...";
+
+            Papa.parse(baseUrl + gid, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    currentData = results.data.filter(row => row.Titre || row.Question || row.Mot || row.Auteur);
+                    renderCards();
+                }
+            });
+        }
+
+        function shuffleCurrent() {
+            currentData.sort(() => Math.random() - 0.5);
+            renderCards();
+        }
+
+        function renderCards() {
+            let html = "";
+            currentData.forEach((row, index) => {
+                // Détection du texte principal (Question, Titre ou Mot)
+                let q = row.Titre || row.Question || row.Mot || row.Auteur || "Sans titre";
+                
+                // Détection du tag (Thème, Catégorie ou Niveau)
+                let tag = row.Thème || row.Catégorie || row.Niveau || row.Siècle || "Révision";
+
+                // Logique de réponse
+                let r = "";
+                let code = (row.Bonne_Réponse || "").trim().toUpperCase();
+                
+                if (code === "A") r = row.Categorie || row.Réponse_A;
+                else if (code === "B") r = row.Contenu || row.Réponse_B;
+                else if (code === "C") r = row.Audio || row.Réponse_C;
+                else if (code === "D") r = row.Réponse_D;
+                else r = row.Contenu || row.Texte || row.Définition || row.Œuvre || "Voir détails";
+
+                // Info complémentaire
+                let expli = row.Explication || row.Points_Vigilance || row.Exemple || row.Courant || "";
+
+                html += `
+                    <div class="card" onclick="toggle(${index})">
+                        <span class="theme-tag">${tag}</span>
+                        <span class="question">${q}</span>
+                        <div id="rep-${index}" class="reponse">
+                            ✅ RÉPONSE :<br>${r}
+                            ${expli ? `<span class="explication">ℹ️ ${expli}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('app').innerHTML = html || "Aucune donnée trouvée.";
+        }
 
         function toggle(id) {
             let div = document.getElementById('rep-' + id);
             div.style.display = (div.style.display === 'block') ? 'none' : 'block';
         }
+
+        // Chargement initial
+        loadCategory(categories[0].gid, document.querySelector('.nav-btn'));
     </script>
 </body>
 </html>

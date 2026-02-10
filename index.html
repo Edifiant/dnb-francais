@@ -71,7 +71,7 @@
         @media (max-width: 600px) { .fiche-bristol { padding-left: 50px; } .fiche-bristol::before { left: 40px; } .btn-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body>
+<body class="">
 
 <div class="container">
     <h1 style="text-align:center;">🇫🇷 Objectif Brevet</h1>
@@ -131,23 +131,30 @@
 
     function toggleDictee(id) {
         const txt = document.getElementById('txt-' + id);
-        txt.style.display = (txt.style.display === 'none' || txt.style.display === '') ? 'block' : 'none';
+        const btn = document.getElementById('btn-' + id);
+        if (txt.style.display === 'none' || txt.style.display === '') {
+            txt.style.display = 'block';
+            btn.innerText = "🙈 Masquer le texte";
+        } else {
+            txt.style.display = 'none';
+            btn.innerText = "👁️ Voir le texte";
+        }
     }
 
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            // DICTÉES
+            // DICTÉES (Basé sur colonnes : Titre, Texte, Niveau, Points_Vigilance)
             if (row.Texte && row.Points_Vigilance) {
                 html += `<div class="fiche-bristol">
-                    <div class="badge-info" style="background:var(--orange)">📝 Dictée</div><br>
+                    <div class="badge-info" style="background:var(--orange)">📝 Dictée - ${row.Niveau || "Moyen"}</div><br>
                     <h2>${row.Titre || "Dictée"}</h2>
-                    <button class="btn-reveal" onclick="toggleDictee(${i})">👁️ Voir le texte</button>
+                    <br><button class="btn-reveal" id="btn-${i}" onclick="toggleDictee(${i})">👁️ Voir le texte</button>
                     <div class="dictee-texte" id="txt-${i}">${row.Texte}</div>
                     <div class="info-highlight" style="border-color:var(--marge)"><strong>⚠️ Vigilance :</strong><br>${row.Points_Vigilance}</div>
                 </div>`;
             }
-            // AUTEURS
+            // AUTEURS (Basé sur colonnes : Auteur, Siècle, Image, Œuvre, Courant)
             else if (row.Auteur) {
                 const imgUrl = row.Image || row.image || "";
                 html += `<div class="fiche-bristol">
@@ -159,11 +166,11 @@
                     <div style="clear:both;"></div>
                 </div>`;
             }
-            // COURS / VOCABULAIRE
+            // COURS / FICHES
             else if (row.Type === "COURS" || row.Définition || row.Contenu) {
                 html += `<div class="fiche-bristol">
                     <h2>${row.Titre || row.Mot || "Leçon"}</h2>
-                    <div style="white-space: pre-wrap;">${row.Contenu || row.Définition}</div>
+                    <div style="white-space: pre-wrap; margin-top:10px;">${row.Contenu || row.Définition}</div>
                 </div>`;
             }
             // QUIZ
@@ -171,7 +178,7 @@
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `<div class="card-quiz">
                     <div style="font-weight:bold; color:var(--violet); margin-bottom:10px;">🧠 QUIZ</div>
-                    <div style="margin-bottom:15px; font-weight:bold;">${row.Question}</div>
+                    <div style="margin-bottom:15px; font-weight:bold; line-height:1.4;">${row.Question}</div>
                     <div class="btn-grid">
                         <button class="opt-btn" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A}</button>
                         <button class="opt-btn" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B}</button>
@@ -180,14 +187,19 @@
                 </div>`;
             }
         });
-        app.innerHTML = html || "<p style='text-align:center;'>Aucun résultat trouvé.</p>";
+        app.innerHTML = html || "<p style='text-align:center; padding:20px;'>Aucun résultat trouvé pour votre recherche.</p>";
     }
 
     function check(click, correct, id) {
         const fb = document.getElementById('fb-' + id);
         fb.style.display = "block";
-        if(click === correct) { fb.innerText = "✅ Bravo !"; fb.className = "feedback correct"; }
-        else { fb.innerText = "❌ Mauvaise réponse."; fb.className = "feedback wrong"; }
+        if(click === correct) { 
+            fb.innerText = "✨ Bravo ! C'est la bonne réponse."; 
+            fb.className = "feedback correct"; 
+        } else { 
+            fb.innerText = "🧐 Pas tout à fait... Réessaye !"; 
+            fb.className = "feedback wrong"; 
+        }
     }
 
     loadData(sections[0].gid, menu.firstChild);

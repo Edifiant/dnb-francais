@@ -3,61 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Révisions DNB Français</title>
+    <title>Brevet Français - Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root {
-            --bg: #f0f2f5;
-            --bristol: #ffffff;
-            --marge: #ff8585;
-            --ligne: #e1e9f4;
-            --bleu: #1877f2;
-            --violet: #673ab7;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        :root { --bristol: #fff; --bleu: #1877f2; --marge: #ff8585; --ligne: #e1e9f4; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 800px; margin: 0 auto; }
-
+        
         /* Menu */
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
-        .nav-btn { 
-            padding: 10px 20px; border-radius: 20px; border: none; background: white;
-            cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .nav-btn { padding: 10px 20px; border-radius: 20px; border: none; background: white; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .nav-btn.active { background: var(--bleu); color: white; }
 
-        /* --- STYLE BRISTOL (COURS) --- */
-        .fiche-bristol {
-            background: var(--bristol);
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-            padding: 40px 40px 40px 70px;
-            position: relative;
+        /* Style Bristol (Cours) */
+        .card-cours {
+            background: var(--bristol); border: 1px solid #ccc; border-radius: 4px;
+            padding: 40px 30px 40px 65px; margin-bottom: 30px; position: relative;
             background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
-            background-size: 100% 2.2rem;
-            line-height: 2.2rem;
+            background-size: 100% 2.2rem; line-height: 2.2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .fiche-bristol::before {
-            content: ""; position: absolute; top: 0; left: 55px; bottom: 0;
-            width: 2px; background: var(--marge);
-        }
-        .fiche-bristol h2 {
-            margin: 0 0 1rem 0; color: var(--bleu); font-size: 1.6rem;
-            border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2;
-        }
+        .card-cours::before { content: ""; position: absolute; top: 0; left: 50px; bottom: 0; width: 2px; background: var(--marge); }
+        .card-cours h2 { color: var(--bleu); margin: 0 0 10px 0; border-bottom: 2px solid var(--bleu); display: inline-block; line-height: 1.2; }
 
-        /* --- STYLE QUIZ --- */
-        .card-quiz {
-            background: #fff; border-radius: 12px; border: 2px solid #ddd;
-            padding: 20px; margin-bottom: 20px;
-        }
+        /* Style Quiz */
+        .card-quiz { background: white; padding: 20px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 20px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .opt-btn {
-            background: #f8f9fa; border: 2px solid #eee; padding: 12px;
-            border-radius: 8px; cursor: pointer; font-weight: bold;
-        }
+        .opt-btn { padding: 12px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: #f9f9f9; font-weight: bold; }
+        
         .feedback { margin-top: 10px; padding: 10px; border-radius: 5px; display: none; text-align: center; font-weight: bold; }
         .correct { background: #d1fae5; color: #065f46; }
         .wrong { background: #fee2e2; color: #991b1b; }
@@ -66,80 +38,83 @@
 <body>
 
 <div class="container">
-    <h1 style="text-align:center;">📖 Révisions Brevet</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Chargement en cours...</div>
+    <div id="app">Chargement des révisions...</div>
 </div>
 
 <script>
-    // Liste des onglets (Vérifiez bien vos GID ici)
-    const categories = [
+    // Liste des rubriques (Vérifiez bien vos GID)
+    const sections = [
         { name: "Grammaire", gid: "1679242234" },
         { name: "Conjugaison", gid: "1987121612" },
         { name: "Figures Style", gid: "1943336125" },
         { name: "Fiches", gid: "1143879514" }
     ];
 
-    const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
+    const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
 
-    const menu = document.getElementById('menu');
     const app = document.getElementById('app');
+    const menu = document.getElementById('menu');
 
-    // Initialisation du menu
-    categories.forEach((cat, i) => {
+    // Génération du menu
+    sections.forEach((s, i) => {
         const btn = document.createElement('button');
-        btn.className = 'nav-btn' + (i === 0 ? ' active' : '');
-        btn.innerText = cat.name;
-        btn.onclick = () => loadData(cat.gid, btn);
+        btn.className = 'nav-btn' + (i===0 ? ' active' : '');
+        btn.innerText = s.name;
+        btn.onclick = () => loadData(s.gid, btn);
         menu.appendChild(btn);
     });
 
     function loadData(gid, btn) {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "Chargement des données...";
+        app.innerHTML = "Récupération des données...";
 
-        Papa.parse(baseUrl + gid, {
+        Papa.parse(spreadsheetUrl + gid, {
             download: true,
             header: true,
             skipEmptyLines: true,
-            error: function(err) { app.innerHTML = "Erreur de chargement : " + err; },
-            complete: function(results) { render(results.data); }
+            complete: (results) => render(results.data),
+            error: (err) => app.innerHTML = "⚠️ Erreur de connexion avec Google Sheets."
         });
     }
 
     function render(data) {
         if (!data || data.length === 0) {
-            app.innerHTML = "Aucune donnée trouvée dans cet onglet.";
+            app.innerHTML = "⚠️ Aucune donnée trouvée sur cet onglet.";
             return;
         }
 
         let html = "";
         data.forEach((row, i) => {
-            // Sécurité : on nettoie les noms de colonnes
+            // Détection du TYPE (on accepte Type, type, TYPE ou Type_Fiche)
             const type = (row.Type || row.type || row.TYPE || "").trim().toUpperCase();
-            const titre = row.Titre || row.Question || "Sans titre";
-            const texte = row.Contenu || row.Texte || "";
+            
+            // Détection du TITRE et CONTENU
+            const titre = row.Titre || row.Question || row.Mot || "Notion";
+            const texte = row.Contenu || row.Texte || row.Définition || "";
 
             if (type === "COURS") {
                 html += `
-                <div class="fiche-bristol">
+                <div class="card-cours">
                     <h2>${titre}</h2>
-                    <div style="white-space: pre-wrap; font-size:1.2rem;">${texte}</div>
+                    <div style="white-space: pre-wrap; font-size: 1.1rem;">${texte}</div>
                 </div>`;
             } else {
-                // On récupère les réponses (A, B, C ou les colonnes alternatives)
-                const ra = row.Réponse_A || row.Categorie || "";
-                const rb = row.Réponse_B || row.Contenu || "";
-                const rc = row.Réponse_C || row.Audio || "";
+                // Pour le QUIZ, on prend ce qu'on trouve pour les réponses
+                const rA = row.Réponse_A || row.Categorie || "";
+                const rB = row.Réponse_B || row.Contenu || "";
+                const rC = row.Réponse_C || row.Audio || "";
+                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
 
                 html += `
                 <div class="card-quiz">
                     <p><strong>${titre}</strong></p>
+                    <p>${texte}</p>
                     <div class="btn-grid">
-                        ${ra ? `<button class="opt-btn" onclick="check('A','${row.Bonne_Réponse}',${i})">${ra}</button>` : ''}
-                        ${rb ? `<button class="opt-btn" onclick="check('B','${row.Bonne_Réponse}',${i})">${rb}</button>` : ''}
-                        ${rc ? `<button class="opt-btn" onclick="check('C','${row.Bonne_Réponse}',${i})">${rc}</button>` : ''}
+                        ${rA ? `<button class="opt-btn" onclick="check('A','${bonne}',${i})">${rA}</button>` : ''}
+                        ${rB ? `<button class="opt-btn" onclick="check('B','${bonne}',${i})">${rB}</button>` : ''}
+                        ${rC ? `<button class="opt-btn" onclick="check('C','${bonne}',${i})">${rC}</button>` : ''}
                     </div>
                     <div id="fb-${i}" class="feedback"></div>
                 </div>`;
@@ -148,18 +123,19 @@
         app.innerHTML = html;
     }
 
-    function check(choice, correct, id) {
-        const fb = document.getElementById('fb-' + id);
-        fb.style.display = "block";
-        if (choice === (correct || "").trim().toUpperCase()) {
-            fb.innerText = "✅ Bravo !"; fb.className = "feedback correct";
+    function check(click, correct, id) {
+        const div = document.getElementById('fb-'+id);
+        div.style.display = "block";
+        if(click === correct) {
+            div.innerText = "✅ Bravo !"; div.className = "feedback correct";
         } else {
-            fb.innerText = "❌ Faux, relis la fiche !"; fb.className = "feedback wrong";
+            div.innerText = "❌ Mauvaise réponse. Relis la fiche !"; div.className = "feedback wrong";
         }
     }
 
-    // Charger le premier onglet au démarrage
-    loadData(categories[0].gid, menu.firstChild);
+    // Chargement automatique
+    loadData(sections[0].gid, menu.firstChild);
 </script>
+
 </body>
 </html>

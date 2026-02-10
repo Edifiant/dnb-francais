@@ -37,7 +37,23 @@
             background: var(--violet); color: white; padding: 0px 15px; 
             border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-bottom: 10px;
         }
-        .timeline-container { margin-top: 25px; background: #eee; height: 10px; border-radius: 5px; position: relative; }
+        
+        /* PORTRAIT DE L'AUTEUR (C'est ici qu'on met le style !) */
+        .auteur-portrait {
+            width: 100px;
+            height: 130px;
+            object-fit: cover;
+            float: right;
+            margin-left: 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-container { margin-top: 25px; background: #eee; height: 10px; border-radius: 5px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 5px; transition: 1s; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-top: 5px; }
 
@@ -49,6 +65,10 @@
         .correct { background: #d4edda; color: #155724; }
         .wrong { background: #f8d7da; color: #721c24; }
         .expli-box { margin-top: 15px; padding: 15px; background: #f0f7ff; border-left: 5px solid var(--bleu); display: none; }
+        
+        @media (max-width: 500px) {
+            .auteur-portrait { width: 70px; height: 90px; margin-left: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -95,64 +115,34 @@
         data.forEach((row, i) => {
             const type = (row.Type || row.type || "").trim().toUpperCase();
             
-            // --- LOGIQUE AUTEURS (AVEC IMAGE) ---
-if (row.Auteur) {
-    const siecle = row.Siècle || "";
-    let progress = 0;
-    if(siecle.includes("XVII")) progress = 25;
-    else if(siecle.includes("XVIII")) progress = 50;
-    else if(siecle.includes("XIX")) progress = 75;
-    else if(siecle.includes("XX")) progress = 100;
+            // --- LOGIQUE AUTEURS ---
+            if (row.Auteur) {
+                const siecle = row.Siècle || "";
+                let progress = 0;
+                if(siecle.includes("XVII")) progress = 25;
+                else if(siecle.includes("XVIII")) progress = 50;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 100;
 
-    // On récupère l'URL de l'image (si la colonne existe)
-    const imgUrl = row.Image || row.image || "";
+                const imgUrl = row.Image || row.image || "";
 
-    html += `
-    <div class="fiche-bristol auteur-card">
-        ${imgUrl ? `<img src="${imgUrl}" class="/* --- STYLE POUR LE PORTRAIT DE L'AUTEUR --- */
-        .auteur-portrait {
-            width: 100px;
-            height: 130px;
-            object-fit: cover; /* Pour que l'image ne soit pas déformée */
-            float: right; /* L'image se place à droite du texte */
-            margin-left: 20px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border: 3px solid white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 2; /* Pour passer au-dessus des lignes bleues */
-        }
-
-        .auteur-info-texte {
-            min-height: 130px; /* Assure que le texte a la place de l'image */
-        }
-
-        /* Ajustement mobile pour que l'image ne prenne pas toute la place */
-        @media (max-width: 500px) {
-            .auteur-portrait {
-                width: 70px;
-                height: 90px;
-                margin-left: 10px;
+                html += `
+                <div class="fiche-bristol auteur-card">
+                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
+                    <div class="badge-siecle">${siecle} siècle</div>
+                    <h2>${row.Auteur}</h2>
+                    <div class="auteur-info-texte">
+                        <strong>📚 Œuvre majeure :</strong> ${row.Œuvre || "Non précisée"}<br>
+                        <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "Classique"}
+                    </div>
+                    <div class="timeline-container">
+                        <div class="timeline-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="timeline-labels">
+                        <span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span>
+                    </div>
+                </div>`;
             }
-        }">` : ''}
-        
-        <div class="badge-siecle">${siecle} siècle</div>
-        <h2>${row.Auteur}</h2>
-        
-        <div class="auteur-info-texte">
-            <strong>📚 Œuvre majeure :</strong> ${row.Œuvre || "Non précisée"}<br>
-            <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "Classique"}
-        </div>
-        
-        <div style="clear:both;"></div> <div class="timeline-container">
-            <div class="timeline-bar" style="width: ${progress}%"></div>
-        </div>
-        <div class="timeline-labels">
-            <span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span>
-        </div>
-    </div>`;
-}
             // --- LOGIQUE COURS / VOCABULAIRE ---
             else if (type === "COURS" || row.Définition) {
                 const titre = row.Titre || row.Mot || "Leçon";

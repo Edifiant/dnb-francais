@@ -105,20 +105,20 @@
                 </div>`;
             }
             // --- 2. CAS DES AUTEURS ---
-            else if (row.Auteur) {
-                const imgUrl = row.Image || "";
-                html += `
-                <div class="fiche-bristol">
-                    ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
-                    <div class="badge-info">${row.Siècle || ""} siècle</div>
-                    <h2>${row.Auteur}</h2>
-                    <div style="line-height: 1.8;">
-                        <strong>📚 Œuvre :</strong> ${row.Œuvre || "N/A"}<br>
-                        <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}
-                    </div>
-                    <div style="clear:both;"></div>
-                </div>`;
-            }
+else if (row.Auteur) {
+    const imgUrl = row.Image || "";
+    html += `
+    <div class="fiche-bristol">
+        ${imgUrl ? `<img src="${imgUrl}" class="auteur-portrait">` : ''}
+        <div class="badge-info">${row.Siècle || ""} siècle</div>
+        <h2>${row.Auteur}</h2>
+        <div style="line-height: 1.8;">
+            <strong>📚 Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em><br>
+            <strong>🎨 Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}
+        </div>
+        <div style="clear:both;"></div>
+    </div>`;
+}
             // --- 3. CAS DES COURS / FICHES ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `

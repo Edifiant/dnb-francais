@@ -67,13 +67,14 @@
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
 
-        /* TIMELINE DES AUTEURS (RÉAJOUTÉE) */
+        /* TIMELINE */
         .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
 
         /* QUIZ */
         .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
+        .quiz-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 20px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s; font-size: 1rem; color: var(--texte); }
         .opt-btn:hover:not(:disabled) { background: var(--opt-hover); border-color: var(--bleu); }
@@ -124,10 +125,10 @@
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
-        { name: "Figures Style", gid: "1943336125", color: "#ec4899" },
+        { name: "Figures de style", gid: "1943336125", color: "#ec4899" },
         { name: "Fiches", gid: "1143879514", color: "#10b981" },
         { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },
-        { name: "Dictées", gid: "586561849", color: "#eab308" },
+        { name: "Orthographe", gid: "586561849", color: "#eab308" },
         { name: "Auteurs", gid: "951178030", color: "#06b6d4" }
     ];
 
@@ -163,9 +164,8 @@
         let hasQuiz = false;
 
         data.forEach((row, i) => {
-            if (row.Texte && row.Points_Vigilance) {
-                html += `<div class="fiche-bristol"><div class="badge-info" style="background:var(--orange)">Dictée</div><br><h2>${row.Titre || "Dictée"}</h2><div style="margin-top:20px;"><div style="background: var(--opt-bg); padding: 20px; border-radius: 10px; line-height: 1.8; border: 1px solid var(--card-border);">${row.Texte}</div><div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div></div></div>`;
-            } else if (row.Auteur) {
+            // LOGIQUE AUTEURS
+            if (row.Auteur) {
                 const siecle = row.Siècle || "";
                 let progress = 10;
                 if(siecle.includes("XVII")) progress = 35;
@@ -186,14 +186,37 @@
                     <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
                     <div style="clear:both;"></div>
                 </div>`;
-            } else if (row.Type === "COURS" || row.Définition) {
+            } 
+            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
+            else if (row.Type === "COURS" || row.Définition || row.Texte) {
                 let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || ""}</div></div>`;
-            } else if (row.Question || row.Type === "QUIZ") {
+                let contenu = row.Contenu || row.Définition || row.Texte || "";
+                let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
+                
+                html += `
+                <div class="fiche-bristol">
+                    <h2>${row.Titre || row.Mot || "Leçon"}</h2>
+                    ${v}
+                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
+                    ${vigilance}
+                </div>`;
+            } 
+            // LOGIQUE QUIZ
+            else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true;
                 maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                html += `<div class="card-quiz" id="q-card-${i}"><div class="quiz-title">${row.Titre || row.Question}</div><div class="btn-grid"><button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button><button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div></div>`;
+                html += `
+                <div class="card-quiz" id="q-card-${i}">
+                    <div class="quiz-title">${row.Titre || row.Question}</div>
+                    <div class="btn-grid">
+                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
+                    </div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
+                </div>`;
             }
         });
 

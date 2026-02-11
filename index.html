@@ -164,7 +164,30 @@
             if (row.Texte && row.Points_Vigilance) {
                 html += `<div class="fiche-bristol"><div class="badge-info" style="background:var(--orange)">Dictée</div><br><h2>${row.Titre || "Dictée"}</h2><div style="margin-top:20px;"><div style="background: var(--opt-bg); padding: 20px; border-radius: 10px; line-height: 1.8; border: 1px solid var(--card-border);">${row.Texte}</div><div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div></div></div>`;
             } else if (row.Auteur) {
-                html += `<div class="fiche-bristol">${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}<div class="badge-info">${row.Siècle || "N/A"} siècle</div><br><h2>${row.Auteur}</h2><div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div><div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div></div>`;
+                const siecle = row.Siècle || "";
+                // Calcul de la progression pour la timeline
+                let progress = 10;
+                if(siecle.includes("XVII")) progress = 35;
+                else if(siecle.includes("XVIII")) progress = 55;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 95;
+
+                html += `
+                <div class="fiche-bristol">
+                    ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
+                    <div class="badge-info">${siecle} siècle</div><br>
+                    <h2>${row.Auteur}</h2>
+                    <div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
+                    <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
+                    
+                    <div class="timeline-container">
+                        <div class="timeline-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="timeline-labels">
+                        <span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>`;
             } else if (row.Type === "COURS" || row.Définition) {
                 let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || ""}</div></div>`;

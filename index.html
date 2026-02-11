@@ -215,9 +215,9 @@
                     <div style="clear:both;"></div>
                 </div>`;
             }
-            else if (row.Type === "COURS" || row.Définition) {
+            // REMPLACE TON BLOC "COURS" PAR CELUI-CI :
+else if (row.Type === "COURS" || row.Définition) {
     let videoHtml = "";
-    // On vérifie si une URL de vidéo existe
     if (row.Video && row.Video.includes('youtube.com')) {
         videoHtml = `
         <div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);">
@@ -235,9 +235,7 @@
     <div class="fiche-bristol">
         <h2>${row.Titre || row.Mot}</h2>
         ${videoHtml} 
-        <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">
-            ${row.Contenu || row.Définition || ""}
-        </div>
+        <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || ""}</div>
     </div>`;
 }
             else if (row.Question || row.Type === "QUIZ") {

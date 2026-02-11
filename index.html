@@ -118,7 +118,7 @@
 
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">   Score: 0 / 0</div>
-    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">  </button>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
 </div>
 
 <div class="container">
@@ -137,7 +137,7 @@
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
         const btn = document.getElementById('themeBtn');
-        btn.innerText = document.body.classList.contains('dark-mode') ? "  " : "  ";
+        btn.innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
 
     const sections = [
@@ -253,7 +253,7 @@ else if (row.Type === "COURS" || row.Définition) {
                         ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
                         ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>  Explication :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });

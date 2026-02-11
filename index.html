@@ -130,197 +130,229 @@
 </div>
 
 <script>
-    let currentScore = 0;
-    let maxQuizScore = 0;
-    let answeredQuestions = new Set(); 
+/* ===============================
+   APP OBJECT
+================================ */
+const App = {
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        const btn = document.getElementById('themeBtn');
-        btn.innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
+  state: {
+    score: 0,
+    maxScore: 0,
+    answered: new Set(),
+    currentSection: null
+  },
+
+  els: {
+    app: document.getElementById('app'),
+    menu: document.getElementById('menu'),
+    scoreBoard: document.getElementById('scoreBoard'),
+    finalBox: document.getElementById('finalResult'),
+    themeBtn: document.getElementById('themeBtn')
+  },
+
+/* ===============================
+   INIT
+================================ */
+  init(){
+    this.restoreTheme();
+    this.buildMenu();
+    this.loadSection(sections[0]);
+  },
+
+/* ===============================
+   UTILITIES
+================================ */
+  escapeHTML(str=""){
+    return str
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  },
+
+  getYoutubeEmbed(url){
+    const match = url?.match(/(?:v=|be\/)([^&]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  },
+
+/* ===============================
+   THEME
+================================ */
+  toggleTheme(){
+    document.body.classList.toggle('dark-mode');
+    const dark = document.body.classList.contains('dark-mode');
+    localStorage.setItem("theme", dark ? "dark" : "light");
+    this.els.themeBtn.innerText = dark ? "☀️" : "🌙";
+  },
+
+  restoreTheme(){
+    if(localStorage.getItem("theme")==="dark"){
+      document.body.classList.add("dark-mode");
+      this.els.themeBtn.innerText="☀️";
     }
+  },
 
-    const sections = [
-        { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
-        { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
-        { name: "Figures Style", gid: "1943336125", color: "#ec4899" },
-        { name: "Fiches", gid: "1143879514", color: "#10b981" },
-        { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },
-        { name: "Dictées", gid: "586561849", color: "#eab308" },
-        { name: "Auteurs", gid: "951178030", color: "#06b6d4" }
-    ];
-
-    const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
-    const app = document.getElementById('app');
-    const menu = document.getElementById('menu');
-    const scoreBoard = document.getElementById('scoreBoard');
-    const finalBox = document.getElementById('finalResult');
-
-    sections.forEach((s) => {
-        const btn = document.createElement('button');
-        btn.className = 'nav-btn';
-        btn.innerText = s.name;
-        btn.style.setProperty('--btn-color', s.color);
-        btn.onclick = () => loadData(s.gid, btn);
-        menu.appendChild(btn);
+/* ===============================
+   MENU + DATA LOADING
+================================ */
+  buildMenu(){
+    sections.forEach(section=>{
+      const btn=document.createElement('button');
+      btn.className='nav-btn';
+      btn.innerText=section.name;
+      btn.style.setProperty('--btn-color',section.color);
+      btn.onclick=()=>this.loadSection(section,btn);
+      this.els.menu.appendChild(btn);
     });
+  },
 
-    function loadData(gid, btn) {
-        currentScore = 0;
-        maxQuizScore = 0;
-        answeredQuestions.clear();
-        finalBox.style.display = "none";
-        scoreBoard.innerHTML = "   Score: 0 / 0";
-        scoreBoard.style.opacity = "0.5"; 
+  loadSection(section, btn){
+    this.resetScore();
+    this.state.currentSection=section;
 
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        app.innerHTML = "<div style='text-align:center; padding: 50px;'>   Préparation du cours...</div>";
-        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn?.classList.add('active');
+
+    this.els.app.innerHTML="Préparation du cours...";
+
+    Papa.parse(spreadsheetUrl+section.gid,{
+      download:true,
+      header:true,
+      skipEmptyLines:true,
+      complete:(results)=>this.render(results.data)
+    });
+  },
+
+/* ===============================
+   SCORE
+================================ */
+  resetScore(){
+    this.state.score=0;
+    this.state.maxScore=0;
+    this.state.answered.clear();
+    this.els.finalBox.style.display="none";
+    this.updateScore();
+  },
+
+  updateScore(){
+    this.els.scoreBoard.innerHTML=`Score: ${this.state.score} / ${this.state.maxScore}`;
+  },
+
+/* ===============================
+   RENDER MASTER
+================================ */
+  render(data){
+    const html = data.map((row,i)=>this.renderRow(row,i)).join("");
+    this.els.app.innerHTML = html || "Aucune donnée.";
+  },
+
+  renderRow(row,i){
+    switch(row.Type){
+      case "DICTEE": return this.renderDictee(row);
+      case "AUTEUR": return this.renderAuteur(row);
+      case "COURS": return this.renderCours(row);
+      case "QUIZ": return this.renderQuiz(row,i);
+      default: return "";
     }
+  },
 
-    function render(data) {
-        let html = "";
-        let hasQuiz = false;
-
-        data.forEach((row, i) => {
-            if (row.Texte && row.Points_Vigilance) {
-                html += `<div class="fiche-bristol">
-                    <div class="badge-info" style="background:var(--orange)">   Dictée</div><br>
-                    <h2>${row.Titre || "Dictée"}</h2>
-                    <div style="margin-top:20px;">
-                        <div style="background: var(--opt-bg); padding: 20px; border-radius: 10px; line-height: 1.8; border: 1px solid var(--card-border);">${row.Texte}</div>
-                        <div class="vigilance-box"><strong>   Points de vigilance :</strong><br>${row.Points_Vigilance}</div>
-                    </div></div>`;
-            }
-            else if (row.Auteur) {
-                const siecle = row.Siècle || "";
-                let progress = 10;
-                if(siecle.includes("XVII")) progress = 35;
-                else if(siecle.includes("XVIII")) progress = 55;
-                else if(siecle.includes("XIX")) progress = 75;
-                else if(siecle.includes("XX")) progress = 95;
-
-                html += `<div class="fiche-bristol">
-                    ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
-                    <div class="badge-info">    ${siecle} siècle</div><br>
-                    <h2>${row.Auteur}</h2>
-                    <div class="info-highlight"><span>  </span> <strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
-                    <div class="info-highlight" style="border-left-color: var(--vert);"><span>  </span> <strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
-                    
-                    <div class="timeline-container">
-                        <div class="timeline-bar" style="width: ${progress}%"></div>
-                    </div>
-                    <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
-                    <div style="clear:both;"></div>
-                </div>`;
-            }
-            // REMPLACE TON BLOC "COURS" PAR CELUI-CI :
-else if (row.Type === "COURS" || row.Définition) {
-    let videoHtml = "";
-    if (row.Video && row.Video.includes('youtube.com')) {
-        videoHtml = `
-        <div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);">
-            <iframe 
-                style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
-                src="${row.Video}" 
-                title="Vidéo de cours"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div>`;
-    }
-
-    html += `
+/* ===============================
+   RENDER TYPES
+================================ */
+  renderDictee(row){
+    return `
     <div class="fiche-bristol">
-        <h2>${row.Titre || row.Mot}</h2>
-        ${videoHtml} 
-        <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || ""}</div>
+      <div class="badge-info" style="background:var(--orange)">Dictée</div>
+      <h2>${this.escapeHTML(row.Titre)}</h2>
+      <div>${this.escapeHTML(row.Texte)}</div>
+      <div class="vigilance-box">${this.escapeHTML(row.Points_Vigilance)}</div>
     </div>`;
-}
-            else if (row.Question || row.Type === "QUIZ") {
-                hasQuiz = true;
-                maxQuizScore++;
-                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                
-                html += `
-                <div class="card-quiz" id="q-card-${i}">
-                    <div class="quiz-header"><span class="quiz-tag">   Question</span><span class="quiz-number">${maxQuizScore}</span></div>
-                    <div class="quiz-title">${row.Titre || row.Question}</div>
-                    <div class="btn-grid">
-                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || row.Categorie}</button>
-                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || row.Contenu}</button>
-                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
-                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
-                    </div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡Explication :</strong><br>${row.Explication || "Bravo !"}</div>
-                </div>`;
-            }
-        });
+  },
 
-        app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+  renderAuteur(row){
+    return `
+    <div class="fiche-bristol">
+      <h2>${this.escapeHTML(row.Auteur)}</h2>
+      <div class="info-highlight">
+        <strong>Œuvre :</strong> ${this.escapeHTML(row.Œuvre)}
+      </div>
+    </div>`;
+  },
 
-        if (hasQuiz) {
-            scoreBoard.style.opacity = "1";
-            scoreBoard.innerHTML = `   Score: 0 / ${maxQuizScore}`;
-        } else {
-            scoreBoard.innerHTML = "";
-        }
+  renderCours(row){
+    let video="";
+    const embed=this.getYoutubeEmbed(row.Video);
+    if(embed){
+      video=`<iframe width="100%" height="315" src="${embed}" allowfullscreen></iframe>`;
     }
 
-    function check(click, correct, id) {
-        if (answeredQuestions.has(id)) return;
-        answeredQuestions.add(id);
+    return `
+    <div class="fiche-bristol">
+      <h2>${this.escapeHTML(row.Titre)}</h2>
+      ${video}
+      <div>${this.escapeHTML(row.Contenu)}</div>
+    </div>`;
+  },
 
-        const btnClicked = document.getElementById(`btn-${id}-${click}`);
-        const expli = document.getElementById(`ex-${id}`);
+  renderQuiz(row,i){
+    this.state.maxScore++;
 
-        ['A', 'B', 'C', 'D'].forEach(letter => {
-            const b = document.getElementById(`btn-${id}-${letter}`);
-            if(b) b.disabled = true;
-        });
+    const correct=row.Bonne_Réponse?.trim().toUpperCase();
 
-        if (click === correct) {
-            currentScore++;
-            btnClicked.classList.add('success');
-            confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
-        } else {
-            btnClicked.classList.add('error');
-            const btnCorrect = document.getElementById(`btn-${id}-${correct}`);
-            if(btnCorrect) btnCorrect.classList.add('success');
-        }
-        if(expli) expli.style.display = "block";
-        updateScoreBoard();
+    return `
+    <div class="card-quiz" id="q-${i}">
+      <div class="quiz-title">${this.escapeHTML(row.Question)}</div>
+      <div class="btn-grid">
+        ${this.quizBtn(i,'A',row.Réponse_A,correct)}
+        ${this.quizBtn(i,'B',row.Réponse_B,correct)}
+        ${row.Réponse_C ? this.quizBtn(i,'C',row.Réponse_C,correct):""}
+        ${row.Réponse_D ? this.quizBtn(i,'D',row.Réponse_D,correct):""}
+      </div>
+    </div>`;
+  },
+
+  quizBtn(i,letter,text,correct){
+    return `
+      <button class="opt-btn"
+        onclick="App.answer(${i},'${letter}','${correct}')">
+        ${letter}. ${this.escapeHTML(text)}
+      </button>`;
+  },
+
+/* ===============================
+   QUIZ LOGIC
+================================ */
+  answer(id,click,correct){
+    if(this.state.answered.has(id)) return;
+    this.state.answered.add(id);
+
+    if(click===correct){
+      this.state.score++;
+      confetti({particleCount:30,spread:50});
     }
 
-    function updateScoreBoard() {
-        scoreBoard.innerHTML = `   Score: ${currentScore} / ${maxQuizScore}`;
-        if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) {
-            showFinalResult();
-        }
+    this.updateScore();
+
+    if(this.state.answered.size===this.state.maxScore){
+      this.showFinal();
     }
+  },
 
-    function showFinalResult() {
-        const percent = Math.round((currentScore / maxQuizScore) * 100);
-        let msg = "";
-        let color = "";
+  showFinal(){
+    const percent=Math.round(this.state.score/this.state.maxScore*100);
+    this.els.finalBox.innerHTML=`<h3>Score final : ${percent}%</h3>`;
+    this.els.finalBox.style.display="block";
+  }
+};
 
-        if(percent === 100) { msg = "INCROYABLE !   "; color = "#10b981"; confetti({particleCount: 200, spread: 100}); }
-        else if(percent >= 75) { msg = "Très bon travail !   "; color = "#2563eb"; }
-        else if(percent >= 50) { msg = "Pas mal, continue !   "; color = "#f59e0b"; }
-        else { msg = "Il faut encore réviser   "; color = "#ef4444"; }
+/* ===============================
+   GLOBAL HOOKS
+================================ */
+function toggleTheme(){ App.toggleTheme(); }
 
-        finalBox.innerHTML = `
-            <h3>Résultat Final</h3>
-            <span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span>
-            <p>${msg}</p>
-            <button class="nav-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>
-        `;
-        finalBox.style.display = "block";
-        setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
-    }
-
-    loadData(sections[0].gid, menu.firstChild);
+App.init();
 </script>
+
 </body>
 </html>

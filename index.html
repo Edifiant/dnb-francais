@@ -229,7 +229,8 @@
         const percent = Math.round((currentScore / maxQuizScore) * 100);
         let msg = "", color = "";
 
-        if(percent === 100) { msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed'); }
+        if(percent === 100) { msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed'); // Explosion de confettis massive !
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
         else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
         else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
         else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }

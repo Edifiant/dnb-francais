@@ -47,8 +47,14 @@
             color: var(--texte); padding: 5px 10px; border-radius: 20px; cursor: pointer;
         }
 
+        /* TITRE PRINCIPAL */
+        .main-title {
+            text-align: center; font-size: 2.8rem; font-weight: 900; 
+            margin: 20px 0 30px 0; color: var(--texte); letter-spacing: -0.05em;
+        }
+
         /* Menu de Navigation */
-        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; margin-top: 20px;}
+        .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { 
             padding: 10px 20px; border-radius: 50px; 
             border: 2px solid var(--btn-color); background: var(--nav-bg); 
@@ -74,7 +80,7 @@
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
 
-        /* TIMELINE RESTAURÉE */
+        /* TIMELINE */
         .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
@@ -92,8 +98,6 @@
             transition: all 0.2s; font-size: 1rem; color: var(--texte);
         }
         .opt-btn:hover:not(:disabled) { background: var(--opt-hover); border-color: var(--bleu); color: var(--bleu); }
-        
-        /* États après réponse */
         .opt-btn:disabled { cursor: default; opacity: 0.7; }
         .opt-btn.success { background: #dcfce7 !important; border-color: #166534 !important; color: #166534 !important; }
         .opt-btn.error { background: #fee2e2 !important; border-color: #991b1b !important; color: #991b1b !important; }
@@ -101,14 +105,13 @@
         .expli-box { margin-top: 20px; padding: 20px; background: #eff6ff; border-left: 6px solid var(--bleu); border-radius: 8px; display: none; line-height: 1.6; animation: fadeIn 0.4s ease; color: #1e293b; }
         body.dark-mode .expli-box { background: #172554; color: #e0f2fe; }
 
-        /* SCORE FINAL */
         .final-score-box {
             text-align: center; padding: 40px; background: var(--bg); border: 4px dashed var(--violet);
             border-radius: 20px; margin-top: 40px; display: none;
         }
         .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; margin: 10px 0; }
 
-        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
     </style>
 </head>
 <body>
@@ -119,13 +122,14 @@
 </div>
 
 <div class="container">
+    <h1 class="main-title">🎓 Objectif Brevet</h1>
+    
     <div class="nav-menu" id="menu"></div>
     <div id="app">Chargement...</div>
     <div id="finalResult" class="final-score-box"></div>
 </div>
 
 <script>
-    // --- VARIABLES DE JEU ---
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set(); 
@@ -180,7 +184,6 @@
         let hasQuiz = false;
 
         data.forEach((row, i) => {
-            // --- DICTÉES ---
             if (row.Texte && row.Points_Vigilance) {
                 html += `<div class="fiche-bristol">
                     <div class="badge-info" style="background:var(--orange)">📝 Dictée</div><br>
@@ -190,11 +193,9 @@
                         <div class="vigilance-box"><strong>⚠️ Points de vigilance :</strong><br>${row.Points_Vigilance}</div>
                     </div></div>`;
             }
-            // --- AUTEURS (AVEC FRISE RESTAURÉE) ---
             else if (row.Auteur) {
-                // Calcul du siècle pour la barre de progression
                 const siecle = row.Siècle || "";
-                let progress = 10; // Minimum visuel
+                let progress = 10;
                 if(siecle.includes("XVII")) progress = 35;
                 else if(siecle.includes("XVIII")) progress = 55;
                 else if(siecle.includes("XIX")) progress = 75;
@@ -214,11 +215,9 @@
                     <div style="clear:both;"></div>
                 </div>`;
             }
-            // --- FICHES ---
             else if (row.Type === "COURS" || row.Définition) {
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2><div style="white-space: pre-wrap; margin-top:10px; color: var(--texte-sec);">${row.Contenu || row.Définition}</div></div>`;
             }
-            // --- QUIZ ---
             else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true;
                 maxQuizScore++;

@@ -215,7 +215,7 @@
                         ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
                         ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });

@@ -94,6 +94,9 @@
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+    🎓 Télécharger mon Bilan
+</button>
 </div>
 
 <div class="container">
@@ -121,7 +124,74 @@
         document.body.classList.toggle('dark-mode');
         document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
+function downloadStyledResults() {
+    let scoresHtml = "";
+    let hasData = false;
 
+    // Construction du tableau des résultats
+    sections.forEach(s => {
+        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+        if(score !== "Non effectué") hasData = true;
+        
+        scoresHtml += `
+            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                <span style="font-weight: bold; color: #475569;">${s.name}</span>
+                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
+            </div>`;
+    });
+
+    if(!hasData) {
+        alert("Complète au moins un quiz pour générer ton bilan !");
+        return;
+    }
+
+    // Structure du document HTML stylisé
+    const docContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Mon Bilan Objectif Brevet</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }
+            .diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
+            h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }
+            .subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
+            .results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }
+            .footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }
+            .stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        </style>
+    </head>
+    <body>
+        <div class="diploma">
+            <h1>Objectif Brevet</h1>
+            <div class="subtitle">Bilan Officiel des Révisions</div>
+            
+            <p>Félicitations ! Voici le récapitulatif de tes performances :</p>
+            
+            <div class="results-container">
+                ${scoresHtml}
+            </div>
+            
+            <div class="footer">
+                Document généré le ${new Date().toLocaleString('fr-FR')}<br>
+                Continue tes efforts pour décrocher la mention !
+            </div>
+            
+            <div class="stamp">Validé par<br>Maître Tronc</div>
+        </div>
+    </body>
+    </html>`;
+
+    // Téléchargement du fichier
+    const blob = new Blob([docContent], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Bilan_Objectif_Brevet.html';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
@@ -254,6 +324,9 @@
 
     function updateScoreBoard() {
         scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
+// Sauvegarde auto du score de la section en cours
+    const activeSection = document.querySelector('.nav-btn.active').innerText;
+    localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
         if (currentScore === 1) unlockTrophy('t-first');
         if (maxQuizScore > 0) {
             const ratio = currentScore / maxQuizScore;

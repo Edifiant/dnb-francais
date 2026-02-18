@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -31,7 +30,6 @@
         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: background 0.3s, color 0.3s; padding-top: 80px; }
         .container { max-width: 850px; margin: 0 auto; position: relative; }
 
-        /* HEADER FIXE */
         .top-bar {
             position: fixed; top: 0; left: 0; right: 0;
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
@@ -49,7 +47,6 @@
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
 
-        /* STYLE TROPHEES */
         .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
         .trophy-card { background: var(--bristol); border: 2px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; width: 90px; opacity: 0.2; filter: grayscale(1); transition: all 0.5s ease; }
         .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--orange); transform: scale(1.05); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2); animation: unlockAnim 0.6s ease-out; }
@@ -58,8 +55,7 @@
 
         @keyframes unlockAnim { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1.05); } }
 
-        /* FICHES BRISTOL */
-        .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
+        .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; overflow: hidden; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
         .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); }
@@ -68,12 +64,10 @@
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
 
-        /* TIMELINE */
         .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
         .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
 
-        /* QUIZ */
         .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
         .quiz-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 20px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -94,10 +88,12 @@
 
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
-    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
-    <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
-    🎓 Télécharger mon Bilan
-</button>
+    <div style="display: flex; gap: 10px;">
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+            🎓 Mon Bilan
+        </button>
+    </div>
 </div>
 
 <div class="container">
@@ -121,112 +117,6 @@
     let maxQuizScore = 0;
     let answeredQuestions = new Set();
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
-    }
-function downloadMethodSheet() {
-    const content = document.getElementById('app').innerHTML;
-    // On retire le bouton de téléchargement du contenu pour qu'il n'apparaisse pas dans le fichier téléchargé
-    const cleanContent = content.replace(/<button.*>.*<\/button>/ig, "");
-
-    const docContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Fiches Méthode - Objectif Brevet</title>
-        <style>
-            body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-            .fiche-bristol { border: 2px solid #e2e8f0; padding: 30px; margin-bottom: 30px; border-radius: 12px; page-break-inside: avoid; }
-            h2 { color: #2563eb; border-bottom: 3px solid #2563eb; display: inline-block; }
-            .vigilance-box { background: #fff1f2; padding: 15px; border-left: 6px solid #fb7185; margin-top: 20px; color: #991b1b; }
-            .info-highlight { background: #f1f5f9; padding: 10px; border-left: 5px solid #7c3aed; margin-top: 10px; }
-            iframe, .timeline-container, .timeline-labels { display: none; }
-        </style>
-    </head>
-    <body>
-        <h1 style="text-align:center; color:#7c3aed;">📚 Mes Fiches Méthode</h1>
-        <hr>
-        ${cleanContent}
-    </body>
-    </html>`;
-
-    const blob = new Blob([docContent], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Fiches_Methode_Brevet.html';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}function downloadStyledResults() {
-    let scoresHtml = "";
-    let hasData = false;
-
-    // Construction du tableau des résultats
-    sections.forEach(s => {
-        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
-        if(score !== "Non effectué") hasData = true;
-        
-        scoresHtml += `
-            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
-                <span style="font-weight: bold; color: #475569;">${s.name}</span>
-                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
-            </div>`;
-    });
-
-    if(!hasData) {
-        alert("Complète au moins un quiz pour générer ton bilan !");
-        return;
-    }
-
-    // Structure du document HTML stylisé
-    const docContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Mon Bilan Objectif Brevet</title>
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }
-            .diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
-            h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }
-            .subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
-            .results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }
-            .footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }
-            .stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
-        </style>
-    </head>
-    <body>
-        <div class="diploma">
-            <h1>Objectif Brevet</h1>
-            <div class="subtitle">Bilan Officiel des Révisions</div>
-            
-            <p>Félicitations ! Voici le récapitulatif de tes performances :</p>
-            
-            <div class="results-container">
-                ${scoresHtml}
-            </div>
-            
-            <div class="footer">
-                Document généré le ${new Date().toLocaleString('fr-FR')}<br>
-                Continue tes efforts pour décrocher la mention !
-            </div>
-            
-            <div class="stamp">Validé par<br>Maître Tronc</div>
-        </div>
-    </body>
-    </html>`;
-
-    // Téléchargement du fichier
-    const blob = new Blob([docContent], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Bilan_Objectif_Brevet.html';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
@@ -244,6 +134,7 @@ function downloadMethodSheet() {
     const scoreBoard = document.getElementById('scoreBoard');
     const finalBox = document.getElementById('finalResult');
 
+    // Initialisation du menu
     sections.forEach((s) => {
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
@@ -252,6 +143,11 @@ function downloadMethodSheet() {
         btn.onclick = () => loadData(s.gid, btn);
         menu.appendChild(btn);
     });
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
+    }
 
     function loadData(gid, btn) {
         currentScore = 0;
@@ -268,25 +164,7 @@ function downloadMethodSheet() {
     function render(data) {
         let html = "";
         let hasQuiz = false;
-// ... fin de la boucle data.forEach ...
-    
-    app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
-    scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
 
-    // NOUVEAU : Ajout du bouton en bas si c'est la section "Fiches méthode"
-    const activeBtn = document.querySelector('.nav-btn.active');
-    if (activeBtn && activeBtn.innerText === "Fiches méthode") {
-        const downloadDiv = document.createElement('div');
-        downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
-        downloadDiv.innerHTML = `
-            <p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p>
-            <button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">
-                📥 Télécharger ces fiches (HTML)
-            </button>
-        `;
-        app.appendChild(downloadDiv);
-    }
-}
         data.forEach((row, i) => {
             // LOGIQUE AUTEURS
             if (row.Auteur) {
@@ -311,7 +189,7 @@ function downloadMethodSheet() {
                     <div style="clear:both;"></div>
                 </div>`;
             } 
-            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
+            // LOGIQUE COURS
             else if (row.Type === "COURS" || row.Définition || row.Texte) {
                 let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
                 let contenu = row.Contenu || row.Définition || row.Texte || "";
@@ -339,13 +217,27 @@ function downloadMethodSheet() {
                         ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
                         ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉) :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
 
         app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
         scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
+
+        // Ajout du bouton de téléchargement en bas si on est dans Fiches méthode
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn && activeBtn.innerText === "Fiches méthode") {
+            const downloadDiv = document.createElement('div');
+            downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
+            downloadDiv.innerHTML = `
+                <p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p>
+                <button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">
+                    📥 Télécharger ces fiches (HTML)
+                </button>
+            `;
+            app.appendChild(downloadDiv);
+        }
     }
 
     function check(click, correct, id) {
@@ -368,19 +260,11 @@ function downloadMethodSheet() {
         updateScoreBoard();
     }
 
-    function unlockTrophy(tid) {
-        const t = document.getElementById(tid);
-        if (t && !t.classList.contains('unlocked')) {
-            t.classList.add('unlocked');
-            confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } });
-        }
-    }
-
     function updateScoreBoard() {
         scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
-// Sauvegarde auto du score de la section en cours
-    const activeSection = document.querySelector('.nav-btn.active').innerText;
-    localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
+        const activeSection = document.querySelector('.nav-btn.active').innerText;
+        localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
+        
         if (currentScore === 1) unlockTrophy('t-first');
         if (maxQuizScore > 0) {
             const ratio = currentScore / maxQuizScore;
@@ -390,22 +274,55 @@ function downloadMethodSheet() {
         if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
     }
 
+    function unlockTrophy(tid) {
+        const t = document.getElementById(tid);
+        if (t && !t.classList.contains('unlocked')) {
+            t.classList.add('unlocked');
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } });
+        }
+    }
+
     function showFinalResult() {
         const percent = Math.round((currentScore / maxQuizScore) * 100);
         let msg = "", color = "";
-        if(percent === 100) { 
-            msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed');
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); 
-        }
+        if(percent === 100) { msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed'); }
         else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
         else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
         else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }
+        
         finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span><p>${msg}</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
         finalBox.style.display = "block";
         setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
     }
 
-    loadData(sections[0].gid, menu.firstChild);
+    function downloadMethodSheet() {
+        const content = document.getElementById('app').innerHTML;
+        const cleanContent = content.replace(/<button.*>.*<\/button>/ig, "");
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;padding:40px;color:#1e293b;line-height:1.6;}.fiche-bristol{border:2px solid #e2e8f0;padding:30px;margin-bottom:30px;border-radius:12px;page-break-inside:avoid;}h2{color:#2563eb;border-bottom:3px solid #2563eb;display:inline-block;}.vigilance-box{background:#fff1f2;padding:15px;border-left:6px solid #fb7185;margin-top:20px;color:#991b1b;}.info-highlight{background:#f1f5f9;padding:10px;border-left:5px solid #7c3aed;margin-top:10px;}iframe,.timeline-container,.timeline-labels{display:none;}</style></head><body><h1 style="text-align:center;color:#7c3aed;">📚 Mes Fiches Méthode</h1><hr>${cleanContent}</body></html>`;
+        const blob = new Blob([docContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Fiches_Methode_Brevet.html'; a.click();
+    }
+
+    function downloadStyledResults() {
+        let scoresHtml = "";
+        let hasData = false;
+        sections.forEach(s => {
+            const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+            if(score !== "Non effectué") hasData = true;
+            scoresHtml += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;"><span style="font-weight:bold;">${s.name}</span><span>${score}</span></div>`;
+        });
+        if(!hasData) { alert("Complète un quiz !"); return; }
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;background:#f1f5f9;padding:40px;display:flex;justify-content:center;}.diploma{background:white;width:600px;padding:50px;border:10px double #7c3aed;}</style></head><body><div class="diploma"><h1>Bilan Objectif Brevet</h1>${scoresHtml}</div></body></html>`;
+        const blob = new Blob([docContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Bilan_Brevet.html'; a.click();
+    }
+
+    // Chargement initial
+    window.onload = () => loadData(sections[0].gid, menu.firstChild);
 </script>
 </body>
 </html>

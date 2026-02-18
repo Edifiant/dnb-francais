@@ -183,7 +183,7 @@
 
         // Gestion du bouton de téléchargement des fiches (UNIQUEMENT Fiches méthode)
         const activeBtn = document.querySelector('.nav-btn.active');
-        if (activeBtn && activeBtn.innerText === "Fiches méthode") {
+        if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
             const downloadDiv = document.createElement('div');
             downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
             downloadDiv.innerHTML = `<p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p><button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">📥 Télécharger ces fiches (HTML)</button>`;

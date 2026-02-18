@@ -48,6 +48,10 @@
         .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
+        .nav-btn[data-method="true"] {
+    background: linear-gradient(135deg, var(--btn-color), #ff8e8e);
+    border-color: #ff4d4d;
+}
 
         /* STYLE TROPHEES */
         .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
@@ -130,16 +134,20 @@ function downloadStyledResults() {
     let hasData = false;
 
     // Construction du tableau des résultats
-    sections.forEach(s => {
-        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
-        if(score !== "Non effectué") hasData = true;
-        
-        scoresHtml += `
-            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
-                <span style="font-weight: bold; color: #475569;">${s.name}</span>
-                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
-            </div>`;
-    });
+    sections.forEach((s) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.innerText = s.name;
+    btn.style.setProperty('--btn-color', s.color);
+    
+    // 👇 AJOUTER CETTE CONDITION POUR LES FICHES MÉTHODE
+    if (s.name.includes("Fiches Méthode") || s.name.includes("📚")) {
+        btn.setAttribute('data-method', 'true');
+    }
+    
+    btn.onclick = () => loadData(s.gid, btn);
+    menu.appendChild(btn);
+});
 
     if(!hasData) {
         alert("Complète au moins un quiz pour générer ton bilan !");

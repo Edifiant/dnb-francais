@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -93,22 +94,22 @@
 
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
-    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">  </button>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
     <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
-       Télécharger mon Bilan
+    🎓 Télécharger mon Bilan
 </button>
 </div>
 
 <div class="container">
-    <h1 class="main-title">   Objectif Brevet</h1>
+    <h1 class="main-title">🎓 Objectif Brevet</h1>
     
     <div class="nav-menu" id="menu"></div>
 
     <div class="trophy-shelf" id="trophyShelf">
-        <div class="trophy-card" id="t-first"><span class="trophy-icon">  </span><span class="trophy-name">Premier Pas</span></div>
-        <div class="trophy-card" id="t-half"><span class="trophy-icon">  </span><span class="trophy-name">Moyenne !</span></div>
-        <div class="trophy-card" id="t-perfect"><span class="trophy-icon">  </span><span class="trophy-name">Sans Faute</span></div>
-        <div class="trophy-card" id="t-speed"><span class="trophy-icon"> </span><span class="trophy-name">Expert</span></div>
+        <div class="trophy-card" id="t-first"><span class="trophy-icon">🎯</span><span class="trophy-name">Premier Pas</span></div>
+        <div class="trophy-card" id="t-half"><span class="trophy-icon">🥈</span><span class="trophy-name">Moyenne !</span></div>
+        <div class="trophy-card" id="t-perfect"><span class="trophy-icon">🏆</span><span class="trophy-name">Sans Faute</span></div>
+        <div class="trophy-card" id="t-speed"><span class="trophy-icon">⚡</span><span class="trophy-name">Expert</span></div>
     </div>
 
     <div id="app">Chargement...</div>
@@ -122,7 +123,7 @@
 
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
-        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "  " : "  ";
+        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
 function downloadStyledResults() {
     let scoresHtml = "";
@@ -196,7 +197,7 @@ function downloadStyledResults() {
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
         { name: "Figures de style", gid: "1943336125", color: "#ec4899" },
-        { name: "✍️ Testez vos connaissances", gid: "1143879514", color: "#10b981" },
+        { name: "Fiches", gid: "1143879514", color: "#10b981" },
         { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },
         { name: "Orthographe", gid: "2137570262", color: "#eab308" },
         { name: "Auteurs", gid: "951178030", color: "#06b6d4" }
@@ -285,7 +286,7 @@ function downloadStyledResults() {
                         ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
                         ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>   Explication de Maître Tronc (  ) :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉) :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
@@ -340,12 +341,12 @@ function downloadStyledResults() {
         const percent = Math.round((currentScore / maxQuizScore) * 100);
         let msg = "", color = "";
         if(percent === 100) { 
-            msg = "INCROYABLE !   "; color = "#10b981"; unlockTrophy('t-speed');
+            msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed');
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); 
         }
-        else if(percent >= 75) { msg = "Très bon travail !  "; color = "#2563eb"; }
-        else if(percent >= 50) { msg = "Pas mal, continue !   "; color = "#f59e0b"; }
-        else { msg = "Il faut encore réviser...   "; color = "#ef4444"; }
+        else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
+        else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
+        else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }
         finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span><p>${msg}</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
         finalBox.style.display = "block";
         setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);

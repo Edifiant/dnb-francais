@@ -48,10 +48,6 @@
         .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
-        .nav-btn[data-method="true"] {
-    background: linear-gradient(135deg, var(--btn-color), #ff8e8e);
-    border-color: #ff4d4d;
-}
 
         /* STYLE TROPHEES */
         .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
@@ -134,20 +130,16 @@ function downloadStyledResults() {
     let hasData = false;
 
     // Construction du tableau des résultats
-    sections.forEach((s) => {
-    const btn = document.createElement('button');
-    btn.className = 'nav-btn';
-    btn.innerText = s.name;
-    btn.style.setProperty('--btn-color', s.color);
-    
-    // 👇 AJOUTER CETTE CONDITION POUR LES FICHES MÉTHODE
-    if (s.name.includes("Fiches Méthode") || s.name.includes("📚")) {
-        btn.setAttribute('data-method', 'true');
-    }
-    
-    btn.onclick = () => loadData(s.gid, btn);
-    menu.appendChild(btn);
-});
+    sections.forEach(s => {
+        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+        if(score !== "Non effectué") hasData = true;
+        
+        scoresHtml += `
+            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                <span style="font-weight: bold; color: #475569;">${s.name}</span>
+                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
+            </div>`;
+    });
 
     if(!hasData) {
         alert("Complète au moins un quiz pour générer ton bilan !");
@@ -209,7 +201,6 @@ function downloadStyledResults() {
         { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },
         { name: "Orthographe", gid: "2137570262", color: "#eab308" },
         { name: "Auteurs", gid: "951178030", color: "#06b6d4" }
-        { name: "📚 Fiches Méthode", gid: "NOUVEL_ID", color: "#ff6b6b" }
     ];
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
@@ -267,31 +258,20 @@ function downloadStyledResults() {
                     <div style="clear:both;"></div>
                 </div>`;
             } 
-            // LOGIQUE COURS / DEFINITIONS / DICTÉES / METHODES
-else if (row.Type === "COURS" || row.Type === "METHODE" || row.Définition || row.Texte || row.Contenu) {
-    let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-    let contenu = row.Contenu || row.Définition || row.Texte || "";
-    let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
-    
-    // On choisit le style en fonction du type
-    if (row.Type === "METHODE") {
-        html += `
-        <div class="fiche-methode">
-            <span class="badge-methode">🛠️ Fiche Méthode</span>
-            <h2 style="color:var(--orange); border-bottom-color:var(--orange)">${row.Titre || "Méthode"}</h2>
-            <div style="white-space: pre-wrap; margin-top:20px; line-height:1.6; color: var(--texte-sec);">${contenu}</div>
-            ${vigilance}
-        </div>`;
-    } else {
-        // Style Bristol classique pour tout le reste
-        html += `
-        <div class="fiche-bristol">
-            <h2>${row.Titre || row.Mot || "Leçon"}</h2>
-            ${v}
-            <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
-            ${vigilance}
-        </div>`;
-    }} 
+            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
+            else if (row.Type === "COURS" || row.Définition || row.Texte) {
+                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+                let contenu = row.Contenu || row.Définition || row.Texte || "";
+                let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
+                
+                html += `
+                <div class="fiche-bristol">
+                    <h2>${row.Titre || row.Mot || "Leçon"}</h2>
+                    ${v}
+                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
+                    ${vigilance}
+                </div>`;
+            } 
             // LOGIQUE QUIZ
             else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true;

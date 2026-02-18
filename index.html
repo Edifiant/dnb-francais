@@ -258,20 +258,32 @@ function downloadStyledResults() {
                     <div style="clear:both;"></div>
                 </div>`;
             } 
-            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
-            else if (row.Type === "COURS" || row.Définition || row.Texte) {
-                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-                let contenu = row.Contenu || row.Définition || row.Texte || "";
-                let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
-                
-                html += `
-                <div class="fiche-bristol">
-                    <h2>${row.Titre || row.Mot || "Leçon"}</h2>
-                    ${v}
-                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
-                    ${vigilance}
-                </div>`;
-            } 
+            // LOGIQUE COURS / DEFINITIONS / DICTÉES / METHODES
+else if (row.Type === "COURS" || row.Type === "METHODE" || row.Définition || row.Texte || row.Contenu) {
+    let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+    let contenu = row.Contenu || row.Définition || row.Texte || "";
+    let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
+    
+    // On choisit le style en fonction du type
+    if (row.Type === "METHODE") {
+        html += `
+        <div class="fiche-methode">
+            <span class="badge-methode">🛠️ Fiche Méthode</span>
+            <h2 style="color:var(--orange); border-bottom-color:var(--orange)">${row.Titre || "Méthode"}</h2>
+            <div style="white-space: pre-wrap; margin-top:20px; line-height:1.6; color: var(--texte-sec);">${contenu}</div>
+            ${vigilance}
+        </div>`;
+    } else {
+        // Style Bristol classique pour tout le reste
+        html += `
+        <div class="fiche-bristol">
+            <h2>${row.Titre || row.Mot || "Leçon"}</h2>
+            ${v}
+            <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
+            ${vigilance}
+        </div>`;
+    }
+}
             // LOGIQUE QUIZ
             else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true;

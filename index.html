@@ -125,7 +125,41 @@
         document.body.classList.toggle('dark-mode');
         document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
-function downloadStyledResults() {
+function downloadMethodSheet() {
+    const content = document.getElementById('app').innerHTML;
+    // On retire le bouton de téléchargement du contenu pour qu'il n'apparaisse pas dans le fichier téléchargé
+    const cleanContent = content.replace(/<button.*>.*<\/button>/ig, "");
+
+    const docContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Fiches Méthode - Objectif Brevet</title>
+        <style>
+            body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+            .fiche-bristol { border: 2px solid #e2e8f0; padding: 30px; margin-bottom: 30px; border-radius: 12px; page-break-inside: avoid; }
+            h2 { color: #2563eb; border-bottom: 3px solid #2563eb; display: inline-block; }
+            .vigilance-box { background: #fff1f2; padding: 15px; border-left: 6px solid #fb7185; margin-top: 20px; color: #991b1b; }
+            .info-highlight { background: #f1f5f9; padding: 10px; border-left: 5px solid #7c3aed; margin-top: 10px; }
+            iframe, .timeline-container, .timeline-labels { display: none; }
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align:center; color:#7c3aed;">📚 Mes Fiches Méthode</h1>
+        <hr>
+        ${cleanContent}
+    </body>
+    </html>`;
+
+    const blob = new Blob([docContent], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Fiches_Methode_Brevet.html';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}function downloadStyledResults() {
     let scoresHtml = "";
     let hasData = false;
 
@@ -234,7 +268,25 @@ function downloadStyledResults() {
     function render(data) {
         let html = "";
         let hasQuiz = false;
+// ... fin de la boucle data.forEach ...
+    
+    app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+    scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
 
+    // NOUVEAU : Ajout du bouton en bas si c'est la section "Fiches méthode"
+    const activeBtn = document.querySelector('.nav-btn.active');
+    if (activeBtn && activeBtn.innerText === "Fiches méthode") {
+        const downloadDiv = document.createElement('div');
+        downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
+        downloadDiv.innerHTML = `
+            <p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p>
+            <button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">
+                📥 Télécharger ces fiches (HTML)
+            </button>
+        `;
+        app.appendChild(downloadDiv);
+    }
+}
         data.forEach((row, i) => {
             // LOGIQUE AUTEURS
             if (row.Auteur) {

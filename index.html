@@ -254,6 +254,52 @@
 </div>
 
 <script>
+    let selectedItem = null; // Variable globale pour stocker l'élément cliqué
+
+// 1. Quand on clique sur une étiquette
+function handleItemClick(el, qId) {
+    if (answeredQuestions.has(qId)) return;
+
+    // On retire la sélection visuelle des autres étiquettes de la même question
+    document.querySelectorAll(`#cont-${qId} .drag-item`).forEach(item => {
+        item.classList.remove('selected');
+    });
+
+    // On sélectionne l'étiquette cliquée
+    el.classList.add('selected');
+    selectedItem = el;
+
+    // On fait clignoter la zone cible pour montrer qu'il faut cliquer dedans
+    document.getElementById(`dz-${qId}`).classList.add('active-target');
+}
+
+// 2. Quand on clique sur la zone vide (la zone cible)
+function handleDropClick(qId, correct) {
+    if (answeredQuestions.has(qId) || !selectedItem) return;
+
+    const dropZone = document.getElementById(`dz-${qId}`);
+    const userVal = selectedItem.getAttribute('data-val');
+    
+    // On transfère le texte de l'étiquette dans la zone
+    dropZone.innerHTML = selectedItem.innerText;
+    dropZone.classList.remove('active-target');
+    answeredQuestions.add(qId);
+
+    // Vérification de la réponse
+    if (userVal === correct) {
+        currentScore++;
+        dropZone.classList.add('success');
+        confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+    } else {
+        dropZone.classList.add('error');
+        dropZone.innerHTML += ` <br>(Réponse : ${correct})`;
+    }
+
+    // Afficher l'explication
+    document.getElementById(`ex-${qId}`).style.display = "block";
+    updateScoreBoard();
+    selectedItem = null; // On réinitialise pour la prochaine question
+}
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set();

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -30,6 +31,7 @@
         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: background 0.3s, color 0.3s; padding-top: 80px; }
         .container { max-width: 850px; margin: 0 auto; position: relative; }
 
+        /* HEADER FIXE */
         .top-bar {
             position: fixed; top: 0; left: 0; right: 0;
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
@@ -47,35 +49,45 @@
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
 
-        /* Styles Bristol & Fiches */
+        /* STYLE TROPHEES */
+        .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+        .trophy-card { background: var(--bristol); border: 2px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; width: 90px; opacity: 0.2; filter: grayscale(1); transition: all 0.5s ease; }
+        .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--orange); transform: scale(1.05); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2); animation: unlockAnim 0.6s ease-out; }
+        .trophy-icon { font-size: 1.8rem; display: block; }
+        .trophy-name { font-size: 0.65rem; font-weight: bold; margin-top: 5px; color: var(--texte); }
+
+        @keyframes unlockAnim { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1.05); } }
+
+        /* FICHES BRISTOL */
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
-        
-        /* Quiz & Cards */
+        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); }
+        .badge-info { background: var(--violet); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 12px; line-height: 1; }
+        .info-highlight { background: var(--highlight-bg); padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--violet); line-height: 1.5; margin-top: 15px; color: var(--texte); }
+        .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
+        body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
+
+        /* TIMELINE */
+        .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
+        .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
+
+        /* QUIZ */
         .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
         .quiz-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 20px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s; color: var(--texte); }
+        .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s; font-size: 1rem; color: var(--texte); }
+        .opt-btn:hover:not(:disabled) { background: var(--opt-hover); border-color: var(--bleu); }
         .opt-btn.success { background: #dcfce7 !important; border-color: #166534 !important; color: #166534 !important; }
         .opt-btn.error { background: #fee2e2 !important; border-color: #991b1b !important; color: #991b1b !important; }
         .expli-box { margin-top: 20px; padding: 20px; background: #eff6ff; border-left: 6px solid var(--bleu); border-radius: 8px; display: none; line-height: 1.6; color: #1e293b; }
-
-        /* NOUVEAU : Styles Drag & Drop */
-        .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; min-height: 50px; padding: 15px; background: var(--highlight-bg); border-radius: 12px; border: 2px dashed var(--card-border); }
-        .draggable-item { padding: 8px 15px; background: var(--bristol); border: 2px solid var(--bleu); border-radius: 8px; cursor: grab; font-weight: 600; user-select: none; touch-action: none; }
-        .drop-zone { display: inline-block; min-width: 100px; border-bottom: 3px solid var(--violet); margin: 0 5px; text-align: center; font-weight: bold; color: var(--violet); padding: 0 10px; }
-
-        /* NOUVEAU : Styles Flashcards */
-        .flashcard-container { perspective: 1000px; width: 100%; max-width: 400px; height: 200px; margin: 20px auto; cursor: pointer; }
-        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; border-radius: 15px; }
-        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 15px; font-size: 1.2rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .flashcard-front { background: var(--bristol); color: var(--bleu); border: 3px solid var(--bleu); }
-        .flashcard-back { background: var(--bleu); color: white; transform: rotateY(180deg); }
+        body.dark-mode .expli-box { background: #172554; color: #e0f2fe; }
 
         .final-score-box { text-align: center; padding: 40px; background: var(--bg); border: 4px dashed var(--violet); border-radius: 20px; margin-top: 40px; display: none; }
-        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } }
+        .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; margin: 10px 0; }
+
+        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
     </style>
 </head>
 <body>
@@ -83,11 +95,23 @@
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+    🎓 Télécharger mon Bilan
+</button>
 </div>
 
 <div class="container">
     <h1 class="main-title">🎓 Objectif Brevet</h1>
+    
     <div class="nav-menu" id="menu"></div>
+
+    <div class="trophy-shelf" id="trophyShelf">
+        <div class="trophy-card" id="t-first"><span class="trophy-icon">🎯</span><span class="trophy-name">Premier Pas</span></div>
+        <div class="trophy-card" id="t-half"><span class="trophy-icon">🥈</span><span class="trophy-name">Moyenne !</span></div>
+        <div class="trophy-card" id="t-perfect"><span class="trophy-icon">🏆</span><span class="trophy-name">Sans Faute</span></div>
+        <div class="trophy-card" id="t-speed"><span class="trophy-icon">⚡</span><span class="trophy-name">Expert</span></div>
+    </div>
+
     <div id="app">Chargement...</div>
     <div id="finalResult" class="final-score-box"></div>
 </div>
@@ -97,18 +121,93 @@
     let maxQuizScore = 0;
     let answeredQuestions = new Set();
 
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
+    }
+function downloadStyledResults() {
+    let scoresHtml = "";
+    let hasData = false;
+
+    // Construction du tableau des résultats
+    sections.forEach(s => {
+        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+        if(score !== "Non effectué") hasData = true;
+        
+        scoresHtml += `
+            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                <span style="font-weight: bold; color: #475569;">${s.name}</span>
+                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
+            </div>`;
+    });
+
+    if(!hasData) {
+        alert("Complète au moins un quiz pour générer ton bilan !");
+        return;
+    }
+
+    // Structure du document HTML stylisé
+    const docContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Mon Bilan Objectif Brevet</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }
+            .diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
+            h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }
+            .subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
+            .results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }
+            .footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }
+            .stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        </style>
+    </head>
+    <body>
+        <div class="diploma">
+            <h1>Objectif Brevet</h1>
+            <div class="subtitle">Bilan Officiel des Révisions</div>
+            
+            <p>Félicitations ! Voici le récapitulatif de tes performances :</p>
+            
+            <div class="results-container">
+                ${scoresHtml}
+            </div>
+            
+            <div class="footer">
+                Document généré le ${new Date().toLocaleString('fr-FR')}<br>
+                Continue tes efforts pour décrocher la mention !
+            </div>
+            
+            <div class="stamp">Validé par<br>Maître Tronc</div>
+        </div>
+    </body>
+    </html>`;
+
+    // Téléchargement du fichier
+    const blob = new Blob([docContent], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Bilan_Objectif_Brevet.html';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
         { name: "Figures de style", gid: "1943336125", color: "#ec4899" },
         { name: "✍️ Testez vos connaissances", gid: "1143879514", color: "#10b981" },
-        { name: "📖 Fiches méthode", gid: "781687810", color: "#eab308" }
+        { name: "Vocabulaire", gid: "710791745", color: "#8b5cf6" },
+        { name: "Orthographe", gid: "2137570262", color: "#eab308" },
+        { name: "Auteurs", gid: "951178030", color: "#06b6d4" }
     ];
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
     const app = document.getElementById('app');
     const menu = document.getElementById('menu');
     const scoreBoard = document.getElementById('scoreBoard');
+    const finalBox = document.getElementById('finalResult');
 
     sections.forEach((s) => {
         const btn = document.createElement('button');
@@ -120,76 +219,140 @@
     });
 
     function loadData(gid, btn) {
-        currentScore = 0; maxQuizScore = 0; answeredQuestions.clear();
+        currentScore = 0;
+        maxQuizScore = 0;
+        answeredQuestions.clear();
+        finalBox.style.display = "none";
+        document.querySelectorAll('.trophy-card').forEach(t => t.classList.remove('unlocked'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "<div style='text-align:center; padding: 50px;'>Chargement...</div>";
-        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (r) => render(r.data) });
+        app.innerHTML = "<div style='text-align:center; padding: 50px;'>Préparation du cours...</div>";
+        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
     }
 
     function render(data) {
         let html = "";
         let hasQuiz = false;
+
         data.forEach((row, i) => {
-            // 1. TYPE FLASHCARD
-            if (row.Type === "FLASHCARD") {
-                html += `<div class="card-quiz"><div class="quiz-title">🗂️ Flashcard : Cliquez pour retourner</div><div class="flashcard-container" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front">${row.Question || row.Mot}</div><div class="flashcard-back">${row.Réponse_A || row.Définition}</div></div></div></div>`;
+            // LOGIQUE AUTEURS
+            if (row.Auteur) {
+                const siecle = row.Siècle || "";
+                let progress = 10;
+                if(siecle.includes("XVII")) progress = 35;
+                else if(siecle.includes("XVIII")) progress = 55;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 95;
+
+                html += `
+                <div class="fiche-bristol">
+                    ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
+                    <div class="badge-info">${siecle} siècle</div><br>
+                    <h2>${row.Auteur}</h2>
+                    <div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
+                    <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
+                    <div class="timeline-container">
+                        <div class="timeline-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                    <div style="clear:both;"></div>
+                </div>`;
             } 
-            // 2. TYPE DRAG & DROP
-            else if (row.Type === "DRAG") {
-                hasQuiz = true; maxQuizScore++;
-                const options = row.Réponse_A.split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
-                html += `<div class="card-quiz" id="q-card-${i}"><div class="quiz-title">🧩 Complétez la phrase</div><div style="line-height: 3rem; margin-bottom: 20px;">${row.Texte_A_Trou.replace('[...]', `<span class="drop-zone" id="dz-${i}" ondrop="drop(event, ${i}, '${row.Bonne_Réponse}')" ondragover="allowDrop(event)">...</span>`)}</div><div class="drag-container" id="drag-pool-${i}">${options.map(opt => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${opt}-${i}">${opt}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div></div>`;
-            }
-            // 3. TYPE QUIZ CLASSIQUE
+            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
+            else if (row.Type === "COURS" || row.Définition || row.Texte) {
+                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+                let contenu = row.Contenu || row.Définition || row.Texte || "";
+                let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
+                
+                html += `
+                <div class="fiche-bristol">
+                    <h2>${row.Titre || row.Mot || "Leçon"}</h2>
+                    ${v}
+                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
+                    ${vigilance}
+                </div>`;
+            } 
+            // LOGIQUE QUIZ
             else if (row.Question || row.Type === "QUIZ") {
-                hasQuiz = true; maxQuizScore++;
+                hasQuiz = true;
+                maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                html += `<div class="card-quiz" id="q-card-${i}"><div class="quiz-title">${row.Question}</div><div class="btn-grid"><button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A}</button><button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B}</button></div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div></div>`;
-            }
-            // 4. TYPE COURS
-            else if (row.Type === "COURS" || row.Définition) {
-                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2><div style="white-space: pre-wrap; margin-top:20px;">${row.Contenu || row.Définition}</div></div>`;
+                html += `
+                <div class="card-quiz" id="q-card-${i}">
+                    <div class="quiz-title">${row.Titre || row.Question}</div>
+                    <div class="btn-grid">
+                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
+                    </div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉) :</strong><br>${row.Explication || "Bravo !"}</div>
+                </div>`;
             }
         });
-        app.innerHTML = html;
+
+        app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
         scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
     }
 
-    // LOGIQUE DRAG & DROP
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { ev.dataTransfer.setData("text", ev.target.innerText); ev.dataTransfer.setData("id", ev.target.id); }
-    function drop(ev, id, correct) {
-        ev.preventDefault();
-        const txt = ev.dataTransfer.getData("text");
-        const dragId = ev.dataTransfer.getData("id");
-        if (txt === correct) {
-            ev.target.innerText = txt; ev.target.style.color = "var(--vert)";
-            document.getElementById(dragId).style.display = "none";
-            if (!answeredQuestions.has(id)) { currentScore++; finishEx(id); }
+    function check(click, correct, id) {
+        if (answeredQuestions.has(id)) return;
+        answeredQuestions.add(id);
+        const btnClicked = document.getElementById(`btn-${id}-${click}`);
+        const expli = document.getElementById(`ex-${id}`);
+        ['A', 'B', 'C', 'D'].forEach(l => { const b = document.getElementById(`btn-${id}-${l}`); if(b) b.disabled = true; });
+
+        if (click === correct) {
+            currentScore++;
+            btnClicked.classList.add('success');
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
         } else {
-            ev.target.innerText = "❌"; setTimeout(() => ev.target.innerText = "...", 800);
+            btnClicked.classList.add('error');
+            const btnCorrect = document.getElementById(`btn-${id}-${correct}`);
+            if(btnCorrect) btnCorrect.classList.add('success');
+        }
+        if(expli) expli.style.display = "block";
+        updateScoreBoard();
+    }
+
+    function unlockTrophy(tid) {
+        const t = document.getElementById(tid);
+        if (t && !t.classList.contains('unlocked')) {
+            t.classList.add('unlocked');
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } });
         }
     }
 
-    // LOGIQUE QUIZ
-    function check(click, correct, id) {
-        if (answeredQuestions.has(id)) return;
-        const btn = document.getElementById(`btn-${id}-${click}`);
-        if (click === correct) { currentScore++; btn.classList.add('success'); confetti({ particleCount: 20 }); } 
-        else { btn.classList.add('error'); }
-        finishEx(id);
-    }
-
-    function finishEx(id) {
-        answeredQuestions.add(id);
-        const ex = document.getElementById(`ex-${id}`);
-        if(ex) ex.style.display = "block";
+    function updateScoreBoard() {
         scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
+// Sauvegarde auto du score de la section en cours
+    const activeSection = document.querySelector('.nav-btn.active').innerText;
+    localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
+        if (currentScore === 1) unlockTrophy('t-first');
+        if (maxQuizScore > 0) {
+            const ratio = currentScore / maxQuizScore;
+            if (ratio >= 0.5) unlockTrophy('t-half');
+            if (ratio === 1 && answeredQuestions.size === maxQuizScore) unlockTrophy('t-perfect');
+        }
+        if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
     }
 
-    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-    window.onload = () => loadData(sections[0].gid, menu.firstChild);
+    function showFinalResult() {
+        const percent = Math.round((currentScore / maxQuizScore) * 100);
+        let msg = "", color = "";
+        if(percent === 100) { 
+            msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed');
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); 
+        }
+        else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
+        else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
+        else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }
+        finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span><p>${msg}</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
+        finalBox.style.display = "block";
+        setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
+    }
+
+    loadData(sections[0].gid, menu.firstChild);
 </script>
 </body>
 </html>

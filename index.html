@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -49,7 +48,7 @@
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
 
-        /* STYLE TROPHEES */
+        /* TROPHEES */
         .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
         .trophy-card { background: var(--bristol); border: 2px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; width: 90px; opacity: 0.2; filter: grayscale(1); transition: all 0.5s ease; }
         .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--orange); transform: scale(1.05); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2); animation: unlockAnim 0.6s ease-out; }
@@ -62,11 +61,21 @@
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
-        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); }
+        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); transition: 0.4s; }
         .badge-info { background: var(--violet); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 12px; line-height: 1; }
         .info-highlight { background: var(--highlight-bg); padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--violet); line-height: 1.5; margin-top: 15px; color: var(--texte); }
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
+
+        /* SYSTEME FLASHCARD */
+        .flashcard-mode { cursor: pointer; transition: transform 0.2s; }
+        .flashcard-mode:hover { transform: scale(1.01); }
+        .flash-hidden { display: none; animation: fadeIn 0.4s ease; }
+        .flashcard-mode.revealed .flash-hidden { display: block; }
+        .flashcard-mode.revealed .flash-prompt { display: none; }
+        .flashcard-mode.revealed .auteur-portrait { filter: blur(0) !important; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* TIMELINE */
         .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
@@ -96,8 +105,8 @@
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
     <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
-    🎓 Télécharger mon Bilan
-</button>
+        🎓 Télécharger mon Bilan
+    </button>
 </div>
 
 <div class="container">
@@ -125,74 +134,22 @@
         document.body.classList.toggle('dark-mode');
         document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
-function downloadStyledResults() {
-    let scoresHtml = "";
-    let hasData = false;
 
-    // Construction du tableau des résultats
-    sections.forEach(s => {
-        const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
-        if(score !== "Non effectué") hasData = true;
-        
-        scoresHtml += `
-            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
-                <span style="font-weight: bold; color: #475569;">${s.name}</span>
-                <span style="color: #7c3aed; font-weight: 800;">${score}</span>
-            </div>`;
-    });
-
-    if(!hasData) {
-        alert("Complète au moins un quiz pour générer ton bilan !");
-        return;
+    function downloadStyledResults() {
+        let scoresHtml = "";
+        let hasData = false;
+        sections.forEach(s => {
+            const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+            if(score !== "Non effectué") hasData = true;
+            scoresHtml += `<div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;"><span style="font-weight: bold; color: #475569;">${s.name}</span><span style="color: #7c3aed; font-weight: 800;">${score}</span></div>`;
+        });
+        if(!hasData) { alert("Complète au moins un quiz pour générer ton bilan !"); return; }
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Bilan Objectif Brevet</title><style>body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }.diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }h1 { color: #7c3aed; text-align: center; margin-bottom: 5px; }.results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }.stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }</style></head><body><div class="diploma"><h1>Objectif Brevet</h1><div style="text-align:center; color:#64748b; letter-spacing:2px;">BILAN OFFICIEL</div><div class="results-container">${scoresHtml}</div><div class="stamp">Validé par<br>Maître Tronc</div></div></body></html>`;
+        const blob = new Blob([docContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'Bilan_Objectif_Brevet.html'; a.click();
     }
 
-    // Structure du document HTML stylisé
-    const docContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Mon Bilan Objectif Brevet</title>
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }
-            .diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
-            h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }
-            .subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
-            .results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }
-            .footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }
-            .stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
-        </style>
-    </head>
-    <body>
-        <div class="diploma">
-            <h1>Objectif Brevet</h1>
-            <div class="subtitle">Bilan Officiel des Révisions</div>
-            
-            <p>Félicitations ! Voici le récapitulatif de tes performances :</p>
-            
-            <div class="results-container">
-                ${scoresHtml}
-            </div>
-            
-            <div class="footer">
-                Document généré le ${new Date().toLocaleString('fr-FR')}<br>
-                Continue tes efforts pour décrocher la mention !
-            </div>
-            
-            <div class="stamp">Validé par<br>Maître Tronc</div>
-        </div>
-    </body>
-    </html>`;
-
-    // Téléchargement du fichier
-    const blob = new Blob([docContent], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Bilan_Objectif_Brevet.html';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
@@ -219,11 +176,8 @@ function downloadStyledResults() {
     });
 
     function loadData(gid, btn) {
-        currentScore = 0;
-        maxQuizScore = 0;
-        answeredQuestions.clear();
+        currentScore = 0; maxQuizScore = 0; answeredQuestions.clear();
         finalBox.style.display = "none";
-        document.querySelectorAll('.trophy-card').forEach(t => t.classList.remove('unlocked'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         app.innerHTML = "<div style='text-align:center; padding: 50px;'>Préparation du cours...</div>";
@@ -235,7 +189,7 @@ function downloadStyledResults() {
         let hasQuiz = false;
 
         data.forEach((row, i) => {
-            // LOGIQUE AUTEURS
+            // LOGIQUE AUTEURS (FLASHCARDS)
             if (row.Auteur) {
                 const siecle = row.Siècle || "";
                 let progress = 10;
@@ -245,48 +199,54 @@ function downloadStyledResults() {
                 else if(siecle.includes("XX")) progress = 95;
 
                 html += `
-                <div class="fiche-bristol">
-                    ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
-                    <div class="badge-info">${siecle} siècle</div><br>
-                    <h2>${row.Auteur}</h2>
-                    <div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
-                    <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
-                    <div class="timeline-container">
-                        <div class="timeline-bar" style="width: ${progress}%"></div>
+                <div class="fiche-bristol flashcard-mode" onclick="this.classList.toggle('revealed')">
+                    <div class="flash-prompt">
+                        <div class="badge-info">Flashcard - Cliquez pour deviner</div><br>
+                        <h2 style="border-bottom:none;">❓ Qui a écrit :</h2>
+                        <div class="info-highlight" style="font-size:1.4rem; text-align:center; border-left:none; border-bottom:4px solid var(--violet);">
+                            "<em>${row.Œuvre || "???"}</em>"
+                        </div>
                     </div>
-                    <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                    
+                    <div class="flash-hidden">
+                        <div class="badge-info">${siecle} siècle</div><br>
+                        <h2>${row.Auteur}</h2>
+                        <div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div>
+                        <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
+                        <div class="timeline-container">
+                            <div class="timeline-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                    </div>
+
+                    ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait" style="filter: blur(15px);">` : ''}
                     <div style="clear:both;"></div>
                 </div>`;
             } 
-            // LOGIQUE COURS / DEFINITIONS / DICTÉES (Harmonisée)
+            // LOGIQUE COURS / DEFINITIONS
             else if (row.Type === "COURS" || row.Définition || row.Texte) {
                 let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-                let contenu = row.Contenu || row.Définition || row.Texte || "";
-                let vigilance = row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : "";
-                
                 html += `
                 <div class="fiche-bristol">
                     <h2>${row.Titre || row.Mot || "Leçon"}</h2>
                     ${v}
-                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${contenu}</div>
-                    ${vigilance}
+                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>
+                    ${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}
                 </div>`;
             } 
             // LOGIQUE QUIZ
             else if (row.Question || row.Type === "QUIZ") {
-                hasQuiz = true;
-                maxQuizScore++;
+                hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `
                 <div class="card-quiz" id="q-card-${i}">
-                    <div class="quiz-title">${row.Titre || row.Question}</div>
+                    <div class="quiz-title">${row.Question || row.Titre}</div>
                     <div class="btn-grid">
                         <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
                         <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
                         ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
-                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉) :</strong><br>${row.Explication || "Bravo !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
@@ -299,20 +259,31 @@ function downloadStyledResults() {
         if (answeredQuestions.has(id)) return;
         answeredQuestions.add(id);
         const btnClicked = document.getElementById(`btn-${id}-${click}`);
-        const expli = document.getElementById(`ex-${id}`);
         ['A', 'B', 'C', 'D'].forEach(l => { const b = document.getElementById(`btn-${id}-${l}`); if(b) b.disabled = true; });
 
         if (click === correct) {
-            currentScore++;
-            btnClicked.classList.add('success');
+            currentScore++; btnClicked.classList.add('success');
             confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
         } else {
             btnClicked.classList.add('error');
             const btnCorrect = document.getElementById(`btn-${id}-${correct}`);
             if(btnCorrect) btnCorrect.classList.add('success');
         }
-        if(expli) expli.style.display = "block";
+        document.getElementById(`ex-${id}`).style.display = "block";
         updateScoreBoard();
+    }
+
+    function updateScoreBoard() {
+        scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
+        const activeSection = document.querySelector('.nav-btn.active').innerText;
+        localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
+        
+        if (currentScore === 1) unlockTrophy('t-first');
+        if (maxQuizScore > 0 && (currentScore / maxQuizScore) >= 0.5) unlockTrophy('t-half');
+        if (answeredQuestions.size === maxQuizScore) {
+            if (currentScore === maxQuizScore) unlockTrophy('t-perfect');
+            showFinalResult();
+        }
     }
 
     function unlockTrophy(tid) {
@@ -323,31 +294,9 @@ function downloadStyledResults() {
         }
     }
 
-    function updateScoreBoard() {
-        scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
-// Sauvegarde auto du score de la section en cours
-    const activeSection = document.querySelector('.nav-btn.active').innerText;
-    localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
-        if (currentScore === 1) unlockTrophy('t-first');
-        if (maxQuizScore > 0) {
-            const ratio = currentScore / maxQuizScore;
-            if (ratio >= 0.5) unlockTrophy('t-half');
-            if (ratio === 1 && answeredQuestions.size === maxQuizScore) unlockTrophy('t-perfect');
-        }
-        if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
-    }
-
     function showFinalResult() {
         const percent = Math.round((currentScore / maxQuizScore) * 100);
-        let msg = "", color = "";
-        if(percent === 100) { 
-            msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed');
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); 
-        }
-        else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
-        else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
-        else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }
-        finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span><p>${msg}</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
+        finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score">${currentScore} / ${maxQuizScore}</span><p>${percent}% de réussite !</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
         finalBox.style.display = "block";
         setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
     }

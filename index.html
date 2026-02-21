@@ -61,16 +61,16 @@
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
-        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); }
-        .badge-info { background: var(--violet); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 12px; line-height: 1; }
-        .info-highlight { background: var(--highlight-bg); padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--violet); line-height: 1.5; margin-top: 15px; color: var(--texte); }
+        .auteur-portrait { width: 90px; height: 115px; object-fit: cover; float: right; margin-left: 15px; border-radius: 10px; border: 3px solid var(--bg); transform: rotate(1deg); }
+        .badge-info { background: var(--violet); color: white; padding: 3px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 8px; line-height: 1; }
+        .info-highlight { background: var(--highlight-bg); padding: 8px 12px; border-radius: 8px; border-left: 4px solid var(--violet); line-height: 1.4; margin-top: 10px; color: var(--texte); font-size: 0.95rem; }
         .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
         body.dark-mode .vigilance-box { background: #450a0a; color: #fecaca; }
 
         /* TIMELINE */
-        .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
+        .timeline-container { margin-top: 20px; background: var(--ligne); height: 6px; border-radius: 4px; position: relative; clear: both; }
         .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
-        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--texte-sec); margin-top: 5px; font-weight: 600; }
 
         /* QUIZ */
         .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
@@ -244,7 +244,7 @@ function downloadStyledResults() {
         let hasQuiz = false;
 
         data.forEach((row, i) => {
-            // LOGIQUE AUTEURS (avec flashcards)
+            // LOGIQUE AUTEURS (avec flashcards compactes)
             if (row.Auteur) {
                 const siecle = row.Siècle || "";
                 let progress = 10;
@@ -257,29 +257,29 @@ function downloadStyledResults() {
                 const flashId = `flash-${i}-${Date.now()}`;
 
                 html += `
-                <div class="fiche-bristol" style="cursor: pointer;" onclick="flipCard('${flashId}')">
-                    <div id="${flashId}" class="flashcard-inner" style="transition: transform 0.6s; transform-style: preserve-3d; position: relative; width: 100%; min-height: 200px;">
+                <div class="fiche-bristol" style="cursor: pointer; padding: 25px 25px 25px 70px;" onclick="flipCard('${flashId}')">
+                    <div id="${flashId}" class="flashcard-inner" style="transition: transform 0.5s; transform-style: preserve-3d; position: relative; width: 100%; min-height: 140px;">
                         <!-- Recto de la flashcard (affichage normal) -->
                         <div class="flashcard-front" style="backface-visibility: hidden; -webkit-backface-visibility: hidden; width: 100%;">
-                            ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}
-                            <div class="badge-info">${siecle} siècle</div><br>
-                            <h2>${row.Auteur}</h2>
-                            <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
-                            <div class="timeline-container">
+                            ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait" style="width: 70px; height: 90px;">` : ''}
+                            <div class="badge-info" style="font-size: 0.7rem; padding: 2px 10px;">${siecle} siècle</div><br>
+                            <h2 style="font-size: 1.5rem; margin: 0 0 0.3rem 0;">${row.Auteur}</h2>
+                            <div class="info-highlight" style="border-left-color: var(--vert); padding: 5px 10px; font-size: 0.85rem;"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div>
+                            <div class="timeline-container" style="margin-top: 12px; height: 5px;">
                                 <div class="timeline-bar" style="width: ${progress}%"></div>
                             </div>
-                            <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                            <div class="timeline-labels" style="font-size: 0.6rem;"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
                             <div style="clear:both;"></div>
-                            <div style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: var(--violet);">👆 Cliquez pour voir l'œuvre</div>
+                            <div style="text-align: center; margin-top: 5px; font-size: 0.75rem; color: var(--violet);">👆 Cliquez pour voir l'œuvre</div>
                         </div>
-                        <!-- Verso de la flashcard (informations supplémentaires) -->
-                        <div class="flashcard-back" style="backface-visibility: hidden; -webkit-backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; min-height: 200px; transform: rotateY(180deg); background: var(--highlight-bg); border-radius: 12px; padding: 15px; box-sizing: border-box;">
-                            <div style="display: flex; flex-direction: column; justify-content: center; min-height: 200px;">
-                                <h3 style="color: var(--violet); margin-top: 0;">${row.Auteur}</h3>
-                                <p><strong>📖 Œuvre majeure :</strong> <em>${row.Œuvre || "N/A"}</em></p>
-                                <p><strong>🏛️ Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</p>
-                                <p><strong>📅 Siècle :</strong> ${siecle}</p>
-                                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--texte-sec);">👆 Cliquez pour revenir</div>
+                        <!-- Verso de la flashcard (informations supplémentaires compactes) -->
+                        <div class="flashcard-back" style="backface-visibility: hidden; -webkit-backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; min-height: 140px; transform: rotateY(180deg); background: var(--highlight-bg); border-radius: 8px; padding: 10px; box-sizing: border-box; display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <h4 style="color: var(--violet); margin: 0 0 5px 0; font-size: 1.1rem;">${row.Auteur}</h4>
+                                <p style="margin: 3px 0; font-size: 0.85rem;"><strong>📖</strong> <em>${row.Œuvre ? row.Œuvre.substring(0, 25) + (row.Œuvre.length > 25 ? '…' : '') : "N/A"}</em></p>
+                                <p style="margin: 3px 0; font-size: 0.8rem;"><strong>🏛️</strong> ${(row.Courant || row.Mouvement || "N/A").substring(0, 20)}</p>
+                                <p style="margin: 3px 0; font-size: 0.8rem;"><strong>📅</strong> ${siecle}</p>
+                                <div style="text-align: center; margin-top: 5px; font-size: 0.65rem; color: var(--texte-sec);">👆 Retour</div>
                             </div>
                         </div>
                     </div>
@@ -288,7 +288,7 @@ function downloadStyledResults() {
                 <style>
                     .flashcard-inner {
                         transform-style: preserve-3d;
-                        transition: transform 0.6s;
+                        transition: transform 0.5s;
                     }
                     .flashcard-front, .flashcard-back {
                         backface-visibility: hidden;

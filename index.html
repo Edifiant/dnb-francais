@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Objectif Brevet - Cahier de Révisions</title>
+    <title>Objectif Brevet - Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -16,62 +16,56 @@
             --bg: #0f172a; --bristol: #1e293b; --marge: #be123c; --ligne: #334155;
             --bleu: #60a5fa; --violet: #a78bfa; --vert: #34d399; --texte: #f1f5f9;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); padding-top: 80px; }
-        .container { max-width: 850px; margin: 0 auto; }
-        .top-bar { position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); padding: 10px 20px; z-index: 999; display: flex; justify-content: space-between; align-items: center; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); padding-top: 80px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 800px; margin: 0 auto; }
         
+        /* Navigation */
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); padding: 10px 20px; z-index: 999; display: flex; justify-content: space-between; align-items: center; }
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; justify-content: center; }
-        .nav-btn { padding: 8px 16px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; }
+        .nav-btn { padding: 10px 18px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; font-size: 0.9rem; }
         .nav-btn.active { background: var(--btn-color); color: white; }
 
         /* Fiche Bristol */
-        .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 40px 20px 40px 60px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
+        .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 25px; padding: 40px 20px 40px 60px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 45px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
+        .fiche-bristol h2 { margin: 0 0 1rem 0; color: var(--bleu); font-size: 1.5rem; line-height: 1.2; border-bottom: 3px solid var(--bleu); display: inline-block; }
 
-        /* Drag & Drop interactif (Tap-Tap) */
-        .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding: 15px; background: var(--highlight-bg); border-radius: 12px; }
-        .draggable-item { 
-            padding: 10px 15px; background: var(--bristol); border: 2px solid var(--bleu); border-radius: 8px; 
-            cursor: pointer; font-weight: 600; transition: 0.2s;
+        /* NOUVEAU : Selecteur pour Mobile */
+        .phrase-exercice { font-size: 1.2rem; line-height: 2.5; margin: 15px 0; font-weight: 500; }
+        .mobile-select {
+            appearance: none; background: var(--highlight-bg); border: 2px solid var(--violet);
+            border-radius: 8px; padding: 5px 10px; font-size: 1rem; font-weight: bold;
+            color: var(--violet); cursor: pointer; margin: 0 5px; outline: none;
         }
-        .draggable-item.selected { background: var(--bleu); color: white; transform: scale(1.05); box-shadow: 0 0 15px rgba(37, 99, 235, 0.4); }
-        .drop-zone { 
-            display: inline-block; min-width: 80px; border-bottom: 3px solid var(--violet); 
-            padding: 0 10px; font-weight: bold; color: var(--violet); cursor: pointer; background: rgba(124, 58, 237, 0.05);
-        }
+        .mobile-select.correct { border-color: var(--vert); color: var(--vert); background: #f0fdf4; }
 
-        /* Flashcards */
-        .flashcard-container { perspective: 1000px; width: 100%; max-width: 320px; height: 180px; margin: 20px auto; }
-        .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
-        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 15px; border-radius: 15px; text-align: center; border: 2px solid var(--bleu); }
-        .flashcard-back { background: var(--bleu); color: white; transform: rotateY(180deg); }
-
-        .card-quiz { background: var(--bristol); padding: 20px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 6px solid var(--violet); margin-bottom: 20px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .opt-btn { padding: 12px; border: 2px solid var(--card-border); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 600; }
+        /* Quiz & Flashcards */
+        .card-quiz { background: var(--bristol); padding: 25px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 6px solid var(--violet); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { padding: 15px; border: 2px solid var(--card-border); border-radius: 12px; background: #fff; cursor: pointer; font-weight: 600; text-align: left; font-size: 1rem; }
         .opt-btn.success { background: #dcfce7 !important; border-color: #10b981 !important; }
         .opt-btn.error { background: #fee2e2 !important; border-color: #ef4444 !important; }
-        .expli-box { margin-top: 15px; padding: 15px; background: var(--highlight-bg); border-left: 5px solid var(--bleu); display: none; border-radius: 8px; }
-        .final-score-box { text-align: center; padding: 30px; background: var(--bristol); border: 4px dashed var(--violet); border-radius: 20px; display: none; }
+        
+        .expli-box { margin-top: 15px; padding: 15px; background: var(--highlight-bg); border-left: 5px solid var(--bleu); display: none; border-radius: 8px; font-size: 0.95rem; }
+        .final-score-box { text-align: center; padding: 30px; background: var(--bristol); border: 4px dashed var(--violet); border-radius: 20px; margin-top: 30px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div id="scoreBoard" style="font-weight:800; color:var(--violet);">Score : 0 / 0</div>
-    <button onclick="document.body.classList.toggle('dark-mode')" style="background:none; border:none; font-size:1.5rem;">🌓</button>
+    <button onclick="document.body.classList.toggle('dark-mode')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">🌓</button>
 </div>
 
 <div class="container">
-    <h1 style="text-align:center; font-weight:900;">🎓 Objectif Brevet</h1>
+    <h1 style="text-align:center; font-weight:900; color:var(--bleu);">🎓 Objectif Brevet</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Chargement...</div>
+    <div id="app">Chargement des données...</div>
     <div id="finalResult" class="final-score-box"></div>
 </div>
 
 <script>
-    let currentScore = 0, maxQuizScore = 0, answeredCount = 0, selectedWord = null, selectedWordId = null;
+    let currentScore = 0, maxQuizScore = 0, answeredCount = 0;
 
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
@@ -110,20 +104,36 @@
         data.forEach((row, i) => {
             const type = (row.Type || "").toUpperCase();
             
-            if (type === "FLASHCARD") {
-                html += `<div class="card-quiz"><div class="flashcard-container" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front">${row.Question || row.Mot}</div><div class="flashcard-back">${row.Réponse_A || row.Définition}</div></div></div></div>`;
-            } 
-            else if (type === "DRAG") {
+            // CAS 1 : EXERCICE A TROU (DRAG/SELECT)
+            if (type === "DRAG" || row.Texte_A_Trou) {
                 maxQuizScore++;
-                const cleanAns = (row.Bonne_Réponse || "").trim();
-                const text = (row.Texte_A_Trou || "").replace('[...]', `<span class="drop-zone" onclick="handleDrop(this, ${i}, '${cleanAns}')">...</span>`);
-                const options = (row.Réponse_A || "").split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
-                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${row.Question || "Complétez"}</div><p style="font-size:1.1rem; line-height:2.2;">${text}</p><div class="drag-container">${options.map((o, idx) => `<span class="draggable-item" id="item-${i}-${idx}" onclick="handleSelect(this)">${o}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
+                const options = (row.Réponse_A || "").split(',').map(o => o.trim());
+                let selectHtml = `<select class="mobile-select" onchange="checkSelect(this, '${row.Bonne_Réponse.trim().replace(/'/g, "\\'")}', ${i})">`;
+                selectHtml += `<option value="">Choisir...</option>`;
+                options.forEach(opt => { selectHtml += `<option value="${opt}">${opt}</option>`; });
+                selectHtml += `</select>`;
+
+                const text = (row.Texte_A_Trou || "").replace('[...]', selectHtml);
+                html += `<div class="card-quiz" id="card-${i}">
+                    <div style="color:var(--violet); font-weight:bold; margin-bottom:10px;">📝 Complétez la phrase :</div>
+                    <div class="phrase-exercice">${text}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div>
+                </div>`;
             }
+            // CAS 2 : QUIZ CLASSIQUE
             else if (type === "QUIZ" || row.Bonne_Réponse) {
                 maxQuizScore++;
-                html += `<div class="card-quiz"><div class="quiz-title">${row.Question}</div><div class="btn-grid"><button class="opt-btn" onclick="check('A','${row.Bonne_Réponse}',${i},this)">A. ${row.Réponse_A}</button><button class="opt-btn" onclick="check('B','${row.Bonne_Réponse}',${i},this)">B. ${row.Réponse_B}</button>${row.Réponse_C ? `<button class="opt-btn" onclick="check('C','${row.Bonne_Réponse}',${i},this)">C. ${row.Réponse_C}</button>` : ''}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
-            } 
+                html += `<div class="card-quiz">
+                    <div class="quiz-title" style="font-weight:700; margin-bottom:15px;">${row.Question}</div>
+                    <div class="btn-grid">
+                        <button class="opt-btn" onclick="checkQcm('A','${row.Bonne_Réponse}',${i},this)">A. ${row.Réponse_A}</button>
+                        <button class="opt-btn" onclick="checkQcm('B','${row.Bonne_Réponse}',${i},this)">B. ${row.Réponse_B}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" onclick="checkQcm('C','${row.Bonne_Réponse}',${i},this)">C. ${row.Réponse_C}</button>` : ''}
+                    </div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div>
+                </div>`;
+            }
+            // CAS 3 : COURS
             else if (row.Titre || row.Contenu) {
                 html += `<div class="fiche-bristol"><h2>${row.Titre}</h2><div style="white-space:pre-wrap;">${row.Contenu}</div></div>`;
             }
@@ -132,48 +142,47 @@
         updateScore();
     }
 
-    // NOUVELLE LOGIQUE : CLIQUER LE MOT PUIS CLIQUER LE TROU
-    function handleSelect(el) {
-        document.querySelectorAll('.draggable-item').forEach(d => d.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedWord = el.innerText;
-        selectedWordId = el.id;
-    }
+    // VERIFICATION SELECT (MOBILE)
+    function checkSelect(el, correct, id) {
+        if (el.disabled) return;
+        if (el.value === "") return;
 
-    function handleDrop(target, id, correct) {
-        if (!selectedWord) { alert("Clique d'abord sur un mot en bas !"); return; }
-        
-        if (selectedWord.trim() === correct.trim()) {
-            target.innerText = selectedWord;
-            target.style.color = "var(--vert)";
-            target.style.background = "transparent";
-            target.onclick = null; // Désactive le clic sur ce trou
-            document.getElementById(selectedWordId).style.visibility = "hidden";
-            currentScore++; answeredCount++; confetti();
-            document.getElementById(`ex-${id}`).style.display = "block";
-            selectedWord = null;
-            updateScore();
+        answeredCount++;
+        if (el.value.trim() === correct.trim()) {
+            currentScore++;
+            el.classList.add('correct');
+            confetti();
         } else {
-            target.style.borderBottomColor = "red";
-            setTimeout(() => target.style.borderBottomColor = "var(--violet)", 500);
-            alert("Ce n'est pas le bon mot, essaie encore !");
+            el.style.borderColor = "red";
+            el.style.color = "red";
         }
+        el.disabled = true;
+        document.getElementById(`ex-${id}`).style.display = "block";
+        updateScore();
     }
 
-    function check(letter, correct, id, btn) {
+    // VERIFICATION QCM
+    function checkQcm(letter, correct, id, btn) {
         if (btn.parentElement.classList.contains('locked')) return;
-        btn.parentElement.classList.add('locked'); answeredCount++;
-        if (letter.trim() === correct.trim()) { currentScore++; btn.classList.add('success'); confetti(); } 
-        else { btn.classList.add('error'); }
+        btn.parentElement.classList.add('locked');
+        answeredCount++;
+        if (letter.trim() === correct.trim()) {
+            currentScore++;
+            btn.classList.add('success');
+            confetti();
+        } else {
+            btn.classList.add('error');
+        }
         document.getElementById(`ex-${id}`).style.display = "block";
         updateScore();
     }
 
     function updateScore() {
         document.getElementById('scoreBoard').innerText = `Score : ${currentScore} / ${maxQuizScore}`;
-        if (answeredCount === maxQuizScore && maxQuizScore > 0) {
-            document.getElementById('finalResult').style.display = "block";
-            document.getElementById('finalResult').innerHTML = `<h2>Bravo ! Score : ${currentScore}/${maxQuizScore}</h2>`;
+        if (answeredCount >= maxQuizScore && maxQuizScore > 0) {
+            const res = document.getElementById('finalResult');
+            res.style.display = "block";
+            res.innerHTML = `<h2>Terminé ! 🎉</h2><p>Ton score : <strong>${currentScore} / ${maxQuizScore}</strong></p>`;
         }
     }
 

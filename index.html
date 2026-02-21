@@ -411,8 +411,8 @@ function handleDropClick(qId, correct) {
                 } 
                 else if (format === "DRAGDROP") {
                     quizContent = `
-                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
-                        <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
+                        <div class="drop-zone" id="dz-${i}" onclick="handleDropClick(${i}, '${bonne}')">...</div>
+                        <div class="drag-item" onclick="handleItemClick(this, ${i})" data-val="A">...</div>
                             Déposez la réponse ici
                         </div>
                         <div class="drag-container" id="drag-container-${i}">

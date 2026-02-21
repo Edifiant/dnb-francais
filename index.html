@@ -75,11 +75,7 @@
 </head>
 <body>
 
-<div id="lock-screen">
-    <h2>🔐 Accès Réservé</h2>
-    <input type="password" id="pinCode" class="pin-input" placeholder="CODE">
-    <button class="btn-action" onclick="unlock()">Entrer</button>
-</div>
+
 
 <div class="top-bar">
     <div id="scoreBoard" style="font-weight: 800;">Score: 0 / 0</div>
@@ -115,14 +111,7 @@
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
 
-    // PROTECTION
-    function unlock() {
-        if(document.getElementById('pinCode').value === "2025") {
-            document.getElementById('lock-screen').style.display = 'none';
-        } else {
-            alert("Code incorrect");
-        }
-    }
+    
 
     // NAVIGATION
     const menu = document.getElementById('menu');

@@ -9,28 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://bernardo-castilho.github.io/dragdroptouch/DragDropTouch.js"></script>
     <style>
-        /* Style pour l'élément sélectionné */
-.drag-item.selected {
-    background: var(--bleu) !important;
-    color: white !important;
-    border-color: var(--bleu) !important;
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-}
-
-/* Animation de la zone qui attend le clic */
-.drop-zone.active-target {
-    border-color: var(--bleu);
-    background: var(--opt-hover);
-    border-style: solid;
-    animation: pulseTap 1.5s infinite;
-}
-
-@keyframes pulseTap {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
-}
         /* --- NOUVEAUX TYPES DE QUIZ --- */
         /* Dropdown / Menu déroulant */
         .quiz-select {
@@ -254,52 +232,6 @@
 </div>
 
 <script>
-    let selectedItem = null; // Variable globale pour stocker l'élément cliqué
-
-// 1. Quand on clique sur une étiquette
-function handleItemClick(el, qId) {
-    if (answeredQuestions.has(qId)) return;
-
-    // On retire la sélection visuelle des autres étiquettes de la même question
-    document.querySelectorAll(`#cont-${qId} .drag-item`).forEach(item => {
-        item.classList.remove('selected');
-    });
-
-    // On sélectionne l'étiquette cliquée
-    el.classList.add('selected');
-    selectedItem = el;
-
-    // On fait clignoter la zone cible pour montrer qu'il faut cliquer dedans
-    document.getElementById(`dz-${qId}`).classList.add('active-target');
-}
-
-// 2. Quand on clique sur la zone vide (la zone cible)
-function handleDropClick(qId, correct) {
-    if (answeredQuestions.has(qId) || !selectedItem) return;
-
-    const dropZone = document.getElementById(`dz-${qId}`);
-    const userVal = selectedItem.getAttribute('data-val');
-    
-    // On transfère le texte de l'étiquette dans la zone
-    dropZone.innerHTML = selectedItem.innerText;
-    dropZone.classList.remove('active-target');
-    answeredQuestions.add(qId);
-
-    // Vérification de la réponse
-    if (userVal === correct) {
-        currentScore++;
-        dropZone.classList.add('success');
-        confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
-    } else {
-        dropZone.classList.add('error');
-        dropZone.innerHTML += ` <br>(Réponse : ${correct})`;
-    }
-
-    // Afficher l'explication
-    document.getElementById(`ex-${qId}`).style.display = "block";
-    updateScoreBoard();
-    selectedItem = null; // On réinitialise pour la prochaine question
-}
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set();
@@ -411,8 +343,8 @@ function handleDropClick(qId, correct) {
                 } 
                 else if (format === "DRAGDROP") {
                     quizContent = `
-                        <div class="drop-zone" id="dz-${i}" onclick="handleDropClick(${i}, '${bonne}')">...</div>
-                        <div class="drag-item" onclick="handleItemClick(this, ${i})" data-val="A">...</div>
+                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
                             Déposez la réponse ici
                         </div>
                         <div class="drag-container" id="drag-container-${i}">

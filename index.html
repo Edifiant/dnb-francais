@@ -2,16 +2,17 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Objectif Brevet - Cahier de Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/drag-drop-touch/1.1.0/dragdroptouch.js"></script>
+    
     <style>
         :root {
             --bg: #f8fafc; --bristol: #ffffff; --marge: #fb7185; --ligne: #e2e8f0;
-            --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --orange: #f59e0b;
-            --texte: #1e293b; --card-border: #e2e8f0; --nav-bg: #ffffff;
-            --highlight-bg: #f1f5f9; --quiz-bg: #ffffff; --opt-bg: #f8fafc;
+            --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --texte: #1e293b; 
+            --card-border: #e2e8f0; --nav-bg: #ffffff; --highlight-bg: #f1f5f9;
         }
         body.dark-mode {
             --bg: #0f172a; --bristol: #1e293b; --marge: #be123c; --ligne: #334155;
@@ -20,34 +21,44 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: background 0.3s; padding-top: 80px; }
         .container { max-width: 850px; margin: 0 auto; }
+        
+        /* Barre du haut */
         .top-bar { position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); padding: 10px 20px; z-index: 999; display: flex; justify-content: space-between; align-items: center; }
         body.dark-mode .top-bar { background: rgba(15, 23, 42, 0.9); }
+
+        /* Menu */
         .nav-menu { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; justify-content: center; }
         .nav-btn { padding: 8px 16px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; }
+        .nav-btn.active { background: var(--btn-color); color: white; }
 
-        /* Fiche Bristol */
+        /* Fiches Bristol */
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
 
-        /* Drag and Drop */
+        /* Drag & Drop Mobile-Friendly */
         .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; padding: 15px; background: var(--highlight-bg); border-radius: 12px; border: 2px dashed var(--card-border); }
-        .draggable-item { padding: 8px 15px; background: var(--bristol); border: 2px solid var(--bleu); border-radius: 8px; cursor: grab; font-weight: 600; user-select: none; }
-        .drop-zone { display: inline-block; min-width: 100px; border-bottom: 3px solid var(--violet); margin: 0 5px; text-align: center; font-weight: bold; color: var(--violet); padding: 0 10px; }
+        .draggable-item { 
+            padding: 10px 18px; background: var(--bristol); border: 2px solid var(--bleu); border-radius: 8px; 
+            cursor: grab; font-weight: 600; user-select: none; touch-action: none; /* Bloque le scroll pendant le drag */
+        }
+        .drop-zone { 
+            display: inline-block; min-width: 100px; border-bottom: 3px solid var(--violet); 
+            margin: 0 5px; text-align: center; font-weight: bold; color: var(--violet); padding: 0 10px;
+        }
 
         /* Flashcards */
-        .flashcard-container { perspective: 1000px; width: 100%; max-width: 350px; height: 220px; margin: 20px auto; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+        .flashcard-container { perspective: 1000px; width: 100%; max-width: 350px; height: 200px; margin: 20px auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid var(--bleu); }
-        .flashcard-front { background: var(--bristol); color: var(--bleu); font-weight: 700; }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid var(--bleu); }
+        .flashcard-front { background: var(--bristol); color: var(--bleu); font-weight: bold; }
         .flashcard-back { background: var(--bleu); color: white; transform: rotateY(180deg); }
 
         /* Quiz */
         .card-quiz { background: var(--quiz-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 6px solid var(--violet); margin-bottom: 20px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .opt-btn { padding: 14px; border: 2px solid var(--card-border); border-radius: 10px; background: var(--opt-bg); cursor: pointer; font-weight: 600; color: var(--texte); }
+        .opt-btn { padding: 14px; border: 2px solid var(--card-border); border-radius: 10px; background: var(--opt-bg); cursor: pointer; font-weight: 600; }
         .opt-btn.success { background: #dcfce7 !important; border-color: #10b981 !important; }
         .opt-btn.error { background: #fee2e2 !important; border-color: #ef4444 !important; }
         .expli-box { margin-top: 15px; padding: 15px; background: var(--highlight-bg); border-left: 5px solid var(--bleu); border-radius: 8px; display: none; }
@@ -59,13 +70,13 @@
 
 <div class="top-bar">
     <div id="scoreBoard" style="font-weight:800; color:var(--violet);">Score : 0 / 0</div>
-    <button onclick="document.body.classList.toggle('dark-mode')" style="cursor:pointer; background:none; border:none; font-size:1.5rem;">🌓</button>
+    <button onclick="document.body.classList.toggle('dark-mode')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">🌓</button>
 </div>
 
 <div class="container">
-    <h1 style="text-align:center; font-weight:900; margin-bottom:30px;">🎓 Objectif Brevet</h1>
+    <h1 style="text-align:center; font-weight:900;">🎓 Objectif Brevet</h1>
     <div class="nav-menu" id="menu"></div>
-    <div id="app">Chargement...</div>
+    <div id="app">Chargement en cours...</div>
     <div id="finalResult" class="final-score-box"></div>
 </div>
 
@@ -114,9 +125,9 @@
             } 
             else if (type === "DRAG") {
                 maxQuizScore++;
-                const text = (row.Texte_A_Trou || "").replace('[...]', `<span class="drop-zone" id="dz-${i}" ondrop="drop(event, ${i}, '${row.Bonne_Réponse}')" ondragover="allowDrop(event)">...</span>`);
+                const text = (row.Texte_A_Trou || "").replace('[...]', `<span class="drop-zone" id="dz-${i}" ondrop="drop(event, ${i}, '${row.Bonne_Réponse.replace(/'/g, "\\'")}')" ondragover="allowDrop(event)">...</span>`);
                 const options = (row.Réponse_A || "").split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
-                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${row.Question || "Complétez la phrase"}</div><p style="font-size:1.1rem; line-height:2;">${text}</p><div class="drag-container">${options.map(o => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${o}">${o}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
+                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${row.Question || "Complétez"}</div><p style="font-size:1.1rem; line-height:2;">${text}</p><div class="drag-container">${options.map(o => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${o}">${o}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
             }
             else if (type === "QUIZ" || row.Bonne_Réponse) {
                 maxQuizScore++;
@@ -124,41 +135,44 @@
             } 
             else if (row.Titre || row.Contenu) {
                 isFiche = true;
-                html += `<div class="fiche-bristol"><h2>${row.Titre || "Leçon"}</h2><div style="white-space:pre-wrap;">${row.Contenu || ""}</div></div>`;
+                html += `<div class="fiche-bristol"><h2>${row.Titre}</h2><div style="white-space:pre-wrap;">${row.Contenu}</div></div>`;
             }
         });
-
         if (isFiche) html = `<button class="nav-btn" style="--btn-color:#475569; margin-bottom:20px;" onclick="downloadMethodSheet()">📥 Télécharger la fiche</button>` + html;
         document.getElementById('app').innerHTML = html;
-        document.getElementById('scoreBoard').innerText = `Score : 0 / ${maxQuizScore}`;
+        updateScoreDisplay();
     }
 
-    // LOGIQUE JEU
     function check(letter, correct, id, btn) {
         if (btn.parentElement.classList.contains('locked')) return;
         btn.parentElement.classList.add('locked'); answeredCount++;
         if (letter.trim() === correct.trim()) { currentScore++; btn.classList.add('success'); confetti(); } 
         else { btn.classList.add('error'); }
         document.getElementById(`ex-${id}`).style.display = "block";
-        updateProg();
+        updateScoreDisplay();
     }
 
     function drag(ev) { ev.dataTransfer.setData("text", ev.target.innerText); ev.dataTransfer.setData("sourceId", ev.target.id); }
     function allowDrop(ev) { ev.preventDefault(); }
+    
     function drop(ev, id, correct) {
         ev.preventDefault();
-        const data = ev.dataTransfer.getData("text");
-        if (data.trim() === correct.trim()) {
-            ev.target.innerText = data;
-            ev.target.style.color = "var(--vert)";
+        const data = ev.dataTransfer.getData("text").trim();
+        const targetZone = ev.target;
+        
+        if (data === correct.trim()) {
+            targetZone.innerText = data;
+            targetZone.style.color = "var(--vert)";
+            targetZone.style.borderBottomColor = "var(--vert)";
             document.getElementById(ev.dataTransfer.getData("sourceId")).style.opacity = "0.3";
+            document.getElementById(ev.dataTransfer.getData("sourceId")).draggable = false;
             currentScore++; answeredCount++; confetti();
             document.getElementById(`ex-${id}`).style.display = "block";
-            updateProg();
+            updateScoreDisplay();
         }
     }
 
-    function updateProg() {
+    function updateScoreDisplay() {
         document.getElementById('scoreBoard').innerText = `Score : ${currentScore} / ${maxQuizScore}`;
         if (answeredCount === maxQuizScore && maxQuizScore > 0) {
             const res = document.getElementById('finalResult');
@@ -167,7 +181,6 @@
         }
     }
 
-    // TELECHARGEMENTS
     function downloadBilan() {
         const doc = `<html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;text-align:center;padding:50px;}.box{border:8px solid #7c3aed;padding:40px;border-radius:20px;}</style></head><body><div class="box"><h1>Bilan : ${currentCat}</h1><h2>Score : ${currentScore} / ${maxQuizScore}</h2></div></body></html>`;
         saveFile(doc, 'Bilan_Brevet.html');

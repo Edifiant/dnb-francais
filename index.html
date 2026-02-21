@@ -232,6 +232,129 @@
 </div>
 
 <script>
+    <script>
+
+/* ==========================================
+   VARIABLES (inchangées)
+========================================== */
+
+let currentScore = 0;
+let maxQuizScore = 0;
+let answeredQuestions = new Set();
+
+/* ==========================================
+   NOUVEAU DRAG & DROP MOBILE SAFE
+========================================== */
+
+let draggedElement = null;
+let draggedValue = null;
+
+document.addEventListener("pointerdown", function(e){
+
+    if(e.target.classList.contains("drag-item")){
+
+        draggedElement = e.target;
+        draggedValue = e.target.getAttribute("data-val");
+
+        draggedElement.style.position = "absolute";
+        draggedElement.style.zIndex = "1000";
+
+        moveAt(e.pageX, e.pageY);
+
+        document.addEventListener("pointermove", onPointerMove);
+    }
+});
+
+function onPointerMove(e){
+    moveAt(e.pageX, e.pageY);
+}
+
+function moveAt(pageX,pageY){
+    draggedElement.style.left = pageX - draggedElement.offsetWidth/2 + "px";
+    draggedElement.style.top = pageY - draggedElement.offsetHeight/2 + "px";
+}
+
+document.addEventListener("pointerup", function(e){
+
+    document.removeEventListener("pointermove", onPointerMove);
+
+    if(!draggedElement) return;
+
+    const dropZones = document.querySelectorAll(".drop-zone");
+
+    dropZones.forEach(zone => {
+
+        const rect = zone.getBoundingClientRect();
+
+        const inside =
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom;
+
+        if(inside){
+            handleDrop(zone);
+        }
+    });
+
+    draggedElement.style.position = "static";
+    draggedElement.style.zIndex = "auto";
+
+    draggedElement = null;
+    draggedValue = null;
+});
+
+/* ==========================================
+   GESTION DU DROP (connectée à votre score)
+========================================== */
+
+function handleDrop(dropZone){
+
+    const id = dropZone.id.split("-")[1];
+    const correct = dropZone.getAttribute("data-correct");
+
+    if(answeredQuestions.has(parseInt(id))) return;
+
+    dropZone.innerHTML = "";
+    dropZone.appendChild(draggedElement);
+
+    answeredQuestions.add(parseInt(id));
+
+    const container = document.getElementById(`drag-container-${id}`);
+    if(container){
+        Array.from(container.children).forEach(child=>{
+            child.style.opacity="0.5";
+            child.style.pointerEvents="none";
+        });
+    }
+
+    const expli = document.getElementById(`ex-${id}`);
+
+    if(draggedValue === correct){
+
+        currentScore++;
+        dropZone.classList.add("success");
+        draggedElement.classList.add("success");
+
+        confetti({particleCount:30,spread:60,origin:{y:0.7}});
+
+    }else{
+
+        dropZone.classList.add("error");
+        draggedElement.classList.add("error");
+
+        const correctEl =
+            document.querySelector(`#drag-${id}-${correct}`);
+
+        if(correctEl) correctEl.classList.add("success");
+    }
+
+    if(expli) expli.style.display="block";
+
+    updateScoreBoard();  // ← votre fonction existante
+}
+
+</script>
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set();

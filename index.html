@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Objectif Brevet</title>
+    <title>Objectif Brevet - Version Mobile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -11,45 +11,60 @@
             --bg: #f8fafc; --bristol: #ffffff; --bleu: #2563eb; --violet: #7c3aed;
             --vert: #10b981; --texte: #1e293b; --card-border: #e2e8f0;
         }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 70px; color: var(--texte); }
-        .top-bar { position: fixed; top: 0; left: 0; right: 0; background: white; border-bottom: 1px solid #ccc; padding: 10px; z-index: 1000; display: flex; justify-content: space-between; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 70px; color: var(--texte); }
         
-        .nav-menu { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 10px; margin-bottom: 20px; }
-        .nav-btn { white-space: nowrap; padding: 8px 15px; border-radius: 20px; border: 2px solid var(--bleu); background: white; font-weight: bold; }
+        /* Barre de score fixe */
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; background: white; border-bottom: 2px solid var(--bleu); padding: 10px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        
+        /* Menu horizontal défilant */
+        .nav-menu { display: flex; overflow-x: auto; gap: 8px; padding: 5px 0 15px 0; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .nav-btn { white-space: nowrap; padding: 10px 18px; border-radius: 25px; border: 2px solid var(--bleu); background: white; font-weight: bold; color: var(--bleu); flex-shrink: 0; }
         .nav-btn.active { background: var(--bleu); color: white; }
 
-        .card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; border-top: 5px solid var(--violet); margin-bottom: 20px; }
+        /* Style des Cartes (Quiz et Cours) */
+        .card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; border-top: 6px solid var(--violet); margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* Zone de texte avec le trou */
+        /* Style des Flashcards */
+        .flashcard { perspective: 1000px; width: 100%; height: 200px; margin-bottom: 20px; }
+        .flash-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+        .flashcard.flipped .flash-inner { transform: rotateY(180deg); }
+        .flash-front, .flash-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 15px; text-align: center; border: 3px solid var(--bleu); box-sizing: border-box; font-weight: bold; font-size: 1.1rem; }
+        .flash-front { background: white; color: var(--bleu); }
+        .flash-back { background: var(--bleu); color: white; transform: rotateY(180deg); }
+
+        /* Exercices à trous */
         .phrase { font-size: 1.2rem; line-height: 1.8; margin-bottom: 15px; }
-        .gap { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--violet); text-align: center; color: var(--violet); font-weight: bold; padding: 0 5px; }
+        .gap { display: inline-block; min-width: 70px; border-bottom: 3px solid var(--violet); text-align: center; color: var(--violet); font-weight: bold; }
         .gap.filled { color: var(--vert); border-bottom-color: var(--vert); }
 
-        /* Boutons de mots à cliquer */
+        /* Boutons de choix */
         .choice-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .word-btn { padding: 8px 12px; border: 2px solid var(--bleu); border-radius: 8px; background: #eff6ff; cursor: pointer; font-weight: bold; }
+        .word-btn { flex: 1 1 40%; padding: 12px; border: 2px solid var(--bleu); border-radius: 10px; background: #eff6ff; font-weight: bold; cursor: pointer; }
         
-        .expli { display: none; background: #f1f5f9; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem; }
+        .expli { display: none; background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 5px solid var(--bleu); }
     </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div id="scoreBoard">Score : 0 / 0</div>
+    <div style="font-size: 0.8rem; color: #666;">Objectif Brevet 🎓</div>
 </div>
 
 <div class="nav-menu" id="menu"></div>
 <div id="app">Chargement...</div>
 
 <script>
-    let score = 0, total = 0, answered = 0;
+    let score = 0, totalQuestions = 0, answered = 0;
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
     
     const sections = [
         { name: "Grammaire", gid: "1679242234" },
         { name: "Conjugaison", gid: "1987121612" },
         { name: "Orthographe", gid: "1665486895" },
-        { name: "Vocabulaire", gid: "1862590497" }
+        { name: "Vocabulaire", gid: "1862590497" },
+        { name: "Figures de style", gid: "1943336125" },
+        { name: "✍️ Tests", gid: "1143879514" }
     ];
 
     function init() {
@@ -57,69 +72,123 @@
         sections.forEach(s => {
             const b = document.createElement('button');
             b.className = 'nav-btn'; b.innerText = s.name;
-            b.onclick = () => load(s.gid, b);
+            b.onclick = () => loadSection(s.gid, b);
             menu.appendChild(b);
         });
-        load(sections[0].gid, menu.firstChild);
+        loadSection(sections[0].gid, menu.firstChild);
     }
 
-    function load(gid, btn) {
-        score = 0; total = 0; answered = 0;
+    function loadSection(gid, btn) {
+        score = 0; totalQuestions = 0; answered = 0;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, complete: r => render(r.data) });
+        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: r => render(r.data) });
     }
 
     function render(data) {
         let html = "";
         data.forEach((row, i) => {
-            if (row.Texte_A_Trou || row.Type === "DRAG") {
-                total++;
-                const choices = (row.Réponse_A || "").split(',').map(s => s.trim());
+            const type = (row.Type || "").toUpperCase();
+
+            // 1. GESTION DES FLASHCARDS
+            if (type === "FLASHCARD") {
+                const recto = row.Question || row.Mot || "Question ?";
+                const verso = row.Réponse_A || row.Définition || "Réponse !";
+                html += `
+                <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                    <div class="flash-inner">
+                        <div class="flash-front">💡 ${recto}</div>
+                        <div class="flash-back">${verso}</div>
+                    </div>
+                </div>`;
+            }
+
+            // 2. GESTION DES EXERCICES À TROUS (ANCIEN DRAG & DROP)
+            else if (type === "DRAG" || row.Texte_A_Trou) {
+                totalQuestions++;
                 const cleanCorrect = (row.Bonne_Réponse || "").trim();
-                
-                // On remplace le [...] par une balise span vide
+                const choices = (row.Réponse_A || "").split(',').map(s => s.trim()).sort(() => Math.random() - 0.5);
                 const phraseHtml = (row.Texte_A_Trou || "").replace('[...]', `<span class="gap" id="gap-${i}">...</span>`);
                 
-                html += `<div class="card">
+                html += `
+                <div class="card">
                     <div class="phrase">${phraseHtml}</div>
                     <div class="choice-container" id="choices-${i}">
                         ${choices.map(c => `<button class="word-btn" onclick="checkChoice(this, '${c.replace(/'/g, "\\'")}', '${cleanCorrect.replace(/'/g, "\\'")}', ${i})">${c}</button>`).join('')}
                     </div>
-                    <div class="expli" id="ex-${i}"><strong>💡 Explication :</strong><br>${row.Explication}</div>
+                    <div class="expli" id="ex-${i}"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
+                </div>`;
+            }
+
+            // 3. GESTION DES QUIZ CLASSIQUES (QCM)
+            else if (type === "QUIZ" || row.Bonne_Réponse) {
+                totalQuestions++;
+                html += `
+                <div class="card">
+                    <div style="font-weight:bold; margin-bottom:15px;">${row.Question}</div>
+                    <div class="choice-container" id="choices-${i}">
+                        <button class="word-btn" onclick="checkQcm(this, 'A', '${row.Bonne_Réponse}', ${i})">A. ${row.Réponse_A}</button>
+                        <button class="word-btn" onclick="checkQcm(this, 'B', '${row.Bonne_Réponse}', ${i})">B. ${row.Réponse_B}</button>
+                        ${row.Réponse_C ? `<button class="word-btn" onclick="checkQcm(this, 'C', '${row.Bonne_Réponse}', ${i})">C. ${row.Réponse_C}</button>` : ''}
+                    </div>
+                    <div class="expli" id="ex-${i}"><strong>💡 Explication :</strong><br>${row.Explication || "Bonne réponse !"}</div>
+                </div>`;
+            }
+
+            // 4. GESTION DES FICHES COURS
+            else if (row.Titre || row.Contenu) {
+                html += `
+                <div class="card" style="border-top-color: var(--bleu)">
+                    <h2 style="color:var(--bleu); margin-top:0;">${row.Titre}</h2>
+                    <div style="white-space:pre-wrap; line-height:1.6;">${row.Contenu}</div>
                 </div>`;
             }
         });
         document.getElementById('app').innerHTML = html;
-        updateScore();
+        updateScoreDisplay();
     }
 
     function checkChoice(btn, val, correct, id) {
         const container = document.getElementById('choices-' + id);
         if (container.classList.contains('locked')) return;
-        
-        container.classList.add('locked'); // Empêche de recliquer
+        container.classList.add('locked');
         answered++;
-        
+
         const gap = document.getElementById('gap-' + id);
         gap.innerText = val;
         
         if (val === correct) {
             score++;
             gap.classList.add('filled');
-            btn.style.background = "#dcfce7";
+            btn.style.background = "#dcfce7"; btn.style.borderColor = "var(--vert)";
             confetti();
         } else {
-            btn.style.background = "#fee2e2";
+            btn.style.background = "#fee2e2"; btn.style.borderColor = "red";
             gap.style.color = "red";
         }
-        
         document.getElementById('ex-' + id).style.display = "block";
-        updateScore();
+        updateScoreDisplay();
     }
 
-    function updateScore() {
-        document.getElementById('scoreBoard').innerText = `Score : ${score} / ${total}`;
+    function checkQcm(btn, letter, correct, id) {
+        const container = document.getElementById('choices-' + id);
+        if (container.classList.contains('locked')) return;
+        container.classList.add('locked');
+        answered++;
+
+        if (letter.trim() === correct.trim()) {
+            score++;
+            btn.style.background = "#dcfce7"; btn.style.borderColor = "var(--vert)";
+            confetti();
+        } else {
+            btn.style.background = "#fee2e2"; btn.style.borderColor = "red";
+        }
+        document.getElementById('ex-' + id).style.display = "block";
+        updateScoreDisplay();
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById('scoreBoard').innerText = `Score : ${score} / ${totalQuestions}`;
     }
 
     init();

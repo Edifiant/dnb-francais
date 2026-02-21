@@ -47,36 +47,37 @@
         .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
 
-        /* --- SYSTÈME DE FLASHCARDS --- */
-        .flashcard-container { perspective: 1000px; width: 100%; max-width: 450px; height: 350px; margin: 20px auto; cursor: pointer; }
+        /* --- SYSTÈME DE FLASHCARDS (3D) --- */
+        .flashcard-container { perspective: 1000px; width: 100%; max-width: 500px; height: 320px; margin: 20px auto; cursor: pointer; }
         .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
         .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
         
-        .flashcard-front, .flashcard-back { 
-            position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; 
-            border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 25px; box-sizing: border-box; border: 4px solid var(--bleu); background: var(--bristol); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
-        }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; border: 4px solid var(--violet); background: var(--bristol); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         
-        .flashcard-back { transform: rotateY(180deg); border-color: var(--orange); }
-        .flash-name { font-size: 1.8rem; font-weight: 900; color: var(--bleu); margin-bottom: 10px; }
-        .flash-tag { background: var(--bleu); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; margin-top: 10px; }
-        .flash-back-img { width: 80px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 2px solid var(--ligne); }
-        .flash-info { font-size: 1rem; line-height: 1.4; color: var(--texte); margin: 5px 0; }
+        .flashcard-back { transform: rotateY(180deg); border-color: var(--bleu); }
+        .flash-portrait { width: 100px; height: 120px; border-radius: 10px; margin-bottom: 15px; object-fit: cover; border: 3px solid var(--bg); }
+        .flash-name { font-size: 1.8rem; font-weight: 900; color: var(--texte); margin: 0; }
+        .flash-hint { font-size: 0.8rem; color: var(--violet); margin-top: 10px; text-transform: uppercase; font-weight: bold; }
 
-        /* --- AUTRES STYLES (COURS & QUIZ) --- */
+        /* TIMELINE DANS FLASHCARD */
+        .timeline-container { width: 100%; margin-top: 15px; background: var(--ligne); height: 6px; border-radius: 4px; position: relative; }
+        .timeline-bar { height: 100%; background: var(--bleu); border-radius: 4px; }
+        .timeline-labels { width: 100%; display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--texte-sec); margin-top: 5px; }
+
+        /* FICHES BRISTOL (COURS) */
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
 
+        /* QUIZ */
         .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s; font-size: 1rem; color: var(--texte); }
         .opt-btn.success { background: #dcfce7 !important; border-color: #166534 !important; color: #166534 !important; }
         .opt-btn.error { background: #fee2e2 !important; border-color: #991b1b !important; color: #991b1b !important; }
+        .expli-box { margin-top: 20px; padding: 20px; background: #eff6ff; border-left: 6px solid var(--bleu); border-radius: 8px; display: none; line-height: 1.6; }
 
-        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
+        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } .flashcard-container { height: 380px; } }
     </style>
 </head>
 <body>
@@ -84,16 +85,20 @@
 <div class="top-bar">
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+    🎓 Bilan
+</button>
 </div>
 
 <div class="container">
     <h1 class="main-title">🎓 Objectif Brevet</h1>
     <div class="nav-menu" id="menu"></div>
     <div id="app">Chargement...</div>
+    <div id="finalResult" class="final-score-box" style="display:none;"></div>
 </div>
 
 <script>
-    let currentScore = 0, maxScore = 0, answered = new Set(), currentGid = "";
+    let currentScore = 0, maxQuizScore = 0, answeredQuestions = new Set();
     
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
@@ -125,7 +130,7 @@
     }
 
     function loadData(gid, btn) {
-        currentScore = 0; maxScore = 0; answered.clear(); currentGid = gid;
+        currentScore = 0; maxQuizScore = 0; answeredQuestions.clear();
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('app').innerHTML = "<div style='text-align:center; padding: 50px;'>Chargement...</div>";
@@ -134,75 +139,99 @@
 
     function render(data) {
         let html = "";
+        let hasQuiz = false;
+
         data.forEach((row, i) => {
-            // MODE FLASHCARD (Auteurs ou Tests)
-            if (row.Auteur || (currentGid === "1143879514" && row.Question)) {
-                maxScore++;
-                const recto = row.Auteur || row.Question;
-                const versoTitre = row.Auteur ? "Ses secrets :" : "La réponse :";
-                const ligne1 = row.Œuvre ? `<strong>Œuvre :</strong> ${row.Œuvre}` : (row.Bonne_Réponse || "");
-                const ligne2 = row.Courant ? `<strong>Mouvement :</strong> ${row.Courant}` : (row.Explication || "");
-                const tag = row.Siècle ? `${row.Siècle}e siècle` : "Quiz";
-                const image = row.Image || row.image || "";
+            // --- NOUVELLE LOGIQUE FLASHCARDS AUTEURS ---
+            if (row.Auteur) {
+                const siecle = row.Siècle || "";
+                let progress = 10;
+                if(siecle.includes("XVII")) progress = 35;
+                else if(siecle.includes("XVIII")) progress = 55;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 95;
 
                 html += `
-                <div class="flashcard-container" onclick="this.classList.toggle('flipped'); if(!answered.has(${i})){ answered.add(${i}); currentScore++; updateScore(); confetti({particleCount:20}); }">
+                <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
                     <div class="flashcard-inner">
                         <div class="flashcard-front">
-                            <div class="flash-name">${recto}</div>
-                            <div class="flash-tag">${tag}</div>
-                            <div style="margin-top:20px; font-size:0.8rem; color:var(--texte-sec);">Clique pour retourner 👆</div>
+                            ${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="flash-portrait">` : ''}
+                            <h2 class="flash-name">${row.Auteur}</h2>
+                            <div class="flash-hint">Clique pour découvrir l'œuvre ✍️</div>
                         </div>
                         <div class="flashcard-back">
-                            ${image ? `<img src="${image}" class="flash-back-img">` : ''}
-                            <div style="font-weight:bold; color:var(--orange); margin-bottom:10px;">${versoTitre}</div>
-                            <div class="flash-info">${ligne1}</div>
-                            <div class="flash-info">${ligne2}</div>
+                            <div style="background: var(--bleu); color:white; padding: 5px 15px; border-radius:20px; font-weight:bold; margin-bottom:15px;">${siecle} siècle</div>
+                            <div style="font-size: 1.2rem; line-height: 1.4; color: var(--texte);">
+                                <strong>Œuvre majeure :</strong><br><em>${row.Œuvre || "N/A"}</em><br><br>
+                                <strong>Mouvement :</strong><br>${row.Courant || row.Mouvement || "N/A"}
+                            </div>
+                            <div class="timeline-container">
+                                <div class="timeline-bar" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
                         </div>
                     </div>
                 </div>`;
             } 
-            // MODE COURS CLASSIQUE
+            // COURS CLASSIQUES
             else if (row.Type === "COURS" || row.Définition || row.Texte) {
+                let contenu = row.Contenu || row.Définition || row.Texte || "";
                 html += `
                 <div class="fiche-bristol">
                     <h2>${row.Titre || row.Mot || "Leçon"}</h2>
-                    <div style="white-space: pre-wrap; margin-top:20px;">${row.Contenu || row.Définition || row.Texte}</div>
+                    <div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec);">${contenu}</div>
                 </div>`;
             } 
-            // MODE QUIZ CLASSIQUE
-            else if (row.Question) {
-                maxScore++;
+            // QUIZ
+            else if (row.Question || row.Type === "QUIZ") {
+                hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 html += `
                 <div class="card-quiz">
-                    <div style="font-weight:700; margin-bottom:20px;">${row.Question}</div>
+                    <div style="font-weight:700; margin-bottom:20px;">${row.Titre || row.Question}</div>
                     <div class="btn-grid">
-                        <button class="opt-btn" id="btn-${i}-A" onclick="checkQ('A','${bonne}',${i})">A. ${row.Réponse_A}</button>
-                        <button class="opt-btn" id="btn-${i}-B" onclick="checkQ('B','${bonne}',${i})">B. ${row.Réponse_B}</button>
+                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
                     </div>
-                    <div id="ex-${i}" style="display:none; margin-top:15px; padding:10px; background:#eff6ff; border-radius:8px;">💡 ${row.Explication || "Bien joué !"}</div>
+                    <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
         });
-        document.getElementById('app').innerHTML = html;
-        updateScore();
+
+        document.getElementById('app').innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+        document.getElementById('scoreBoard').innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
     }
 
-    function checkQ(click, correct, id) {
-        if (answered.has(id)) return;
-        answered.add(id);
-        const btn = document.getElementById(`btn-${id}-${click}`);
-        if (click === correct) { currentScore++; btn.classList.add('success'); confetti(); }
-        else { btn.classList.add('error'); document.getElementById(`btn-${id}-${correct}`).classList.add('success'); }
-        document.getElementById(`ex-${id}`).style.display = "block";
-        updateScore();
+    function check(click, correct, id) {
+        if (answeredQuestions.has(id)) return;
+        answeredQuestions.add(id);
+        const btnClicked = document.getElementById(`btn-${id}-${click}`);
+        const expli = document.getElementById(`ex-${id}`);
+
+        if (click === correct) {
+            currentScore++;
+            btnClicked.classList.add('success');
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+        } else {
+            btnClicked.classList.add('error');
+            const btnCorrect = document.getElementById(`btn-${id}-${correct}`);
+            if(btnCorrect) btnCorrect.classList.add('success');
+        }
+        if(expli) expli.style.display = "block";
+        document.getElementById('scoreBoard').innerText = `Score: ${currentScore} / ${maxQuizScore}`;
     }
 
-    function updateScore() {
-        document.getElementById('scoreBoard').innerText = maxScore > 0 ? `Score: ${currentScore} / ${maxScore}` : "";
-        const activeSection = document.querySelector('.nav-btn.active').innerText;
-        localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxScore}`);
+    // Fonction de téléchargement (gardée du code original)
+    function downloadStyledResults() {
+        let scoresHtml = "";
+        sections.forEach(s => {
+            const score = localStorage.getItem(`score_${s.name}`) || "Non effectué";
+            scoresHtml += `<p><strong>${s.name} :</strong> ${score}</p>`;
+        });
+        const blob = new Blob([scoresHtml], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'Bilan.html'; a.click();
     }
 
     initMenu();

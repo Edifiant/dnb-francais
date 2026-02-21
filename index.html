@@ -40,7 +40,6 @@
         .nav-btn { padding: 8px 16px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s; }
         .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; }
 
-        /* Bristol & Cards */
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
         .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
@@ -55,7 +54,6 @@
         
         .expli-box { margin-top: 20px; padding: 20px; background: var(--highlight-bg); border-left: 6px solid var(--bleu); border-radius: 8px; display: none; line-height: 1.6; }
 
-        /* Interactif */
         .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; padding: 15px; background: var(--highlight-bg); border-radius: 12px; border: 2px dashed var(--card-border); }
         .draggable-item { padding: 8px 15px; background: var(--bristol); border: 2px solid var(--bleu); border-radius: 8px; cursor: grab; font-weight: 600; }
         .drop-zone { display: inline-block; min-width: 80px; border-bottom: 3px solid var(--violet); margin: 0 5px; text-align: center; font-weight: bold; color: var(--violet); }
@@ -83,12 +81,12 @@
     let answeredCount = 0;
     let currentCategoryName = "";
 
-    // LISTE DES SECTIONS (Vérifiez les GID avec votre Google Sheets)
+    // CONFIGURATION DES ONGLETS
     const sections = [
         { name: "Grammaire", gid: "1679242234", color: "#3b82f6" },
         { name: "Conjugaison", gid: "1987121612", color: "#f97316" },
-        { name: "Orthographe", gid: "1665486895", color: "#8b5cf6" }, // Ajouté
-        { name: "Vocabulaire", gid: "1862590497", color: "#06b6d4" }, // Ajouté
+        { name: "Orthographe", gid: "1665486895", color: "#8b5cf6" },
+        { name: "Vocabulaire", gid: "1862590497", color: "#06b6d4" },
         { name: "Figures de style", gid: "1943336125", color: "#ec4899" },
         { name: "✍️ Testez vos connaissances", gid: "1143879514", color: "#10b981" },
         { name: "📖 Fiches méthode", gid: "781687810", color: "#eab308" }
@@ -114,7 +112,6 @@
         document.getElementById('finalResult').style.display = 'none';
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
         Papa.parse(spreadsheetUrl + gid, {
             download: true, header: true, skipEmptyLines: true,
             complete: (results) => render(results.data)
@@ -127,30 +124,31 @@
 
         data.forEach((row, i) => {
             const type = (row.Type || "").toUpperCase();
-            
+            const question = row.Question || row.Titre || "";
+
             if (type === "DRAG") {
                 maxQuizScore++;
                 const text = (row.Texte_A_Trou || "").replace('[...]', `<span class="drop-zone" id="dz-${i}" ondrop="drop(event, ${i}, '${row.Bonne_Réponse}')" ondragover="allowDrop(event)">...</span>`);
                 const opts = (row.Réponse_A || "").split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
-                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${row.Question || "Complétez la phrase"}</div><p>${text}</p><div class="drag-container">${opts.map(o => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${o}">${o}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
+                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${question}</div><p>${text}</p><div class="drag-container">${opts.map(o => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${o}">${o}</span>`).join('')}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
             }
-            else if (type === "QUIZ" || row.Question) {
+            else if (type === "QUIZ" || row.Bonne_Réponse) {
                 maxQuizScore++;
-                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${row.Question}</div><div class="btn-grid">
+                html += `<div class="card-quiz" id="card-${i}"><div class="quiz-title">${question}</div><div class="btn-grid">
                     <button class="opt-btn" onclick="check('A','${row.Bonne_Réponse}',${i},this)">A. ${row.Réponse_A}</button>
                     <button class="opt-btn" onclick="check('B','${row.Bonne_Réponse}',${i},this)">B. ${row.Réponse_B}</button>
                     ${row.Réponse_C ? `<button class="opt-btn" onclick="check('C','${row.Bonne_Réponse}',${i},this)">C. ${row.Réponse_C}</button>` : ''}
                     ${row.Réponse_D ? `<button class="opt-btn" onclick="check('D','${row.Bonne_Réponse}',${i},this)">D. ${row.Réponse_D}</button>` : ''}
                 </div><div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication}</div></div>`;
             }
-            else {
+            else if (row.Titre || row.Mot) {
                 isFiche = true;
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2><div style="white-space:pre-wrap;">${row.Contenu || row.Définition}</div></div>`;
             }
         });
 
         if (isFiche) {
-            html = `<button class="nav-btn" style="--btn-color:#475569; margin-bottom:20px;" onclick="downloadMethodSheet()">📥 Télécharger la fiche (HTML)</button>` + html;
+            html = `<button class="nav-btn" style="--btn-color:#475569; margin-bottom:20px;" onclick="downloadMethodSheet()">📥 Télécharger la fiche</button>` + html;
         }
 
         document.getElementById('app').innerHTML = html;
@@ -185,27 +183,24 @@
         document.getElementById('scoreBoard').innerText = `Score : ${currentScore} / ${maxQuizScore}`;
         if (answeredCount === maxQuizScore && maxQuizScore > 0) {
             const res = document.getElementById('finalResult');
-            res.innerHTML = `<h2>Félicitations ! Ton score : ${currentScore}/${maxQuizScore}</h2><button class="nav-btn" style="--btn-color:var(--violet);" onclick="downloadBilan()">📥 Télécharger mon bilan</button>`;
+            res.innerHTML = `<h2>Ton score : ${currentScore}/${maxQuizScore}</h2><button class="nav-btn" style="--btn-color:var(--violet);" onclick="downloadBilan()">📥 Télécharger mon bilan</button>`;
             res.style.display = "block";
-            res.scrollIntoView({behavior: "smooth"});
         }
     }
 
-    // --- FONCTIONS DE TÉLÉCHARGEMENT INITIALES ---
+    // TÉLÉCHARGEMENTS (Format original Blob/HTML)
     function downloadBilan() {
         const content = `<html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;padding:50px;text-align:center;} .box{border:10px solid #7c3aed; padding:40px; border-radius:30px;}</style></head>
-        <body><div class="box"><h1>Mon Bilan Objectif Brevet</h1><p>Catégorie : ${currentCategoryName}</p><h1>Score : ${currentScore} / ${maxQuizScore}</h1></div></body></html>`;
+        <body><div class="box"><h1>Bilan : ${currentCategoryName}</h1><h1>Score : ${currentScore} / ${maxQuizScore}</h1></div></body></html>`;
         const blob = new Blob([content], {type: 'text/html'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'Bilan_Objectif_Brevet.html'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Bilan_Objectif_Brevet.html'; a.click();
     }
 
     function downloadMethodSheet() {
         const content = document.getElementById('app').innerHTML.replace(/<button.*?>.*?<\/button>/g, "");
         const doc = `<html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;padding:40px;} .fiche-bristol{border:2px solid #e2e8f0; padding:25px; border-radius:15px; margin-bottom:20px;} h2{color:#2563eb;}</style></head><body>${content}</body></html>`;
         const blob = new Blob([doc], {type: 'text/html'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'Fiche_Revision.html'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Fiche_Revision.html'; a.click();
     }
 
     init();

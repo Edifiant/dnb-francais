@@ -110,7 +110,6 @@
     const menu = document.getElementById('menu');
     const scoreBoard = document.getElementById('scoreBoard');
 
-    // Génération du menu
     sections.forEach((s) => {
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
@@ -124,119 +123,106 @@
         currentScore = 0; maxQuizScore = 0; answeredQuestions.clear();
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "<div style='text-align:center; padding: 50px;'>Chargement des données...</div>";
-        
-        Papa.parse(spreadsheetUrl + gid, { 
-            download: true, 
-            header: true, 
-            skipEmptyLines: true, 
-            complete: (r) => render(r.data) 
-        });
+        app.innerHTML = "<div style='text-align:center; padding: 50px;'>Chargement...</div>";
+        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (r) => render(r.data) });
     }
 
     function render(data) {
         let html = "";
         let hasQuiz = false;
-        
+
         data.forEach((row, i) => {
             const type = (row.Type || "").toUpperCase();
+            const question = row.Question || "";
 
-            // 1. FLASHCARD
+            // 1. DÉTECTION DU TYPE DE CONTENU
+            
+            // CAS FLASHCARD
             if (type === "FLASHCARD") {
-                const q = row.Question || row.Mot || "Question manquante";
-                const r = row.Réponse_A || row.Définition || "Réponse manquante";
                 html += `
                 <div class="card-quiz">
                     <div class="quiz-title">🗂️ Flashcard</div>
                     <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
                         <div class="flashcard-inner">
-                            <div class="flashcard-front">${q}</div>
-                            <div class="flashcard-back">${r}</div>
+                            <div class="flashcard-front">${row.Question || row.Mot || "Cliquez pour voir"}</div>
+                            <div class="flashcard-back">${row.Réponse_A || row.Définition}</div>
                         </div>
                     </div>
                 </div>`;
             } 
-            // 2. DRAG & DROP
+            // CAS DRAG & DROP
             else if (type === "DRAG") {
                 hasQuiz = true; maxQuizScore++;
-                const texte = row.Texte_A_Trou || row["Texte_A-Trou"] || "Texte avec [...] manquant";
-                const choix = row.Réponse_A || "";
-                const options = choix.split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
-                
+                const texte = row.Texte_A_Trou || row["Texte_A-Trou"] || "";
+                const options = (row.Réponse_A || "").split(',').map(o => o.trim()).sort(() => Math.random() - 0.5);
                 html += `
                 <div class="card-quiz" id="q-card-${i}">
-                    <div class="quiz-title">🧩 Glissez la bonne réponse</div>
-                    <div style="line-height: 3rem; margin-bottom: 20px; font-size:1.2rem;">
+                    <div class="quiz-title">🧩 Complétez la phrase</div>
+                    <p style="line-height: 2.5rem; font-size: 1.1rem;">
                         ${texte.replace('[...]', `<span class="drop-zone" id="dz-${i}" ondrop="drop(event, ${i}, '${row.Bonne_Réponse}')" ondragover="allowDrop(event)">...</span>`)}
-                    </div>
-                    <div class="drag-container">
-                        ${options.map(opt => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${opt}">${opt}</span>`).join('')}
-                    </div>
+                    </p>
+                    <div class="drag-container">${options.map(opt => `<span class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-${opt}">${opt}</span>`).join('')}</div>
                     <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
-            // 3. QUIZ / QCM
-            else if (type === "QUIZ" || row.Question) {
+            // CAS QUIZ (Si Type est "QUIZ" OU si la colonne "Question" n'est pas vide)
+            else if (type === "QUIZ" || question.length > 5) {
                 hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim();
                 html += `
                 <div class="card-quiz" id="q-card-${i}">
-                    <div class="quiz-title">${row.Question}</div>
+                    <div class="quiz-title">${question}</div>
                     <div class="btn-grid">
                         <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A}</button>
                         <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B}</button>
+                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                     </div>
                     <div id="ex-${i}" class="expli-box"><strong>💡 Explication :</strong><br>${row.Explication || "Bravo !"}</div>
                 </div>`;
             }
-            // 4. COURS
-            else {
+            // CAS PAR DÉFAUT : COURS / FICHE
+            else if (row.Titre || row.Mot || row.Contenu) {
                 html += `
                 <div class="fiche-bristol">
-                    <h2>${row.Titre || row.Mot || "Sans titre"}</h2>
-                    <div style="white-space: pre-wrap; margin-top:20px;">${row.Contenu || row.Définition || ""}</div>
+                    <h2>${row.Titre || row.Mot}</h2>
+                    <div style="white-space: pre-wrap; margin-top:20px;">${row.Contenu || row.Définition}</div>
                 </div>`;
             }
         });
 
-        app.innerHTML = html || "<p>Aucune donnée trouvée.</p>";
+        app.innerHTML = html;
         scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
     }
 
-    // Fonctions Drag & Drop
+    // --- Fonctions de jeu ---
     function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { 
-        ev.dataTransfer.setData("text", ev.target.innerText); 
-        ev.dataTransfer.setData("id", ev.target.id); 
-    }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.innerText); ev.dataTransfer.setData("id", ev.target.id); }
+    
     function drop(ev, id, correct) {
         ev.preventDefault();
         const txt = ev.dataTransfer.getData("text");
         const dragId = ev.dataTransfer.getData("id");
-        
         if (txt.trim() === correct.trim()) {
             ev.target.innerText = txt;
             ev.target.style.color = "var(--vert)";
-            ev.target.style.borderBottomColor = "var(--vert)";
-            document.getElementById(dragId).style.opacity = "0.3";
-            document.getElementById(dragId).setAttribute("draggable", "false");
+            document.getElementById(dragId).style.display = "none";
             if (!answeredQuestions.has(id)) { currentScore++; finishEx(id); }
-            confetti({ particleCount: 30, spread: 60 });
+            confetti({ particleCount: 20 });
         } else {
-            ev.target.innerText = "❌"; 
-            setTimeout(() => ev.target.innerText = "...", 800);
+            ev.target.innerText = "❌"; setTimeout(() => ev.target.innerText = "...", 800);
         }
     }
 
     function check(click, correct, id) {
         if (answeredQuestions.has(id)) return;
         const btn = document.getElementById(`btn-${id}-${click}`);
-        if (click === correct) { 
-            currentScore++; 
-            btn.classList.add('success'); 
-            confetti({ particleCount: 40 }); 
-        } else { 
-            btn.classList.add('error'); 
+        if (click.trim() === correct.trim()) {
+            currentScore++;
+            btn.classList.add('success');
+            confetti({ particleCount: 30, spread: 50 });
+        } else {
+            btn.classList.add('error');
             const correctBtn = document.getElementById(`btn-${id}-${correct}`);
             if(correctBtn) correctBtn.classList.add('success');
         }

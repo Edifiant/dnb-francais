@@ -6,121 +6,123 @@
     <title>Objectif Brevet - Cahier de Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    /* --- NOUVEAUX TYPES DE QUIZ --- */
-/* Dropdown / Menu déroulant */
-.quiz-select {
-    width: 100%;
-    padding: 15px;
-    font-size: 1rem;
-    border: 2px solid var(--card-border);
-    border-radius: 12px;
-    background: var(--opt-bg);
-    color: var(--texte);
-    margin: 15px 0;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-}
-.quiz-select.success { background-color: #dcfce7; border-color: #166534; color: #166534; }
-.quiz-select.error { background-color: #fee2e2; border-color: #991b1b; color: #991b1b; }
-
-/* Drag & Drop / Glisser-déposer */
-.drag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
-}
-.drag-item {
-    padding: 12px 20px;
-    background: var(--opt-bg);
-    border: 2px solid var(--violet);
-    border-radius: 10px;
-    cursor: grab;
-    font-weight: 600;
-    transition: transform 0.2s;
-}
-.drag-item:active { cursor: grabbing; transform: scale(0.95); }
-.drag-item.success { background: #dcfce7; border-color: #166534; color: #166534; }
-.drag-item.error { background: #fee2e2; border-color: #991b1b; color: #991b1b; }
-
-.drop-zone {
-    width: 100%;
-    min-height: 80px;
-    border: 3px dashed var(--card-border);
-    border-radius: 12px;
-    background: var(--highlight-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
-    color: var(--texte-sec);
-    font-weight: bold;
-    transition: background 0.3s;
-}
-.drop-zone.dragover { background: #e0e7ff; border-color: var(--bleu); }
-.drop-zone.success { background: #dcfce7; border-style: solid; border-color: #166534; }
-.drop-zone.error { background: #fee2e2; border-style: solid; border-color: #991b1b; }
     <style>
-/* --- SYSTÈME DE FLASHCARDS --- */
-.flashcards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
-}
-.flashcard-wrapper {
-    perspective: 1000px;
-    min-height: 320px;
-}
-.flashcard {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-    transform-style: preserve-3d;
-    cursor: pointer;
-}
-.flashcard.flipped {
-    transform: rotateY(180deg);
-}
-.flashcard-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    border: 2px solid var(--card-border);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    padding: 25px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-/* RECTO : Nom et image */
-.flashcard-front {
-    background: var(--nav-bg);
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-.flashcard-front img {
-    width: 110px; height: 110px; border-radius: 50%; object-fit: cover; 
-    margin-bottom: 15px; border: 4px solid var(--bleu);
-}
-.flashcard-front h2 { margin: 0; color: var(--bleu); font-size: 1.6rem; border: none; }
-.click-hint { font-size: 0.85rem; color: var(--texte-sec); margin-top: auto; opacity: 0.7; font-weight: 600; }
+        /* --- NOUVEAUX TYPES DE QUIZ --- */
+        /* Dropdown / Menu déroulant */
+        .quiz-select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--opt-bg);
+            color: var(--texte);
+            margin: 15px 0;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-select.success { background-color: #dcfce7; border-color: #166534; color: #166534; }
+        .quiz-select.error { background-color: #fee2e2; border-color: #991b1b; color: #991b1b; }
 
-/* VERSO : Informations et chronologie */
-.flashcard-back {
-    background: var(--bristol);
-    transform: rotateY(180deg);
-    background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
-    background-size: 100% 2.6rem;
-    line-height: 2.6rem;
-    justify-content: center;
-}
-.flashcard-back .info-highlight { padding: 8px 15px; margin-top: 15px; line-height: 1.4; }
-.flashcard-back .timeline-container { margin-top: auto; margin-bottom: 5px; }
+        /* Drag & Drop / Glisser-déposer */
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .drag-item {
+            padding: 12px 20px;
+            background: var(--opt-bg);
+            border: 2px solid var(--violet);
+            border-radius: 10px;
+            cursor: grab;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+        .drag-item.success { background: #dcfce7; border-color: #166534; color: #166534; }
+        .drag-item.error { background: #fee2e2; border-color: #991b1b; color: #991b1b; }
+
+        .drop-zone {
+            width: 100%;
+            min-height: 80px;
+            border: 3px dashed var(--card-border);
+            border-radius: 12px;
+            background: var(--highlight-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            color: var(--texte-sec);
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .drop-zone.dragover { background: #e0e7ff; border-color: var(--bleu); }
+        .drop-zone.success { background: #dcfce7; border-style: solid; border-color: #166534; }
+        .drop-zone.error { background: #fee2e2; border-style: solid; border-color: #991b1b; }
+
+        /* --- SYSTÈME DE FLASHCARDS --- */
+        .flashcards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .flashcard-wrapper {
+            perspective: 1000px;
+            min-height: 320px;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            border: 2px solid var(--card-border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        /* RECTO : Nom et image */
+        .flashcard-front {
+            background: var(--nav-bg);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .flashcard-front img {
+            width: 110px; height: 110px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 15px; border: 4px solid var(--bleu);
+        }
+        .flashcard-front h2 { margin: 0; color: var(--bleu); font-size: 1.6rem; border: none; }
+        .click-hint { font-size: 0.85rem; color: var(--texte-sec); margin-top: auto; opacity: 0.7; font-weight: 600; }
+
+        /* VERSO : Informations et chronologie */
+        .flashcard-back {
+            background: var(--bristol);
+            transform: rotateY(180deg);
+            background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
+            background-size: 100% 2.6rem;
+            line-height: 2.6rem;
+            justify-content: center;
+        }
+        .flashcard-back .info-highlight { padding: 8px 15px; margin-top: 15px; line-height: 1.4; }
+        .flashcard-back .timeline-container { margin-top: auto; margin-bottom: 5px; }
+        
         :root {
             --bg: #f8fafc; --bristol: #ffffff; --marge: #fb7185; --ligne: #e2e8f0;
             --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --orange: #f59e0b;
@@ -269,116 +271,145 @@
     }
 
     function render(data) {
-    let html = "";
-    let hasQuiz = false;
-    let authorHtml = ""; // Variable pour stocker nos flashcards
+        let html = "";
+        let hasQuiz = false;
+        let authorHtml = "";
 
-    data.forEach((row, i) => {
-        // --- 1. SYSTÈME FLASHCARDS AUTEURS ---
-        if (row.Auteur) {
-            const siecle = row.Siècle || "";
-            let progress = 10;
-            if(siecle.includes("XVII")) progress = 35;
-            else if(siecle.includes("XVIII")) progress = 55;
-            else if(siecle.includes("XIX")) progress = 75;
-            else if(siecle.includes("XX")) progress = 95;
+        data.forEach((row, i) => {
+            // --- 1. SYSTÈME FLASHCARDS AUTEURS ---
+            if (row.Auteur) {
+                const siecle = row.Siècle || "";
+                let progress = 10;
+                if(siecle.includes("XVII")) progress = 35;
+                else if(siecle.includes("XVIII")) progress = 55;
+                else if(siecle.includes("XIX")) progress = 75;
+                else if(siecle.includes("XX")) progress = 95;
 
-            const imageTag = (row.Image || row.image) 
-                ? `<img src="${row.Image || row.image}" alt="${row.Auteur}">` 
-                : `<div style="font-size:3.5rem; margin-bottom:15px;">👤</div>`;
+                const imageTag = (row.Image || row.image) 
+                    ? `<img src="${row.Image || row.image}" alt="${row.Auteur}">` 
+                    : `<div style="font-size:3.5rem; margin-bottom:15px;">👤</div>`;
 
-            authorHtml += `
-            <div class="flashcard-wrapper">
-                <div class="flashcard" onclick="this.classList.toggle('flipped')">
-                    <div class="flashcard-face flashcard-front">
-                        ${imageTag}
-                        <h2>${row.Auteur}</h2>
-                        <span class="click-hint">🔄 Clique ici pour en savoir plus</span>
+                authorHtml += `
+                <div class="flashcard-wrapper">
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-face flashcard-front">
+                            ${imageTag}
+                            <h2>${row.Auteur}</h2>
+                            <span class="click-hint">🔄 Clique ici pour en savoir plus</span>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <div class="badge-info">${siecle} siècle</div>
+                            <div class="info-highlight" style="margin-top:0;"><strong>Œuvre(s) :</strong><br><em>${row.Œuvre || "N/A"}</em></div>
+                            <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong><br>${row.Courant || row.Mouvement || "N/A"}</div>
+                            <div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div>
+                            <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                        </div>
                     </div>
-                    <div class="flashcard-face flashcard-back">
-                        <div class="badge-info">${siecle} siècle</div>
-                        <div class="info-highlight" style="margin-top:0;"><strong>Œuvre(s) :</strong><br><em>${row.Œuvre || "N/A"}</em></div>
-                        <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong><br>${row.Courant || row.Mouvement || "N/A"}</div>
-                        <div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div>
-                        <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
-                    </div>
-                </div>
-            </div>`;
-        } 
-        // --- 2. FICHES COURS CLASSIQUES ---
-        else if (row.Type === "COURS" || row.Définition || row.Texte) {
-            let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-            html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
-        } 
-        // --- 3. SYSTÈME DE QUIZ ---
-        else if (row.Question || row.Type === "QUIZ") {
-            hasQuiz = true; maxQuizScore++;
-            const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-            const format = (row.Format || "QCM").toUpperCase(); // QCM, DROPDOWN ou DRAGDROP
-            let quizContent = "";
-
-            if (format === "DROPDOWN") {
-                // Menu déroulant (idéal pour du texte à trous)
-                quizContent = `
-                    <div class="quiz-title">${row.Titre || "Complétez :"} <br><span style="font-weight:normal;">${row.Question}</span></div>
-                    <select id="sel-${i}" class="quiz-select">
-                        <option value="">-- Sélectionnez la bonne réponse --</option>
-                        <option value="A">${row.Réponse_A || ""}</option>
-                        <option value="B">${row.Réponse_B || ""}</option>
-                        ${row.Réponse_C ? `<option value="C">${row.Réponse_C}</option>` : ''}
-                        ${row.Réponse_D ? `<option value="D">${row.Réponse_D}</option>` : ''}
-                    </select>
-                    <button class="nav-btn" style="--btn-color: var(--violet); width: 100%;" onclick="checkDropdown('${bonne}', ${i})">Valider</button>
-                `;
+                </div>`;
             } 
-            else if (format === "DRAGDROP") {
-                // Glisser - Déposer
-                quizContent = `
-                    <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
-                    <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
-                        Déposez la réponse ici
-                    </div>
-                    <div class="drag-container" id="drag-container-${i}">
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-A" data-val="A">${row.Réponse_A}</div>
-                        <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-B" data-val="B">${row.Réponse_B}</div>
-                        ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-C" data-val="C">${row.Réponse_C}</div>` : ''}
-                        ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-D" data-val="D">${row.Réponse_D}</div>` : ''}
-                    </div>
-                `;
-            }
-            else {
-                // QCM Classique (Boutons)
-                quizContent = `
-                    <div class="quiz-title">${row.Titre || row.Question}</div>
-                    <div class="btn-grid">
-                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
-                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
-                        ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
-                        ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
-                    </div>
-                `;
-            }
+            // --- 2. FICHES COURS CLASSIQUES ---
+            else if (row.Type === "COURS" || row.Définition || row.Texte) {
+                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
+            } 
+            // --- 3. SYSTÈME DE QUIZ ---
+            else if (row.Question || row.Type === "QUIZ") {
+                hasQuiz = true; maxQuizScore++;
+                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
+                const format = (row.Format || "QCM").toUpperCase(); 
+                let quizContent = "";
 
-            html += `<div class="card-quiz" id="q-card-${i}">
-                        ${quizContent}
-                        <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc :</strong><br>${row.Explication || "Bien joué !"}</div>
-                     </div>`;
+                if (format === "DROPDOWN") {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || "Complétez :"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <select id="sel-${i}" class="quiz-select">
+                            <option value="">-- Sélectionnez la bonne réponse --</option>
+                            <option value="A">${row.Réponse_A || ""}</option>
+                            <option value="B">${row.Réponse_B || ""}</option>
+                            ${row.Réponse_C ? `<option value="C">${row.Réponse_C}</option>` : ''}
+                            ${row.Réponse_D ? `<option value="D">${row.Réponse_D}</option>` : ''}
+                        </select>
+                        <button class="nav-btn" style="--btn-color: var(--violet); width: 100%;" onclick="checkDropdown('${bonne}', ${i})">Valider</button>
+                    `;
+                } 
+                else if (format === "DRAGDROP") {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
+                            Déposez la réponse ici
+                        </div>
+                        <div class="drag-container" id="drag-container-${i}">
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-A" data-val="A">${row.Réponse_A}</div>
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-B" data-val="B">${row.Réponse_B}</div>
+                            ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-C" data-val="C">${row.Réponse_C}</div>` : ''}
+                            ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-D" data-val="D">${row.Réponse_D}</div>` : ''}
+                        </div>
+                    `;
+                }
+                else {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || row.Question}</div>
+                        <div class="btn-grid">
+                            <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                            <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                            ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                            ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                html += `<div class="card-quiz" id="q-card-${i}">
+                            ${quizContent}
+                            <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc :</strong><br>${row.Explication || "Bien joué !"}</div>
+                         </div>`;
+            }
+        });
+
+        if (authorHtml) {
+            html += `<div class="flashcards-grid">${authorHtml}</div>`;
         }
-    app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
-    scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
 
-    // Gestion du bouton de téléchargement des fiches (UNIQUEMENT Fiches méthode)
-    const activeBtn = document.querySelector('.nav-btn.active');
-    if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
-        const downloadDiv = document.createElement('div');
-        downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
-        downloadDiv.innerHTML = `<p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p><button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">📥 Télécharger ces fiches (HTML)</button>`;
-        app.appendChild(downloadDiv);
+        app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+        scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
+
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
+            const downloadDiv = document.createElement('div');
+            downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
+            downloadDiv.innerHTML = `<p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p><button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">📥 Télécharger ces fiches (HTML)</button>`;
+            app.appendChild(downloadDiv);
+        }
     }
-}
 
+    // --- FONCTIONS DE VALIDATION (Séparées et propres) ---
+
+    // 1. Validation QCM classique
     function check(click, correct, id) {
-        // --- VALIDATION DROPDOWN ---
+        if (answeredQuestions.has(id)) return;
+        answeredQuestions.add(id);
+        const btnClicked = document.getElementById(`btn-${id}-${click}`);
+        const expli = document.getElementById(`ex-${id}`);
+        
+        ['A', 'B', 'C', 'D'].forEach(l => { 
+            const b = document.getElementById(`btn-${id}-${l}`); 
+            if(b) b.disabled = true; 
+        });
+        
+        if (click === correct) { 
+            currentScore++; 
+            btnClicked.classList.add('success'); 
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } }); 
+        } else { 
+            btnClicked.classList.add('error'); 
+            const btnCorrect = document.getElementById(`btn-${id}-${correct}`); 
+            if(btnCorrect) btnCorrect.classList.add('success'); 
+        }
+        
+        if(expli) expli.style.display = "block";
+        updateScoreBoard();
+    }
+
+    // 2. Validation Dropdown
     function checkDropdown(correct, id) {
         if (answeredQuestions.has(id)) return;
         const selectEl = document.getElementById(`sel-${id}`);
@@ -395,7 +426,6 @@
             confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
         } else {
             selectEl.classList.add('error');
-            // Affiche la bonne réponse dans l'explication pour compenser
             expli.innerHTML = `<span style="color:#991b1b;">❌ La bonne réponse était <strong>${correct}</strong>.</span><br><br>` + expli.innerHTML;
         }
         
@@ -403,7 +433,7 @@
         updateScoreBoard();
     }
 
-    // --- GESTION DRAG & DROP ---
+    // 3. Validation Drag & Drop
     function allowDrop(ev) {
         ev.preventDefault();
         ev.currentTarget.classList.add('dragover');
@@ -427,17 +457,15 @@
         
         const draggedId = ev.dataTransfer.getData("elementId");
         const draggedVal = ev.dataTransfer.getData("value");
-        if (!draggedId) return; // Si on a droppé autre chose
+        if (!draggedId) return; 
         
         const draggedEl = document.getElementById(draggedId);
         
-        // Déplace l'étiquette dans la zone
         dropZone.innerHTML = ""; 
         dropZone.appendChild(draggedEl);
         
         answeredQuestions.add(id);
         
-        // Désactive les autres étiquettes
         const container = document.getElementById(`drag-container-${id}`);
         if(container) {
             Array.from(container.children).forEach(child => {
@@ -449,7 +477,6 @@
         draggedEl.setAttribute('draggable', 'false');
         draggedEl.style.opacity = "1";
 
-        // Vérification
         const expli = document.getElementById(`ex-${id}`);
         if (draggedVal === correct) {
             currentScore++;
@@ -459,25 +486,15 @@
         } else {
             dropZone.classList.add('error');
             draggedEl.classList.add('error');
-            
-            // Mettre en surbrillance la bonne réponse restée en bas
             const correctEl = document.getElementById(`drag-${id}-${correct}`);
             if(correctEl) correctEl.classList.add('success');
         }
         
         if(expli) expli.style.display = "block";
         updateScoreBoard();
-    }if (answeredQuestions.has(id)) return;
-        answeredQuestions.add(id);
-        const btnClicked = document.getElementById(`btn-${id}-${click}`);
-        const expli = document.getElementById(`ex-${id}`);
-        ['A', 'B', 'C', 'D'].forEach(l => { const b = document.getElementById(`btn-${id}-${l}`); if(b) b.disabled = true; });
-        if (click === correct) { currentScore++; btnClicked.classList.add('success'); confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } }); }
-        else { btnClicked.classList.add('error'); const btnCorrect = document.getElementById(`btn-${id}-${correct}`); if(btnCorrect) btnCorrect.classList.add('success'); }
-        if(expli) expli.style.display = "block";
-        updateScoreBoard();
     }
 
+    // --- MISE À JOUR DU SCORE ET RÉCOMPENSES ---
     function updateScoreBoard() {
         scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
         const activeSection = document.querySelector('.nav-btn.active').innerText;
@@ -508,7 +525,6 @@
         setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
     }
 
-    // FONCTION DU BILAN (RÉTABLIE À L'ORIGINAL)
     function downloadStyledResults() {
         let scoresHtml = "";
         let hasData = false;
@@ -525,7 +541,6 @@
         a.href = url; a.download = 'Bilan_Objectif_Brevet.html'; a.click();
     }
 
-    // FONCTION TÉLÉCHARGEMENT FICHES
     function downloadMethodSheet() {
         const content = document.getElementById('app').innerHTML;
         const cleanContent = content.replace(/<button.*>.*<\/button>/ig, "");

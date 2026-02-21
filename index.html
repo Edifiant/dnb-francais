@@ -7,6 +7,66 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+/* --- SYSTÈME DE FLASHCARDS --- */
+.flashcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+.flashcard-wrapper {
+    perspective: 1000px;
+    min-height: 320px;
+}
+.flashcard {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+.flashcard.flipped {
+    transform: rotateY(180deg);
+}
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    border: 2px solid var(--card-border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 25px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+/* RECTO : Nom et image */
+.flashcard-front {
+    background: var(--nav-bg);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.flashcard-front img {
+    width: 110px; height: 110px; border-radius: 50%; object-fit: cover; 
+    margin-bottom: 15px; border: 4px solid var(--bleu);
+}
+.flashcard-front h2 { margin: 0; color: var(--bleu); font-size: 1.6rem; border: none; }
+.click-hint { font-size: 0.85rem; color: var(--texte-sec); margin-top: auto; opacity: 0.7; font-weight: 600; }
+
+/* VERSO : Informations et chronologie */
+.flashcard-back {
+    background: var(--bristol);
+    transform: rotateY(180deg);
+    background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
+    background-size: 100% 2.6rem;
+    line-height: 2.6rem;
+    justify-content: center;
+}
+.flashcard-back .info-highlight { padding: 8px 15px; margin-top: 15px; line-height: 1.4; }
+.flashcard-back .timeline-container { margin-top: auto; margin-bottom: 5px; }
         :root {
             --bg: #f8fafc; --bristol: #ffffff; --marge: #fb7185; --ligne: #e2e8f0;
             --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --orange: #f59e0b;
@@ -155,41 +215,72 @@
     }
 
     function render(data) {
-        let html = "";
-        let hasQuiz = false;
-        data.forEach((row, i) => {
-            if (row.Auteur) {
-                const siecle = row.Siècle || "";
-                let progress = 10;
-                if(siecle.includes("XVII")) progress = 35;
-                else if(siecle.includes("XVIII")) progress = 55;
-                else if(siecle.includes("XIX")) progress = 75;
-                else if(siecle.includes("XX")) progress = 95;
-                html += `<div class="fiche-bristol">${(row.Image||row.image) ? `<img src="${row.Image||row.image}" class="auteur-portrait">` : ''}<div class="badge-info">${siecle} siècle</div><br><h2>${row.Auteur}</h2><div class="info-highlight"><strong>Œuvre :</strong> <em>${row.Œuvre || "N/A"}</em></div><div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong> ${row.Courant || row.Mouvement || "N/A"}</div><div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div><div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div><div style="clear:both;"></div></div>`;
-            } 
-            else if (row.Type === "COURS" || row.Définition || row.Texte) {
-                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
-                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
-            } 
-            else if (row.Question || row.Type === "QUIZ") {
-                hasQuiz = true; maxQuizScore++;
-                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                html += `<div class="card-quiz" id="q-card-${i}"><div class="quiz-title">${row.Titre || row.Question}</div><div class="btn-grid"><button class="opt-btn" id="btn-${id = i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button><button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉​) :</strong><br>${row.Explication || "Bravo !"}</div></div>`;
-            }
-        });
+    let html = "";
+    let hasQuiz = false;
+    let authorHtml = ""; // Variable pour stocker nos flashcards
 
-        app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
-        scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
+    data.forEach((row, i) => {
+        // --- 1. SYSTÈME FLASHCARDS AUTEURS ---
+        if (row.Auteur) {
+            const siecle = row.Siècle || "";
+            let progress = 10;
+            if(siecle.includes("XVII")) progress = 35;
+            else if(siecle.includes("XVIII")) progress = 55;
+            else if(siecle.includes("XIX")) progress = 75;
+            else if(siecle.includes("XX")) progress = 95;
 
-        // Gestion du bouton de téléchargement des fiches (UNIQUEMENT Fiches méthode)
-        const activeBtn = document.querySelector('.nav-btn.active');
-        if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
-            const downloadDiv = document.createElement('div');
-            downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
-            downloadDiv.innerHTML = `<p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p><button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">📥 Télécharger ces fiches (HTML)</button>`;
-            app.appendChild(downloadDiv);
+            const imageTag = (row.Image || row.image) 
+                ? `<img src="${row.Image || row.image}" alt="${row.Auteur}">` 
+                : `<div style="font-size:3.5rem; margin-bottom:15px;">👤</div>`;
+
+            authorHtml += `
+            <div class="flashcard-wrapper">
+                <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-face flashcard-front">
+                        ${imageTag}
+                        <h2>${row.Auteur}</h2>
+                        <span class="click-hint">🔄 Cliquez pour retourner</span>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div class="badge-info">${siecle} siècle</div>
+                        <div class="info-highlight" style="margin-top:0;"><strong>Œuvre :</strong><br><em>${row.Œuvre || "N/A"}</em></div>
+                        <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong><br>${row.Courant || row.Mouvement || "N/A"}</div>
+                        <div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div>
+                        <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                    </div>
+                </div>
+            </div>`;
+        } 
+        // --- 2. FICHES COURS CLASSIQUES ---
+        else if (row.Type === "COURS" || row.Définition || row.Texte) {
+            let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+            html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
+        } 
+        // --- 3. SYSTÈME DE QUIZ ---
+        else if (row.Question || row.Type === "QUIZ") {
+            hasQuiz = true; maxQuizScore++;
+            const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
+            html += `<div class="card-quiz" id="q-card-${i}"><div class="quiz-title">${row.Titre || row.Question}</div><div class="btn-grid"><button class="opt-btn" id="btn-${id = i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button><button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}</div><div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉​) :</strong><br>${row.Explication || "Bravo !"}</div></div>`;
         }
+    });
+
+    // Insertion des flashcards dans la grille si des auteurs ont été trouvés
+    if (authorHtml) {
+        html += `<div class="flashcards-grid">${authorHtml}</div>`;
     }
+
+    app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+    scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
+
+    // Gestion du bouton de téléchargement des fiches (UNIQUEMENT Fiches méthode)
+    const activeBtn = document.querySelector('.nav-btn.active');
+    if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
+        const downloadDiv = document.createElement('div');
+        downloadDiv.style.cssText = "text-align: center; margin: 40px 0; padding: 20px; border-top: 2px dashed var(--card-border);";
+        downloadDiv.innerHTML = `<p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p><button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">📥 Télécharger ces fiches (HTML)</button>`;
+        app.appendChild(downloadDiv);
+    }
+}
 
     function check(click, correct, id) {
         if (answeredQuestions.has(id)) return;

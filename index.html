@@ -9,6 +9,28 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://bernardo-castilho.github.io/dragdroptouch/DragDropTouch.js"></script>
     <style>
+        /* Style pour l'élément sélectionné */
+.drag-item.selected {
+    background: var(--bleu) !important;
+    color: white !important;
+    border-color: var(--bleu) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+/* Animation de la zone qui attend le clic */
+.drop-zone.active-target {
+    border-color: var(--bleu);
+    background: var(--opt-hover);
+    border-style: solid;
+    animation: pulseTap 1.5s infinite;
+}
+
+@keyframes pulseTap {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
         /* --- NOUVEAUX TYPES DE QUIZ --- */
         /* Dropdown / Menu déroulant */
         .quiz-select {

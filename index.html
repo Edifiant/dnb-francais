@@ -420,13 +420,13 @@ else if(siecle.includes("XX")) progress = 90;
                 } 
                 else if (format === "DRAGDROP") {
                     quizContent = `
-                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"}${row.Question ? ` <br><span style="font-weight:normal;">${row.Question}</span>` : ""}</div>
                         <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
                             Déposez la réponse ici
                         </div>
                         <div class="drag-container" id="drag-container-${i}">
-                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-A" data-val="A" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_A}</div>
-                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-B" data-val="B" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_B}</div>
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-A" data-val="A" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_A || ""}</div>
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-B" data-val="B" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_B || ""}</div>
                             ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-C" data-val="C" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_C}</div>` : ''}
                             ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-D" data-val="D" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_D}</div>` : ''}
                         </div>

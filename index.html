@@ -6,15 +6,139 @@
     <title>Objectif Brevet - Cahier de Révisions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://bernardo-castilho.github.io/dragdroptouch/DragDropTouch.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://bernardo-castilho.github.io/dragdroptouch/DragDropTouch.js"></script>
     <style>
-        /* --- STYLES EXISTANTS --- */
+        /* --- NOUVEAUX TYPES DE QUIZ --- */
+        /* Dropdown / Menu déroulant */
+        .quiz-select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--opt-bg);
+            color: var(--texte);
+            margin: 15px 0;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-select.success { background-color: #dcfce7; border-color: #166534; color: #166534; }
+        .quiz-select.error { background-color: #fee2e2; border-color: #991b1b; color: #991b1b; }
+
+        /* Drag & Drop / Glisser-déposer */
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .drag-item {
+            padding: 12px 20px;
+            background: var(--opt-bg);
+            border: 2px solid var(--violet);
+            border-radius: 10px;
+            cursor: grab;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+        .drag-item.success { background: #dcfce7; border-color: #166534; color: #166534; }
+        .drag-item.error { background: #fee2e2; border-color: #991b1b; color: #991b1b; }
+.drag-item {
+    touch-action: none; /* Empêche la page de défiler quand on déplace l'objet */
+    user-select: none;  /* Empêche de sélectionner le texte par erreur */
+}
+
+.drop-zone {
+    min-height: 100px; /* On agrandit un peu la zone pour les gros doigts ! */
+}
+        .drop-zone {
+            width: 100%;
+            min-height: 80px;
+            border: 3px dashed var(--card-border);
+            border-radius: 12px;
+            background: var(--highlight-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            color: var(--texte-sec);
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .drop-zone.dragover { background: #e0e7ff; border-color: var(--bleu); }
+        .drop-zone.success { background: #dcfce7; border-style: solid; border-color: #166534; }
+        .drop-zone.error { background: #fee2e2; border-style: solid; border-color: #991b1b; }
+
+        /* --- SYSTÈME DE FLASHCARDS --- */
+        .flashcards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .flashcard-wrapper {
+            perspective: 1000px;
+            min-height: 320px;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            border: 2px solid var(--card-border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        /* RECTO : Nom et image */
+        .flashcard-front {
+            background: var(--nav-bg);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .flashcard-front img {
+            width: 110px; height: 110px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 15px; border: 4px solid var(--bleu);
+        }
+        .flashcard-front h2 { margin: 0; color: var(--bleu); font-size: 1.6rem; border: none; }
+        .click-hint { font-size: 0.85rem; color: var(--texte-sec); margin-top: auto; opacity: 0.7; font-weight: 600; }
+
+        /* VERSO : Informations et chronologie */
+        .flashcard-back {
+            background: var(--bristol);
+            transform: rotateY(180deg);
+            background-image: linear-gradient(var(--ligne) 1px, transparent 1px);
+            background-size: 100% 2.6rem;
+            line-height: 2.6rem;
+            justify-content: center;
+        }
+        .flashcard-back .info-highlight { padding: 8px 15px; margin-top: 15px; line-height: 1.4; }
+        .flashcard-back .timeline-container { margin-top: auto; margin-bottom: 5px; }
+        
         :root {
             --bg: #f8fafc; --bristol: #ffffff; --marge: #fb7185; --ligne: #e2e8f0;
             --bleu: #2563eb; --violet: #7c3aed; --vert: #10b981; --orange: #f59e0b;
             --texte: #1e293b; --texte-sec: #334155; --card-border: #e2e8f0;
             --nav-bg: #ffffff; --nav-text: #1e293b;
-            --highlight-bg: #f1f5f9; --quiz-bg: #ffffff;
+            --highlight-bg: #f1f5f9;
+            --quiz-bg: #ffffff;
             --opt-bg: #f8fafc; --opt-hover: #eff6ff;
         }
 
@@ -23,11 +147,12 @@
             --bleu: #60a5fa; --violet: #a78bfa; --vert: #34d399; --orange: #fbbf24;
             --texte: #f1f5f9; --texte-sec: #cbd5e1; --card-border: #334155;
             --nav-bg: #1e293b; --nav-text: #f1f5f9;
-            --highlight-bg: #334155; --quiz-bg: #1e293b;
+            --highlight-bg: #334155;
+            --quiz-bg: #1e293b;
             --opt-bg: #0f172a; --opt-hover: #1e293b;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: 0.3s; padding-top: 80px; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--texte); transition: background 0.3s, color 0.3s; padding-top: 80px; }
         .container { max-width: 850px; margin: 0 auto; position: relative; }
 
         .top-bar {
@@ -39,72 +164,80 @@
         }
         body.dark-mode .top-bar { background: rgba(15, 23, 42, 0.9); }
 
-        /* --- MODE EXAMEN STYLE --- */
-        #examTimer { display: none; color: var(--marge); font-weight: 800; font-size: 1.2rem; margin-right: 15px; }
-        .exam-mode-active .expli-box { display: none !important; }
+        .score-display { font-weight: 800; font-size: 1.2rem; color: var(--violet); }
+        .theme-toggle { background: transparent; border: 2px solid var(--card-border); color: var(--texte); padding: 5px 10px; border-radius: 20px; cursor: pointer; }
 
-        /* --- COMPOSANTS QUIZ & FLASHCARDS --- */
-        .quiz-select { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid var(--card-border); background: var(--opt-bg); color: var(--texte); margin: 15px 0; font-family: inherit; }
-        .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .drag-item { padding: 12px 20px; background: var(--opt-bg); border: 2px solid var(--violet); border-radius: 10px; cursor: grab; font-weight: 600; touch-action: none; }
-        .drop-zone { width: 100%; min-height: 80px; border: 3px dashed var(--card-border); border-radius: 12px; background: var(--highlight-bg); display: flex; align-items: center; justify-content: center; margin: 15px 0; font-weight: bold; }
-        .drop-zone.dragover { background: #e0e7ff; }
-
-        .flashcards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .flashcard-wrapper { perspective: 1000px; min-height: 320px; }
-        .flashcard { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
-        .flashcard.flipped { transform: rotateY(180deg); }
-        .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; border: 2px solid var(--card-border); padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; }
-        .flashcard-front { background: var(--nav-bg); align-items: center; justify-content: center; text-align: center; }
-        .flashcard-front img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bleu); margin-bottom: 15px; }
-        .flashcard-back { background: var(--bristol); transform: rotateY(180deg); background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; }
-
+        .main-title { text-align: center; font-size: 2.8rem; font-weight: 900; margin: 20px 0 30px 0; color: var(--texte); letter-spacing: -0.05em; }
         .nav-menu { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center; }
-        .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; }
-
-        .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; color: var(--texte); }
-        .opt-btn.success, .quiz-select.success, .drag-item.success { background: #dcfce7 !important; border-color: #166534 !important; color: #166534 !important; }
-        .opt-btn.error, .quiz-select.error, .drag-item.error { background: #fee2e2 !important; border-color: #991b1b !important; color: #991b1b !important; }
-        .expli-box { margin-top: 20px; padding: 20px; background: #eff6ff; border-left: 6px solid var(--bleu); border-radius: 8px; display: none; color: #1e293b; }
-
-        .final-score-box { text-align: center; padding: 40px; background: var(--bg); border: 4px dashed var(--violet); border-radius: 20px; margin-top: 40px; display: none; }
-        .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; }
+        .nav-btn { padding: 10px 20px; border-radius: 50px; border: 2px solid var(--btn-color); background: var(--nav-bg); color: var(--btn-color); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
+        .nav-btn:hover, .nav-btn.active { background: var(--btn-color); color: white; transform: translateY(-2px); }
 
         .trophy-shelf { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-        .trophy-card { background: var(--bristol); border: 2px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; width: 90px; opacity: 0.2; filter: grayscale(1); transition: 0.5s; }
-        .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--orange); transform: scale(1.05); }
+        .trophy-card { background: var(--bristol); border: 2px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; width: 90px; opacity: 0.2; filter: grayscale(1); transition: all 0.5s ease; }
+        .trophy-card.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--orange); transform: scale(1.05); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2); animation: unlockAnim 0.6s ease-out; }
+        .trophy-icon { font-size: 1.8rem; display: block; }
+        .trophy-name { font-size: 0.65rem; font-weight: bold; margin-top: 5px; color: var(--texte); }
 
         .fiche-bristol { background: var(--bristol); border: 1px solid var(--card-border); margin-bottom: 30px; padding: 45px 35px 45px 80px; position: relative; background-image: linear-gradient(var(--ligne) 1px, transparent 1px); background-size: 100% 2.6rem; line-height: 2.6rem; border-radius: 12px; }
         .fiche-bristol::before { content: ""; position: absolute; top: 0; left: 65px; bottom: 0; width: 2px; background: var(--marge); opacity: 0.6; }
+        .fiche-bristol h2 { margin: 0 0 0.8rem 0; color: var(--bleu); font-size: 1.8rem; border-bottom: 3px solid var(--bleu); display: inline-block; line-height: 1.2; }
+        .auteur-portrait { width: 110px; height: 140px; object-fit: cover; float: right; margin-left: 20px; border-radius: 12px; border: 4px solid var(--bg); transform: rotate(2deg); }
+        .badge-info { background: var(--violet); color: white; padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 12px; line-height: 1; }
+        .info-highlight { background: var(--highlight-bg); padding: 10px 15px; border-radius: 8px; border-left: 5px solid var(--violet); line-height: 1.5; margin-top: 15px; color: var(--texte); }
+        .vigilance-box { background: #fff1f2; padding: 20px; border-radius: 12px; border-left: 6px solid var(--marge); margin-top: 20px; line-height: 1.6; color: #991b1b; }
+        
+        .timeline-container { margin-top: 30px; background: var(--ligne); height: 8px; border-radius: 4px; position: relative; clear: both; }
+        .timeline-bar { height: 100%; background: var(--violet); border-radius: 4px; transition: 1s ease-out; }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--texte-sec); margin-top: 8px; font-weight: 600; }
 
-        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } }
+        .card-quiz { background: var(--quiz-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); border-top: 8px solid var(--violet); margin-bottom: 25px; }
+        .quiz-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 20px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt-btn { padding: 16px; border: 2px solid var(--card-border); border-radius: 12px; background: var(--opt-bg); cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s; font-size: 1rem; color: var(--texte); }
+        .opt-btn.success { background: #dcfce7 !important; border-color: #166534 !important; color: #166534 !important; }
+        .opt-btn.error { background: #fee2e2 !important; border-color: #991b1b !important; color: #991b1b !important; }
+        .expli-box { margin-top: 20px; padding: 20px; background: #eff6ff; border-left: 6px solid var(--bleu); border-radius: 8px; display: none; line-height: 1.6; color: #1e293b; }
+
+        .final-score-box { text-align: center; padding: 40px; background: var(--bg); border: 4px dashed var(--violet); border-radius: 20px; margin-top: 40px; display: none; }
+        .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; margin: 10px 0; }
+
+        @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
+    /* --- ANIMATION DE MÉLANGE --- */
+@keyframes shuffleAnim {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.95); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.is-shuffling {
+    animation: shuffleAnim 0.4s ease-out;
+}    
     </style>
 </head>
 <body>
 
 <div class="top-bar">
-    <div id="scoreBoard" class="score-display" style="font-weight:800; color:var(--violet);">Score: 0 / 0</div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <div id="examTimer">⏱️ <span id="timerDisplay">05:00</span></div>
-        <button class="nav-btn" id="examModeBtn" onclick="toggleExamMode()" style="--btn-color: var(--marge);">🔥 Mode Examen</button>
-        <button class="theme-toggle" onclick="toggleTheme()" style="background:none; border:1px solid var(--card-border); border-radius:50%; width:40px; height:40px; cursor:pointer;">🌙</button>
+    <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
+    <div style="display: flex; gap: 10px;">
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+            🎓 Télécharger mon Bilan
+        </button>
     </div>
 </div>
 
 <div class="container">
-    <h1 style="text-align:center; font-size: 2.5rem; font-weight: 900; margin: 20px 0;">🎓 Objectif Brevet, collège Alain 🧑‍🎓</h1>
+    <h1 class="main-title">🎓 Objectif Brevet, collège Alain (3e 3) 🧑‍🎓</h1>
     <div class="nav-menu" id="menu"></div>
 
-    <div class="trophy-shelf">
-        <div class="trophy-card" id="t-first">🎯<br><span style="font-size:0.7rem">Premier Pas</span></div>
-        <div class="trophy-card" id="t-half">🥈<br><span style="font-size:0.7rem">Moyenne !</span></div>
-        <div class="trophy-card" id="t-perfect">🏆<br><span style="font-size:0.7rem">Sans Faute</span></div>
+    <div class="trophy-shelf" id="trophyShelf">
+        <div class="trophy-card" id="t-first"><span class="trophy-icon">🎯</span><span class="trophy-name">Premier Pas</span></div>
+        <div class="trophy-card" id="t-half"><span class="trophy-icon">🥈</span><span class="trophy-name">Moyenne !</span></div>
+        <div class="trophy-card" id="t-perfect"><span class="trophy-icon">🏆</span><span class="trophy-name">Sans Faute</span></div>
+        <div class="trophy-card" id="t-speed"><span class="trophy-icon">⚡</span><span class="trophy-name">Expert</span></div>
     </div>
 
-    <div id="app">Chargement des cours...</div>
+    <div id="app">Chargement...</div>
     <div id="finalResult" class="final-score-box"></div>
 </div>
 
@@ -112,25 +245,25 @@
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set();
-    let isExamMode = false;
-    let examTimerInterval;
-    let examData = [];
 
     const sections = [
         { name: "🪧 Grammaire", gid: "1679242234", color: "#3b82f6" },
-        { name: "✒️ Conjugaison", gid: "1987121612", color: "#f97316" },
-        { name: "🪶 Figures", gid: "1943336125", color: "#ec4899" },
-        { name: "✍️ Tests", gid: "1143879514", color: "#10b981" },
+        { name: "✒️​ Conjugaison", gid: "1987121612", color: "#f97316" },
+        { name: "🪶​ Figures de style", gid: "1943336125", color: "#ec4899" },
+        { name: "✍️ Testez vos connaissances", gid: "1143879514", color: "#10b981" },
         { name: "📝 Vocabulaire", gid: "710791745", color: "#8b5cf6" },
         { name: "🖋️ Orthographe", gid: "2137570262", color: "#eab308" },
+        { name: "📖 Fiches méthode", gid: "781687810", color: "#eab308" },
         { name: "👤 Auteurs", gid: "951178030", color: "#06b6d4" }
     ];
 
     const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoAJJNx2wqbdV3bqbJDt0cmf8DPCCk39wiQa4fdpkHj8fFcKBf0T4viApM-A3lSWbXHeJ8uasSh-M0/pub?single=true&output=csv&gid=";
     const app = document.getElementById('app');
     const menu = document.getElementById('menu');
+    const scoreBoard = document.getElementById('scoreBoard');
+    const finalBox = document.getElementById('finalResult');
 
-    sections.forEach(s => {
+    sections.forEach((s) => {
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
         btn.innerText = s.name;
@@ -139,131 +272,379 @@
         menu.appendChild(btn);
     });
 
-    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-
-    /* --- LOGIQUE MODE EXAMEN --- */
-    function toggleExamMode() {
-        isExamMode = !isExamMode;
-        const btn = document.getElementById('examModeBtn');
-        const timerDiv = document.getElementById('examTimer');
-        
-        if (isExamMode) {
-            document.body.classList.add('exam-mode-active');
-            btn.innerText = "🚫 Quitter l'Examen";
-            btn.style.background = "var(--marge)";
-            btn.style.color = "white";
-            timerDiv.style.display = "block";
-            startTimer(300); // 5 minutes
-            loadData(sections[3].gid, document.querySelector('.nav-btn')); // Charge les tests par défaut
-        } else {
-            location.reload();
-        }
-    }
-
-    function startTimer(seconds) {
-        clearInterval(examTimerInterval);
-        let timeLeft = seconds;
-        const display = document.getElementById('timerDisplay');
-        examTimerInterval = setInterval(() => {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            if (--timeLeft < 0) {
-                clearInterval(examTimerInterval);
-                finishExam();
-            }
-        }, 1000);
-    }
-
-    function finishExam() {
-        clearInterval(examTimerInterval);
-        isExamMode = false;
-        document.body.classList.remove('exam-mode-active');
-        alert("Examen terminé ! Voici vos résultats.");
-        
-        // Révéler toutes les corrections
-        document.querySelectorAll('.expli-box').forEach(el => el.style.display = "block");
-        showFinalResult();
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        document.getElementById('themeBtn').innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
     }
 
     function loadData(gid, btn) {
         currentScore = 0;
+        maxQuizScore = 0;
         answeredQuestions.clear();
+        finalBox.style.display = "none";
+        document.querySelectorAll('.trophy-card').forEach(t => t.classList.remove('unlocked'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        app.innerHTML = "Chargement...";
-        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, complete: (res) => render(res.data) });
+        app.innerHTML = "<div style='text-align:center; padding: 50px;'>Préparation du cours...</div>";
+        Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
     }
 
     function render(data) {
-        examData = data;
         let html = "";
-        maxQuizScore = 0;
+        let hasQuiz = false;
+        let authorHtml = "";
 
         data.forEach((row, i) => {
+            // --- 1. SYSTÈME FLASHCARDS AUTEURS ---
             if (row.Auteur) {
-                // Flashcards Auteurs
-                html += `<div class="flashcard-wrapper"><div class="flashcard" onclick="this.classList.toggle('flipped')">
-                    <div class="flashcard-face flashcard-front"><h3>${row.Auteur}</h3><p>Cliquez pour voir</p></div>
-                    <div class="flashcard-face flashcard-back"><strong>${row.Siècle}e siècle</strong><br>${row.Œuvre}</div>
-                </div></div>`;
-            } else if (row.Question || row.Type === "QUIZ") {
-                maxQuizScore++;
-                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                html += `<div class="card-quiz" id="q-${i}">
-                    <div style="font-weight:700; margin-bottom:15px;">${row.Question}</div>
-                    <div class="btn-grid">
-                        <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A}</button>
-                        <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B}</button>
+                const siecle = row.Siècle || "";
+let progress = 10; // Par défaut (ex: XVIe siècle)
+
+// On vérifie d'abord XVIII pour ne pas qu'il soit confondu avec XVII
+if(siecle.includes("XVIII")) progress = 50; 
+else if(siecle.includes("XVII")) progress = 30;
+else if(siecle.includes("XIX")) progress = 70;
+else if(siecle.includes("XX")) progress = 90;
+
+                const imageTag = (row.Image || row.image) 
+                    ? `<img src="${row.Image || row.image}" alt="${row.Auteur}">` 
+                    : `<div style="font-size:3.5rem; margin-bottom:15px;">👤</div>`;
+
+                authorHtml += `
+                <div class="flashcard-wrapper">
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-face flashcard-front">
+                            ${imageTag}
+                            <h2>${row.Auteur}</h2>
+                            <span class="click-hint">🔄 Clique ici pour en savoir plus</span>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <div class="badge-info">${siecle} siècle</div>
+                            <div class="info-highlight" style="margin-top:0;"><strong>Œuvre(s) :</strong><br><em>${row.Œuvre || "N/A"}</em></div>
+                            <div class="info-highlight" style="border-left-color: var(--vert);"><strong>Courant :</strong><br>${row.Courant || row.Mouvement || "N/A"}</div>
+                            <div class="timeline-container"><div class="timeline-bar" style="width: ${progress}%"></div></div>
+                            <div class="timeline-labels"><span>16e</span><span>17e</span><span>18e</span><span>19e</span><span>20e</span></div>
+                        </div>
                     </div>
-                    <div id="ex-${i}" class="expli-box"><strong>💡 Correction :</strong> ${row.Explication || "Bien joué !"}</div>
                 </div>`;
-            } else if (row.Texte || row.Définition) {
-                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot}</h2><p>${row.Texte || row.Définition}</p></div>`;
+            } 
+            // --- 2. FICHES COURS CLASSIQUES ---
+            else if (row.Type === "COURS" || row.Définition || row.Texte) {
+                let v = row.Video && row.Video.includes('youtube.com') ? `<div style="margin-top:20px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:2px solid var(--card-border);"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="${row.Video}" allowfullscreen></iframe></div>` : "";
+                html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
+            } 
+            // --- 3. SYSTÈME DE QUIZ ---
+            else if (row.Question || row.Type === "QUIZ") {
+                hasQuiz = true; maxQuizScore++;
+                const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
+                const format = (row.Format || "QCM").toUpperCase(); 
+                let quizContent = "";
+
+                if (format === "DROPDOWN") {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || "Complétez :"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <select id="sel-${i}" class="quiz-select">
+                            <option value="">-- Sélectionnez la bonne réponse --</option>
+                            <option value="A">${row.Réponse_A || ""}</option>
+                            <option value="B">${row.Réponse_B || ""}</option>
+                            ${row.Réponse_C ? `<option value="C">${row.Réponse_C}</option>` : ''}
+                            ${row.Réponse_D ? `<option value="D">${row.Réponse_D}</option>` : ''}
+                        </select>
+                        <button class="nav-btn" style="--btn-color: var(--violet); width: 100%;" onclick="checkDropdown('${bonne}', ${i})">Valider</button>
+                    `;
+                } 
+                else if (format === "DRAGDROP") {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || "Glissez la bonne étiquette dans la zone"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <div class="drop-zone" id="dz-${i}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropAndCheck(event, '${bonne}', ${i})">
+                            Déposez la réponse ici
+                        </div>
+                        <div class="drag-container" id="drag-container-${i}">
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-A" data-val="A">${row.Réponse_A}</div>
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-B" data-val="B">${row.Réponse_B}</div>
+                            ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-C" data-val="C">${row.Réponse_C}</div>` : ''}
+                            ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-D" data-val="D">${row.Réponse_D}</div>` : ''}
+                        </div>
+                    `;
+                }
+                else {
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || row.Question}</div>
+                        <div class="btn-grid">
+                            <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                            <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                            ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                            ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                html += `<div class="card-quiz" id="q-card-${i}">
+                            ${quizContent}
+                            <div id="ex-${i}" class="expli-box"><strong>💡 Explication de Maître Tronc (😉)</strong><br>${row.Explication || "Bien joué !"}</div>
+                         </div>`;
             }
         });
-        app.innerHTML = html || "Aucune donnée.";
-        updateScore();
+
+        // Insertion des flashcards dans la grille si des auteurs ont été trouvés
+    if (authorHtml) {
+        // On ajoute le bouton de mélange juste au-dessus de la grille
+        html += `
+        <div style="text-align: center; margin-bottom: 25px;">
+            <button class="nav-btn" style="--btn-color: var(--orange); background: var(--orange); color: white;" onclick="shuffleFlashcards()">
+                🔀 Mélanger les auteurs
+            </button>
+        </div>`;
+        html += `<div class="flashcards-grid">${authorHtml}</div>`;
     }
 
-    function check(user, correct, id) {
+        app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
+        scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
+
+        // --- DÉPLACEMENT DU BOUTON EN HAUT ---
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
+            const downloadDiv = document.createElement('div');
+            downloadDiv.style.cssText = "text-align: center; margin-bottom: 30px; padding: 20px; border-bottom: 2px dashed var(--card-border);";
+            downloadDiv.innerHTML = `
+                <p style="margin-bottom: 15px; font-weight: bold; color: var(--texte-sec);">Besoin de réviser sans connexion ?</p>
+                <button class="nav-btn" style="--btn-color: var(--vert); background: var(--vert); color: white;" onclick="downloadMethodSheet()">
+                    📥 Télécharger ces fiches (HTML)
+                </button>`;
+            
+            // On utilise prepend() pour insérer le bouton AU DÉBUT de l'élément #app
+            app.prepend(downloadDiv);
+        }
+    }
+
+    // --- FONCTIONS DE VALIDATION (Séparées et propres) ---
+
+    // 1. Validation QCM classique
+    function check(click, correct, id) {
         if (answeredQuestions.has(id)) return;
         answeredQuestions.add(id);
-
-        const btn = document.getElementById(`btn-${id}-${user}`);
+        const btnClicked = document.getElementById(`btn-${id}-${click}`);
         const expli = document.getElementById(`ex-${id}`);
-
-        if (user === correct) {
-            currentScore++;
-            if (!isExamMode) {
-                btn.classList.add('success');
-                confetti({ particleCount: 30, spread: 50 });
-            }
-        } else {
-            if (!isExamMode) btn.classList.add('error');
+        
+        ['A', 'B', 'C', 'D'].forEach(l => { 
+            const b = document.getElementById(`btn-${id}-${l}`); 
+            if(b) b.disabled = true; 
+        });
+        
+        if (click === correct) { 
+            currentScore++; 
+            btnClicked.classList.add('success'); 
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } }); 
+        } else { 
+            btnClicked.classList.add('error'); 
+            const btnCorrect = document.getElementById(`btn-${id}-${correct}`); 
+            if(btnCorrect) btnCorrect.classList.add('success'); 
         }
-
-        if (!isExamMode) expli.style.display = "block";
-        updateScore();
-
-        if (answeredQuestions.size === maxQuizScore && isExamMode) finishExam();
+        
+        if(expli) expli.style.display = "block";
+        updateScoreBoard();
     }
 
-    function updateScore() {
-        document.getElementById('scoreBoard').innerText = `Score: ${currentScore} / ${maxQuizScore}`;
-        if (currentScore >= 1) document.getElementById('t-first').classList.add('unlocked');
-        if (maxQuizScore > 0 && currentScore/maxQuizScore >= 0.5) document.getElementById('t-half').classList.add('unlocked');
-        if (maxQuizScore > 0 && currentScore === maxQuizScore) document.getElementById('t-perfect').classList.add('unlocked');
+    // 2. Validation Dropdown
+    function checkDropdown(correct, id) {
+        if (answeredQuestions.has(id)) return;
+        const selectEl = document.getElementById(`sel-${id}`);
+        const userChoice = selectEl.value;
+        if (!userChoice) { alert("Veuillez sélectionner une réponse !"); return; }
+        
+        answeredQuestions.add(id);
+        selectEl.disabled = true;
+        const expli = document.getElementById(`ex-${id}`);
+
+        if (userChoice === correct) {
+            currentScore++;
+            selectEl.classList.add('success');
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+        } else {
+            selectEl.classList.add('error');
+            expli.innerHTML = `<span style="color:#991b1b;">❌ La bonne réponse était <strong>${correct}</strong>.</span><br><br>` + expli.innerHTML;
+        }
+        
+        if(expli) expli.style.display = "block";
+        updateScoreBoard();
+    }
+
+    // 3. Validation Drag & Drop
+    function allowDrop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('dragover');
+    }
+    
+    function leaveDrop(ev) {
+        ev.currentTarget.classList.remove('dragover');
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("elementId", ev.target.id);
+        ev.dataTransfer.setData("value", ev.target.getAttribute("data-val"));
+    }
+
+    function dropAndCheck(ev, correct, id) {
+        ev.preventDefault();
+        const dropZone = ev.currentTarget;
+        dropZone.classList.remove('dragover');
+        
+        if (answeredQuestions.has(id)) return;
+        
+        const draggedId = ev.dataTransfer.getData("elementId");
+        const draggedVal = ev.dataTransfer.getData("value");
+        if (!draggedId) return; 
+        
+        const draggedEl = document.getElementById(draggedId);
+        
+        dropZone.innerHTML = ""; 
+        dropZone.appendChild(draggedEl);
+        
+        answeredQuestions.add(id);
+        
+        const container = document.getElementById(`drag-container-${id}`);
+        if(container) {
+            Array.from(container.children).forEach(child => {
+                child.setAttribute('draggable', 'false');
+                child.style.opacity = "0.5";
+                child.style.cursor = "not-allowed";
+            });
+        }
+        draggedEl.setAttribute('draggable', 'false');
+        draggedEl.style.opacity = "1";
+
+        const expli = document.getElementById(`ex-${id}`);
+        if (draggedVal === correct) {
+            currentScore++;
+            dropZone.classList.add('success');
+            draggedEl.classList.add('success');
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+        } else {
+            dropZone.classList.add('error');
+            draggedEl.classList.add('error');
+            const correctEl = document.getElementById(`drag-${id}-${correct}`);
+            if(correctEl) correctEl.classList.add('success');
+        }
+        
+        if(expli) expli.style.display = "block";
+        updateScoreBoard();
+    }
+
+    // --- MISE À JOUR DU SCORE ET RÉCOMPENSES ---
+    function updateScoreBoard() {
+        scoreBoard.innerHTML = `Score: ${currentScore} / ${maxQuizScore}`;
+        const activeSection = document.querySelector('.nav-btn.active').innerText;
+        localStorage.setItem(`score_${activeSection}`, `${currentScore} / ${maxQuizScore}`);
+        if (currentScore === 1) unlockTrophy('t-first');
+        if (maxQuizScore > 0) {
+            const ratio = currentScore / maxQuizScore;
+            if (ratio >= 0.5) unlockTrophy('t-half');
+            if (ratio === 1 && answeredQuestions.size === maxQuizScore) unlockTrophy('t-perfect');
+        }
+        if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
+    }
+
+    function unlockTrophy(tid) {
+        const t = document.getElementById(tid);
+        if (t && !t.classList.contains('unlocked')) { t.classList.add('unlocked'); confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } }); }
     }
 
     function showFinalResult() {
-        const res = document.getElementById('finalResult');
-        res.innerHTML = `<h3>Bilan Final</h3><span class="big-score">${currentScore} / ${maxQuizScore}</span><button class="nav-btn" onclick="location.reload()">Recommencer</button>`;
-        res.style.display = "block";
-        res.scrollIntoView({ behavior: 'smooth' });
+        const percent = Math.round((currentScore / maxQuizScore) * 100);
+        let msg = "", color = "";
+        if(percent === 100) { msg = "INCROYABLE ! 🏆"; color = "#10b981"; unlockTrophy('t-speed'); }
+        else if(percent >= 75) { msg = "Très bon travail ! ✨"; color = "#2563eb"; }
+        else if(percent >= 50) { msg = "Pas mal, continue ! 👍"; color = "#f59e0b"; }
+        else { msg = "Il faut encore réviser... 📚"; color = "#ef4444"; }
+        finalBox.innerHTML = `<h3>Résultat Final</h3><span class="big-score" style="color:${color}">${currentScore} / ${maxQuizScore}</span><p>${msg}</p><button class="nav-btn" style="--btn-color:var(--violet)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Remonter</button>`;
+        finalBox.style.display = "block";
+        setTimeout(() => finalBox.scrollIntoView({behavior: "smooth"}), 200);
     }
 
+    function downloadStyledResults() {
+        let scoresHtml = "";
+        let hasData = false;
+        sections.forEach(s => {
+            const score = localStorage.getItem(`score_${s.name}`) || "Non évalué";
+            if(score !== "Non évalué") hasData = true;
+            scoresHtml += `<div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;"><span style="font-weight: bold; color: #475569;">${s.name}</span><span style="color: #7c3aed; font-weight: 800;">${score}</span></div>`;
+        });
+        if(!hasData) { alert("Complète au moins un quiz pour générer ton bilan !"); return; }
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }.diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }.subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }.results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }.footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }.stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }</style></head><body><div class="diploma"><h1>Objectif Brevet</h1><div class="subtitle">Bilan Officiel des Révisions</div><p>Félicitations ! Voici le récapitulatif de tes performances :</p><div class="results-container">${scoresHtml}</div><div class="footer">Document généré le ${new Date().toLocaleString('fr-FR')}<br>Continue tes efforts pour décrocher la mention !</div><div class="stamp">Validé par<br>Maître Tronc</div></div></body></html>`;
+        const blob = new Blob([docContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Bilan_Objectif_Brevet.html'; a.click();
+    }
+
+    function downloadMethodSheet() {
+        const content = document.getElementById('app').innerHTML;
+        const cleanContent = content.replace(/<button.*>.*<\/button>/ig, "");
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }.fiche-bristol { border: 2px solid #e2e8f0; padding: 30px; margin-bottom: 30px; border-radius: 12px; page-break-inside: avoid; }h2 { color: #2563eb; border-bottom: 3px solid #2563eb; display: inline-block; }.vigilance-box { background: #fff1f2; padding: 15px; border-left: 6px solid #fb7185; margin-top: 20px; color: #991b1b; }.info-highlight { background: #f1f5f9; padding: 10px; border-left: 5px solid #7c3aed; margin-top: 10px; }iframe, .timeline-container, .timeline-labels { display: none; }</style></head><body><h1 style="text-align:center; color:#7c3aed;">📚 Mes Fiches Méthode</h1><hr>${cleanContent}</body></html>`;
+        const blob = new Blob([docContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Fiches_Methode_Brevet.html'; a.click();
+    }
+function shuffleFlashcards() {
+    const grid = document.querySelector('.flashcards-grid');
+    if (!grid) return;
+
+    // 1. Déclenchement de l'animation
+    grid.classList.remove('is-shuffling'); 
+    void grid.offsetWidth; // Astuce technique pour forcer le navigateur à relancer l'animation
+    grid.classList.add('is-shuffling');
+
+    // 2. Récupération et mélange des cartes
+    let cards = Array.from(grid.children);
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+
+    // 3. Réinsertion dans la grille (légèrement différée pour que l'animation soit fluide)
+    setTimeout(() => {
+        grid.innerHTML = ""; // On vide la grille
+        cards.forEach(card => {
+            const innerCard = card.querySelector('.flashcard');
+            // On remet les cartes face recto
+            if (innerCard) innerCard.classList.remove('flipped');
+            grid.appendChild(card);
+        });
+    }, 150); // Le mélange se fait à la moitié de l'animation (quand les cartes sont au plus petit)
+}
     window.onload = () => loadData(sections[0].gid, menu.firstChild);
-</script>
+window.onscroll = function() {
+    const btn = document.getElementById("backToTop");
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        btn.style.display = "block";
+    } else {
+        btn.style.display = "none";
+    }
+};
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // Pour un effet de remontée fluide
+    });
+}</script>
+    <button id="backToTop" onclick="scrollToTop()" title="Retour en haut" style="
+    display: none; 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 1000; 
+    background-color: #2563eb; 
+    color: white; 
+    border: none; 
+    border-radius: 50%; 
+    width: 50px; 
+    height: 50px; 
+    font-size: 20px; 
+    cursor: pointer; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+    ↑
+</button>
 </body>
 </html>

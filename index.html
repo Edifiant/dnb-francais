@@ -202,6 +202,16 @@
         .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; margin: 10px 0; }
 
         @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
+    /* --- ANIMATION DE MÉLANGE --- */
+@keyframes shuffleAnim {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.95); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.is-shuffling {
+    animation: shuffleAnim 0.4s ease-out;
+}    
     </style>
 </head>
 <body>
@@ -578,25 +588,30 @@ else if(siecle.includes("XX")) progress = 90;
     }
 function shuffleFlashcards() {
     const grid = document.querySelector('.flashcards-grid');
-    if (!grid) return; // Sécurité au cas où la grille n'existe pas
+    if (!grid) return;
 
-    // On récupère toutes les cartes dans un tableau
+    // 1. Déclenchement de l'animation
+    grid.classList.remove('is-shuffling'); 
+    void grid.offsetWidth; // Astuce technique pour forcer le navigateur à relancer l'animation
+    grid.classList.add('is-shuffling');
+
+    // 2. Récupération et mélange des cartes
     let cards = Array.from(grid.children);
-
-    // Algorithme de mélange (Fisher-Yates)
     for (let i = cards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [cards[i], cards[j]] = [cards[j], cards[i]];
     }
 
-    // On réinsère les cartes mélangées dans la grille
-    cards.forEach(card => {
-        // Optionnel mais pratique : on s'assure que toutes les cartes sont remises face "recto"
-        const innerCard = card.querySelector('.flashcard');
-        if (innerCard) innerCard.classList.remove('flipped');
-        
-        grid.appendChild(card);
-    });
+    // 3. Réinsertion dans la grille (légèrement différée pour que l'animation soit fluide)
+    setTimeout(() => {
+        grid.innerHTML = ""; // On vide la grille
+        cards.forEach(card => {
+            const innerCard = card.querySelector('.flashcard');
+            // On remet les cartes face recto
+            if (innerCard) innerCard.classList.remove('flipped');
+            grid.appendChild(card);
+        });
+    }, 150); // Le mélange se fait à la moitié de l'animation (quand les cartes sont au plus petit)
 }
     window.onload = () => loadData(sections[0].gid, menu.firstChild);
 window.onscroll = function() {

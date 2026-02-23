@@ -288,11 +288,13 @@
             // --- 1. SYSTÈME FLASHCARDS AUTEURS ---
             if (row.Auteur) {
                 const siecle = row.Siècle || "";
-                let progress = 10;
-                if(siecle.includes("XVII")) progress = 30;
-                else if(siecle.includes("XVIII")) progress = 55;
-                else if(siecle.includes("XIX")) progress = 75;
-                else if(siecle.includes("XX")) progress = 95;
+let progress = 10; // Par défaut (ex: XVIe siècle)
+
+// On vérifie d'abord XVIII pour ne pas qu'il soit confondu avec XVII
+if(siecle.includes("XVIII")) progress = 50; 
+else if(siecle.includes("XVII")) progress = 30;
+else if(siecle.includes("XIX")) progress = 70;
+else if(siecle.includes("XX")) progress = 90;
 
                 const imageTag = (row.Image || row.image) 
                     ? `<img src="${row.Image || row.image}" alt="${row.Auteur}">` 

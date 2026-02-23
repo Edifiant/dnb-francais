@@ -399,7 +399,7 @@ else if(siecle.includes("XX")) progress = 90;
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
             } 
             // --- 3. SYSTÈME DE QUIZ ---
-            else if (row.Question || row.Type === "QUIZ") {
+            else if (row.Question || ["QUIZ","DRAGDROP","DROPDOWN","QCM"].includes((row.Type||"").toUpperCase())) {
                 hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 const format = (row.Format || row.Type || "QCM").toUpperCase(); 

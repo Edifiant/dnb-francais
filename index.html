@@ -407,7 +407,7 @@ else if(siecle.includes("XX")) progress = 90;
 
                 if (format === "DROPDOWN") {
                     quizContent = `
-                        <div class="quiz-title">${row.Titre || "Complétez :"} <br><span style="font-weight:normal;">${row.Question}</span></div>
+                        <div class="quiz-title">${row.Titre || "Complétez :"} <br>${row.Question ? `<span style="font-weight:normal;">${row.Question}</span>` : ""}</div>
                         <select id="sel-${i}" class="quiz-select">
                             <option value="">-- Sélectionnez la bonne réponse --</option>
                             <option value="A">${row.Réponse_A || ""}</option>

@@ -257,6 +257,47 @@
 
     body.exam-active { padding-top: 115px; }
 
+
+        /* --- TEXTE LIBRE --- */
+        .text-libre-wrap {
+            display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;
+        }
+        .text-libre-input {
+            flex: 1; min-width: 200px; padding: 14px 18px;
+            font-size: 1rem; font-family: 'Inter', sans-serif;
+            border: 2px solid var(--card-border); border-radius: 12px;
+            background: var(--opt-bg); color: var(--texte); transition: border-color 0.2s;
+        }
+        .text-libre-input:focus { outline: none; border-color: var(--violet); }
+        .text-libre-input.success { background: #dcfce7; border-color: #166534; color: #166534; font-weight: 700; }
+        .text-libre-input.error   { background: #fee2e2; border-color: #991b1b; color: #991b1b; }
+        .text-libre-btn {
+            padding: 14px 24px; background: var(--violet); color: white;
+            border: none; border-radius: 12px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+        }
+        .text-libre-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- PHRASE A TROUS --- */
+        .phrase-trous { font-size: 1.1rem; line-height: 2.8rem; margin: 15px 0; color: var(--texte); }
+        .trou-input {
+            display: inline-block; min-width: 90px;
+            padding: 4px 10px; margin: 0 4px;
+            border: none; border-bottom: 3px solid var(--violet);
+            background: transparent; color: var(--texte);
+            font-size: 1rem; font-family: 'Inter', sans-serif;
+            font-weight: 700; text-align: center; outline: none;
+            transition: border-color 0.2s;
+        }
+        .trou-input:focus { border-bottom-color: var(--bleu); }
+        .trou-input.success { border-bottom-color: #166534; color: #166534; }
+        .trou-input.error   { border-bottom-color: #991b1b; color: #991b1b; }
+        .valider-trous-btn {
+            display: inline-block; margin-top: 15px; padding: 12px 30px;
+            background: var(--violet); color: white; border: none;
+            border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;
+        }
+        .valider-trous-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     /* --- ANIMATION DE MÉLANGE --- */
 @keyframes shuffleAnim {
     0% { transform: scale(1); opacity: 1; }
@@ -399,7 +440,7 @@ else if(siecle.includes("XX")) progress = 90;
                 html += `<div class="fiche-bristol"><h2>${row.Titre || row.Mot || "Leçon"}</h2>${v}<div style="white-space: pre-wrap; margin-top:20px; color: var(--texte-sec); font-size: 1.05rem;">${row.Contenu || row.Définition || row.Texte || ""}</div>${row.Points_Vigilance ? `<div class="vigilance-box"><strong>Points de vigilance :</strong><br>${row.Points_Vigilance}</div>` : ""}</div>`;
             } 
             // --- 3. SYSTÈME DE QUIZ ---
-            else if (row.Question || ["QUIZ","DRAGDROP","DROPDOWN","QCM"].includes((row.Type||"").toUpperCase())) {
+            else if (row.Question || ["QUIZ","DRAGDROP","DROPDOWN","QCM","TEXTE_LIBRE","PHRASE_TROUS"].includes((row.Type||"").toUpperCase())) {
                 hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
                 const format = (row.Format || row.Type || "QCM").toUpperCase(); 
@@ -431,6 +472,41 @@ else if(siecle.includes("XX")) progress = 90;
                             ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-D" data-val="D" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_D}</div>` : ''}
                         </div>
                     `;
+                }
+                else if (format === "TEXTE_LIBRE") {
+                    const bonneTexte = (row.Bonne_Réponse || "").trim();
+                    quizContent = `
+                        <div class="quiz-title">${row.Titre || row.Question}</div>
+                        <div class="text-libre-wrap">
+                            <input type="text" id="tl-${i}" class="text-libre-input"
+                                placeholder="Votre réponse..."
+                                onkeydown="if(event.key==='Enter') checkTexteLibre(${i})"
+                                data-correct="${bonneTexte.replace(/"/g,'&quot;')}">
+                            <button class="text-libre-btn" id="tl-btn-${i}" onclick="checkTexteLibre(${i})">Valider ✓</button>
+                        </div>
+                        ${bonneTexte.includes("|") ? '<div style="font-size:0.85rem;color:var(--texte-sec);margin-top:8px;">💡 Plusieurs réponses acceptées</div>' : ""}
+                    `;
+                }
+                else if (format === "PHRASE_TROUS") {
+                    const bonneTexte = (row.Bonne_Réponse || "").trim();
+                    const question = row.Question || row.Titre || "";
+                    let trouIndex = 0;
+                    const answers = bonneTexte.split("|").map(function(a){ return a.trim(); });
+                    const phraseHtml = question.replace(/___/g, function() {
+                        const ans = (answers[trouIndex] || "").replace(/"/g, "&quot;");
+                        const qid = i;
+                        const tid = trouIndex;
+                        const inp = '<input type="text" class="trou-input"'
+                                  + ' id="trou-' + qid + '-' + tid + '"'
+                                  + ' data-answer="' + ans + '"'
+                                  + ' placeholder="  ?  "'
+                                  + ' onkeydown="if(event.key==String.fromCharCode(13)) checkPhraseTrous(' + qid + ')">';
+                        trouIndex++;
+                        return inp;
+                    });
+                    quizContent = '<div class="quiz-title">' + (row.Titre || "Complétez la phrase") + '</div>'
+                                + '<div class="phrase-trous">' + phraseHtml + '</div>'
+                                + '<button class="valider-trous-btn" id="trous-btn-' + i + '" onclick="checkPhraseTrous(' + i + ')">Valider ✓</button>';
                 }
                 else {
                     quizContent = `
@@ -969,6 +1045,54 @@ function shuffleFlashcards() {
                     }
                 }
 
+            } else if (type === 'texte_libre') {
+                const input = document.getElementById('tl-' + id);
+                const btn   = document.getElementById('tl-btn-' + id);
+                if (input) {
+                    input.disabled = true;
+                    input.style.borderColor = '';
+                    input.style.fontWeight = '';
+                    if (btn) btn.disabled = true;
+                    const corrects = ans.correct.split('|').map(normaliser);
+                    if (corrects.includes(normaliser(ans.value))) {
+                        input.classList.add('success'); score++;
+                    } else {
+                        input.classList.add('error');
+                        const expli = document.getElementById('ex-' + id);
+                        if (expli) expli.innerHTML = '<span style="color:#991b1b;">❌ La bonne réponse : <strong>' + ans.correct + '</strong></span><br><br>' + expli.innerHTML;
+                    }
+                }
+
+            } else if (type === 'phrase_trous') {
+                const btn = document.getElementById('trous-btn-' + id);
+                if (btn) btn.disabled = true;
+                let allCorrect = true;
+                let nbCorrect = 0;
+                (ans.inputs || []).forEach(item => {
+                    const inp = document.getElementById(item.id);
+                    if (!inp) return;
+                    inp.disabled = true;
+                    inp.style.borderBottomColor = '';
+                    inp.style.fontWeight = '';
+                    const corrects = item.correct.split('|').map(normaliser);
+                    const userVal  = ans.values[item.id] || '';
+                    if (corrects.includes(normaliser(userVal))) {
+                        inp.classList.add('success'); nbCorrect++;
+                    } else {
+                        inp.classList.add('error');
+                        allCorrect = false;
+                        const hint = document.createElement('div');
+                        hint.style.cssText = 'font-size:0.8rem;color:#991b1b;text-align:center;margin-top:2px;';
+                        hint.textContent = '→ ' + item.correct;
+                        inp.after(hint);
+                    }
+                });
+                if (allCorrect) { score++; }
+                else {
+                    const expli = document.getElementById('ex-' + id);
+                    if (expli) expli.innerHTML = '<span style="color:#991b1b;">❌ ' + nbCorrect + ' trou(s) correct(s) sur ' + (ans.inputs||[]).length + '</span><br><br>' + expli.innerHTML;
+                }
+
             } else if (type === 'dragdrop') {
                 const dz = document.getElementById(`dz-${id}`);
                 if (!dz) return;
@@ -1174,6 +1298,101 @@ function shuffleFlashcards() {
             current = current.parentElement;
         }
         return el;
+    }
+
+
+    // --- NORMALISATION (accents + casse) ---
+    function normaliser(str) {
+        return str.trim().toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/['']/g, "'");
+    }
+
+    // --- TEXTE LIBRE ---
+    function checkTexteLibre(id) {
+        if (answeredQuestions.has(id)) return;
+        const input = document.getElementById('tl-' + id);
+        const btn   = document.getElementById('tl-btn-' + id);
+        const expli = document.getElementById('ex-' + id);
+        const userVal = input.value;
+        if (!userVal.trim()) { input.focus(); return; }
+
+        if (examMode) {
+            examUserAnswers[id] = { type: 'texte_libre', value: userVal, correct: input.dataset.correct };
+            input.style.borderColor = 'var(--violet)';
+            input.style.fontWeight = '700';
+            return;
+        }
+
+        answeredQuestions.add(id);
+        input.disabled = true;
+        btn.disabled = true;
+
+        const corrects = input.dataset.correct.split("|").map(normaliser);
+        if (corrects.includes(normaliser(userVal))) {
+            input.classList.add('success');
+            currentScore++;
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+        } else {
+            input.classList.add('error');
+            // Afficher la bonne réponse dans l'explication
+            if (expli) expli.innerHTML = '<span style="color:#991b1b;">❌ La bonne réponse : <strong>' + input.dataset.correct + '</strong></span><br><br>' + expli.innerHTML;
+        }
+        if (expli) expli.style.display = 'block';
+        updateScoreBoard();
+    }
+
+    // --- PHRASE À TROUS ---
+    function checkPhraseTrous(id) {
+        if (answeredQuestions.has(id)) return;
+        const btn   = document.getElementById('trous-btn-' + id);
+        const expli = document.getElementById('ex-' + id);
+        const inputs = document.querySelectorAll('.trou-input[id^="trou-' + id + '-"]');
+        
+        // Vérifier que tous les trous sont remplis
+        let allFilled = true;
+        inputs.forEach(inp => { if (!inp.value.trim()) allFilled = false; });
+        if (!allFilled) { inputs.forEach(inp => { if (!inp.value.trim()) inp.focus(); }); return; }
+
+        if (examMode) {
+            const vals = {};
+            inputs.forEach(inp => { vals[inp.id] = inp.value; });
+            examUserAnswers[id] = { type: 'phrase_trous', values: vals, inputs: Array.from(inputs).map(inp => ({ id: inp.id, correct: inp.dataset.answer })) };
+            inputs.forEach(inp => { inp.style.borderBottomColor = 'var(--violet)'; inp.style.fontWeight = '700'; });
+            return;
+        }
+
+        answeredQuestions.add(id);
+        btn.disabled = true;
+        let allCorrect = true;
+        let nbCorrect = 0;
+
+        inputs.forEach(inp => {
+            inp.disabled = true;
+            const corrects = inp.dataset.answer.split("|").map(normaliser);
+            if (corrects.includes(normaliser(inp.value))) {
+                inp.classList.add('success');
+                nbCorrect++;
+            } else {
+                inp.classList.add('error');
+                allCorrect = false;
+                // Ajouter un petit span avec la bonne réponse sous l'input
+                const hint = document.createElement('div');
+                hint.style.cssText = 'font-size:0.8rem; color:#991b1b; text-align:center; margin-top:2px;';
+                hint.textContent = '→ ' + inp.dataset.answer;
+                inp.after(hint);
+            }
+        });
+
+        // Score : 1 point si tous les trous sont corrects
+        if (allCorrect) {
+            currentScore++;
+            confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+        } else {
+            if (expli) expli.innerHTML = '<span style="color:#991b1b;">❌ ' + nbCorrect + ' trou(s) correct(s) sur ' + inputs.length + '</span><br><br>' + expli.innerHTML;
+        }
+        if (expli) expli.style.display = 'block';
+        updateScoreBoard();
     }
 
     window.onload = () => loadData(sections[0].gid, menu.firstChild);

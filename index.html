@@ -202,6 +202,62 @@
         .big-score { font-size: 3rem; font-weight: 900; color: var(--violet); display: block; margin: 10px 0; }
 
         @media (max-width: 600px) { .btn-grid { grid-template-columns: 1fr; } .main-title { font-size: 2rem; } }
+    /* --- MODE EXAMEN --- */
+    .exam-banner {
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: linear-gradient(135deg, #7c3aed, #2563eb);
+        color: white; text-align: center; padding: 10px 20px;
+        font-weight: 800; font-size: 1rem; z-index: 998;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+    .exam-timer {
+        font-size: 1.4rem; font-weight: 900; letter-spacing: 2px;
+        font-variant-numeric: tabular-nums;
+        background: rgba(255,255,255,0.2); padding: 4px 16px;
+        border-radius: 30px;
+    }
+    .exam-timer.warning { background: rgba(239, 68, 68, 0.5); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+    
+    .exam-active .card-quiz { border-top-color: var(--violet) !important; }
+    .opt-btn.selected-exam { background: #e0e7ff !important; border-color: #4f46e5 !important; color: #3730a3 !important; font-weight: 800; }
+    body.dark-mode .opt-btn.selected-exam { background: #312e81 !important; border-color: #818cf8 !important; color: #c7d2fe !important; }
+    .quiz-select.selected-exam { background: #e0e7ff; border-color: #4f46e5; color: #3730a3; }
+    .drag-item.selected-exam { background: #e0e7ff; border-color: #4f46e5; color: #3730a3; }
+    .drop-zone.selected-exam { background: #e0e7ff; border-style: solid; border-color: #4f46e5; }
+
+    .exam-submit-btn {
+        display: block; width: 100%; padding: 20px;
+        background: linear-gradient(135deg, #7c3aed, #2563eb);
+        color: white; font-size: 1.2rem; font-weight: 900;
+        border: none; border-radius: 16px; cursor: pointer;
+        margin-top: 30px; transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    .exam-submit-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4); }
+
+    #examModeBtn.active {
+        background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+        color: white !important; border-color: transparent !important;
+    }
+
+    .exam-timer-setup {
+        background: var(--bristol); border: 2px solid var(--violet);
+        border-radius: 16px; padding: 30px; margin-bottom: 25px;
+        text-align: center;
+    }
+    .exam-timer-setup h3 { color: var(--violet); margin: 0 0 20px; font-size: 1.4rem; }
+    .timer-options { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .timer-opt-btn {
+        padding: 12px 20px; border: 2px solid var(--violet); border-radius: 12px;
+        background: var(--opt-bg); color: var(--violet); font-weight: 700;
+        cursor: pointer; font-size: 1rem; transition: all 0.2s;
+    }
+    .timer-opt-btn.selected, .timer-opt-btn:hover { background: var(--violet); color: white; }
+
+    body.exam-active { padding-top: 115px; }
+
     /* --- ANIMATION DE MÉLANGE --- */
 @keyframes shuffleAnim {
     0% { transform: scale(1); opacity: 1; }
@@ -220,8 +276,11 @@
     <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
     <div style="display: flex; gap: 10px;">
         <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+        <button class="theme-toggle" id="examModeBtn" onclick="toggleExamMode()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
+            📝 Mode Examen
+        </button>
         <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
-            🎓 Télécharger mon Bilan
+            🎓 Bilan
         </button>
     </div>
 </div>
@@ -245,6 +304,13 @@
     let currentScore = 0;
     let maxQuizScore = 0;
     let answeredQuestions = new Set();
+
+    // --- MODE EXAMEN ---
+    let examMode = false;
+    let examUserAnswers = {};
+    let examTimerInterval = null;
+    let examSecondsLeft = 0;
+    let selectedExamDuration = 30;
 
     const sections = [
         { name: "🪧 Grammaire", gid: "1679242234", color: "#3b82f6" },
@@ -370,11 +436,11 @@ else if(siecle.includes("XX")) progress = 90;
                 else {
                     quizContent = `
                         <div class="quiz-title">${row.Titre || row.Question}</div>
-                        <div class="btn-grid">
-                            <button class="opt-btn" id="btn-${i}-A" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
-                            <button class="opt-btn" id="btn-${i}-B" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
-                            ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
-                            ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
+                        <div class="btn-grid" data-correct="${bonne}">
+                            <button class="opt-btn" id="btn-${i}-A" data-id="${i}" data-letter="A" data-correct="${bonne}" onclick="check('A','${bonne}',${i})">A. ${row.Réponse_A || ""}</button>
+                            <button class="opt-btn" id="btn-${i}-B" data-id="${i}" data-letter="B" data-correct="${bonne}" onclick="check('B','${bonne}',${i})">B. ${row.Réponse_B || ""}</button>
+                            ${row.Réponse_C ? `<button class="opt-btn" id="btn-${i}-C" data-id="${i}" data-letter="C" data-correct="${bonne}" onclick="check('C','${bonne}',${i})">C. ${row.Réponse_C}</button>` : ''}
+                            ${row.Réponse_D ? `<button class="opt-btn" id="btn-${i}-D" data-id="${i}" data-letter="D" data-correct="${bonne}" onclick="check('D','${bonne}',${i})">D. ${row.Réponse_D}</button>` : ''}
                         </div>
                     `;
                 }
@@ -422,12 +488,25 @@ else if(siecle.includes("XX")) progress = 90;
     // 1. Validation QCM classique
     function check(click, correct, id) {
         if (answeredQuestions.has(id)) return;
+        const btnClicked = document.getElementById();
+        
+        // --- MODE EXAMEN : on enregistre la réponse sans révéler ---
+        if (examMode) {
+            // Désélectionner la réponse précédente si elle existe
+            if (examUserAnswers[id]) {
+                const prevBtn = document.getElementById();
+                if (prevBtn) prevBtn.classList.remove('selected-exam');
+            }
+            examUserAnswers[id] = { type: 'qcm', value: click, correct };
+            btnClicked.classList.add('selected-exam');
+            return;
+        }
+        
         answeredQuestions.add(id);
-        const btnClicked = document.getElementById(`btn-${id}-${click}`);
-        const expli = document.getElementById(`ex-${id}`);
+        const expli = document.getElementById();
         
         ['A', 'B', 'C', 'D'].forEach(l => { 
-            const b = document.getElementById(`btn-${id}-${l}`); 
+            const b = document.getElementById(); 
             if(b) b.disabled = true; 
         });
         
@@ -437,7 +516,7 @@ else if(siecle.includes("XX")) progress = 90;
             confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } }); 
         } else { 
             btnClicked.classList.add('error'); 
-            const btnCorrect = document.getElementById(`btn-${id}-${correct}`); 
+            const btnCorrect = document.getElementById(); 
             if(btnCorrect) btnCorrect.classList.add('success'); 
         }
         
@@ -451,6 +530,13 @@ else if(siecle.includes("XX")) progress = 90;
         const selectEl = document.getElementById(`sel-${id}`);
         const userChoice = selectEl.value;
         if (!userChoice) { alert("Veuillez sélectionner une réponse !"); return; }
+        
+        // --- MODE EXAMEN ---
+        if (examMode) {
+            examUserAnswers[id] = { type: 'dropdown', value: userChoice, correct };
+            selectEl.classList.add('selected-exam');
+            return;
+        }
         
         answeredQuestions.add(id);
         selectEl.disabled = true;
@@ -490,6 +576,28 @@ else if(siecle.includes("XX")) progress = 90;
         dropZone.classList.remove('dragover');
         
         if (answeredQuestions.has(id)) return;
+        
+        // --- MODE EXAMEN : autoriser changement de réponse ---
+        if (examMode) {
+            const draggedId = ev.dataTransfer.getData("elementId");
+            const draggedVal = ev.dataTransfer.getData("value");
+            if (!draggedId) return;
+            const draggedEl = document.getElementById(draggedId);
+            // Nettoyer drop zone si déjà une réponse
+            if (dropZone.firstChild && dropZone.firstChild !== dropZone.childNodes[0]) {
+                const prevEl = dropZone.querySelector('.drag-item');
+                if (prevEl) {
+                    const container = document.getElementById(`drag-container-${id}`);
+                    if (container) { prevEl.classList.remove('selected-exam'); container.appendChild(prevEl); }
+                }
+            }
+            dropZone.innerHTML = "";
+            dropZone.appendChild(draggedEl);
+            dropZone.classList.add('selected-exam');
+            draggedEl.classList.add('selected-exam');
+            examUserAnswers[id] = { type: 'dragdrop', value: draggedVal, correct };
+            return;
+        }
         
         const draggedId = ev.dataTransfer.getData("elementId");
         const draggedVal = ev.dataTransfer.getData("value");
@@ -613,6 +721,266 @@ function shuffleFlashcards() {
         });
     }, 150); // Le mélange se fait à la moitié de l'animation (quand les cartes sont au plus petit)
 }
+
+    // ==========================================
+    // --- FONCTIONS MODE EXAMEN ---
+    // ==========================================
+    
+    function toggleExamMode() {
+        if (examMode) {
+            exitExamMode();
+        } else {
+            startExamSetup();
+        }
+    }
+
+    function startExamSetup() {
+        // Affiche un panneau de configuration avant de lancer le mode examen
+        const quizSections = ["🪧 Grammaire", "✒️​ Conjugaison", "🪶​ Figures de style", "✍️ Testez vos connaissances", "📝 Vocabulaire", "🖋️ Orthographe"];
+        const activeBtn = document.querySelector('.nav-btn.active');
+        const activeSection = activeBtn ? activeBtn.innerText : '';
+        const hasQuiz = maxQuizScore > 0;
+        
+        if (!hasQuiz) {
+            alert('Ce chapitre ne contient pas de questions. Sélectionne un chapitre avec des quiz (Grammaire, Conjugaison, etc.) pour lancer le mode examen !');
+            return;
+        }
+
+        const setupDiv = document.createElement('div');
+        setupDiv.id = 'examSetupPanel';
+        setupDiv.className = 'exam-timer-setup';
+        setupDiv.innerHTML = `
+            <h3>⏱️ Mode Examen - Configuration</h3>
+            <p style="color:var(--texte-sec); margin-bottom:20px;">Choisissez la durée de l'examen. Les corrections s'afficheront uniquement à la fin.</p>
+            <div class="timer-options" id="timerOptions">
+                <button class="timer-opt-btn" onclick="selectDuration(this, 10)">10 min</button>
+                <button class="timer-opt-btn selected" onclick="selectDuration(this, 30)">30 min</button>
+                <button class="timer-opt-btn" onclick="selectDuration(this, 45)">45 min</button>
+                <button class="timer-opt-btn" onclick="selectDuration(this, 60)">1 heure</button>
+            </div>
+            <button class="exam-submit-btn" onclick="launchExamMode()" style="max-width:300px; margin: 0 auto;">
+                🚀 Lancer l'examen
+            </button>
+            <button onclick="document.getElementById('examSetupPanel').remove()" 
+                style="margin-top:12px; background:none; border:none; color:var(--texte-sec); cursor:pointer; font-size:0.9rem;">
+                Annuler
+            </button>
+        `;
+        app.prepend(setupDiv);
+        setupDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectDuration(btn, minutes) {
+        document.querySelectorAll('.timer-opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedExamDuration = minutes;
+    }
+
+    function launchExamMode() {
+        const setupPanel = document.getElementById('examSetupPanel');
+        if (setupPanel) setupPanel.remove();
+
+        examMode = true;
+        examUserAnswers = {};
+        document.getElementById('examModeBtn').classList.add('active');
+        document.getElementById('examModeBtn').innerText = '❌ Quitter examen';
+        document.body.classList.add('exam-active');
+
+        // Reset les réponses déjà données
+        currentScore = 0;
+        answeredQuestions.clear();
+        // Rereload la section pour partir sur un état propre
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn) {
+            const gid = sections.find(s => s.name === activeBtn.innerText)?.gid;
+            if (gid) loadData(gid, activeBtn);
+        }
+        
+        // Lance le timer après le chargement
+        setTimeout(() => {
+            startExamTimer();
+            addExamBannerAndSubmitBtn();
+        }, 800);
+    }
+
+    function startExamTimer() {
+        examSecondsLeft = selectedExamDuration * 60;
+        updateTimerDisplay();
+        examTimerInterval = setInterval(() => {
+            examSecondsLeft--;
+            updateTimerDisplay();
+            if (examSecondsLeft <= 0) {
+                clearInterval(examTimerInterval);
+                alert('⏰ Temps écoulé ! Correction en cours...');
+                submitExam();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const timerEl = document.getElementById('examTimerDisplay');
+        if (!timerEl) return;
+        const m = Math.floor(examSecondsLeft / 60);
+        const s = examSecondsLeft % 60;
+        timerEl.innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        if (examSecondsLeft <= 60) timerEl.classList.add('warning');
+        else timerEl.classList.remove('warning');
+    }
+
+    function addExamBannerAndSubmitBtn() {
+        // Bannière fixe en haut
+        const existingBanner = document.getElementById('examBanner');
+        if (existingBanner) existingBanner.remove();
+        
+        const banner = document.createElement('div');
+        banner.id = 'examBanner';
+        banner.className = 'exam-banner';
+        banner.innerHTML = `
+            <span>📝 Mode Examen — ${selectedExamDuration} min</span>
+            <span class="exam-timer" id="examTimerDisplay">--:--</span>
+            <button onclick="submitExam()" style="background:white; color:#7c3aed; border:none; padding:8px 16px; border-radius:20px; font-weight:800; cursor:pointer;">
+                ✅ Terminer
+            </button>
+        `;
+        document.body.insertBefore(banner, document.body.firstChild);
+        updateTimerDisplay();
+
+        // Bouton de soumission en bas de page
+        const submitBtn = document.createElement('button');
+        submitBtn.id = 'examSubmitBtn';
+        submitBtn.className = 'exam-submit-btn';
+        submitBtn.innerHTML = '✅ Terminer et corriger mon examen';
+        submitBtn.onclick = submitExam;
+        finalBox.before(submitBtn);
+    }
+
+    function exitExamMode(keepResults) {
+        examMode = false;
+        clearInterval(examTimerInterval);
+        document.getElementById('examModeBtn').classList.remove('active');
+        document.getElementById('examModeBtn').innerText = '📝 Mode Examen';
+        document.body.classList.remove('exam-active');
+        
+        const banner = document.getElementById('examBanner');
+        if (banner) banner.remove();
+        const submitBtn = document.getElementById('examSubmitBtn');
+        if (submitBtn) submitBtn.remove();
+        const setupPanel = document.getElementById('examSetupPanel');
+        if (setupPanel) setupPanel.remove();
+        
+        if (!keepResults) {
+            // Recharge proprement
+            const activeBtn = document.querySelector('.nav-btn.active');
+            if (activeBtn) {
+                const gid = sections.find(s => s.name === activeBtn.innerText)?.gid;
+                if (gid) loadData(gid, activeBtn);
+            }
+        }
+    }
+
+    function submitExam() {
+        clearInterval(examTimerInterval);
+        examMode = false; // Stoppe le mode examen pour que les corrections s'affichent normalement
+        
+        let score = 0;
+        const total = maxQuizScore;
+
+        // --- Correction de toutes les questions via examUserAnswers ---
+        Object.entries(examUserAnswers).forEach(([idStr, ans]) => {
+            const id = parseInt(idStr);
+            const { type, value, correct } = ans;
+            const expli = document.getElementById(`ex-${id}`);
+
+            if (type === 'qcm') {
+                ['A','B','C','D'].forEach(l => {
+                    const b = document.getElementById(`btn-${id}-${l}`);
+                    if (!b) return;
+                    b.disabled = true;
+                    b.classList.remove('selected-exam');
+                    if (l === correct) b.classList.add('success');
+                    else if (l === value && value !== correct) b.classList.add('error');
+                });
+                if (value === correct) score++;
+
+            } else if (type === 'dropdown') {
+                const sel = document.getElementById(`sel-${id}`);
+                if (sel) {
+                    sel.disabled = true;
+                    sel.classList.remove('selected-exam');
+                    if (value === correct) { sel.classList.add('success'); score++; }
+                    else { 
+                        sel.classList.add('error');
+                        if (expli) expli.innerHTML = `<span style="color:#991b1b;">❌ La bonne réponse était <strong>${correct}</strong>.</span><br><br>` + expli.innerHTML;
+                    }
+                }
+
+            } else if (type === 'dragdrop') {
+                const dz = document.getElementById(`dz-${id}`);
+                if (!dz) return;
+                const draggedEl = dz.querySelector('.drag-item');
+                dz.classList.remove('selected-exam');
+                if (draggedEl) draggedEl.classList.remove('selected-exam');
+                if (value === correct) {
+                    dz.classList.add('success');
+                    if (draggedEl) draggedEl.classList.add('success');
+                    score++;
+                } else {
+                    dz.classList.add('error');
+                    if (draggedEl) draggedEl.classList.add('error');
+                    const correctEl = document.getElementById(`drag-${id}-${correct}`);
+                    if (correctEl) correctEl.classList.add('success');
+                }
+            }
+            
+            if (expli) expli.style.display = 'block';
+        });
+
+        // Pour les questions sans réponse, désactiver les boutons
+        for (let i = 0; i < total + 50; i++) {
+            ['A','B','C','D'].forEach(l => {
+                const b = document.getElementById(`btn-${i}-${l}`);
+                if (b && !b.disabled) b.disabled = true;
+            });
+            const sel = document.getElementById(`sel-${i}`);
+            if (sel && !sel.disabled) sel.disabled = true;
+        }
+
+        // Afficher toutes les explications
+        document.querySelectorAll('.expli-box').forEach(e => e.style.display = 'block');
+
+        currentScore = score;
+        scoreBoard.innerHTML = `Score: ${score} / ${total}`;
+        const activeSection = document.querySelector('.nav-btn.active')?.innerText;
+        if (activeSection) localStorage.setItem(`score_${activeSection}`, `${score} / ${total}`);
+
+        const percent = total > 0 ? Math.round((score / total) * 100) : 0;
+        let msg = '', color = '';
+        if (percent === 100) { msg = 'INCROYABLE ! 🏆 Parfait !'; color = '#10b981'; }
+        else if (percent >= 75) { msg = 'Très bon résultat ! ✨'; color = '#2563eb'; }
+        else if (percent >= 50) { msg = 'Pas mal, continue ! 👍'; color = '#f59e0b'; }
+        else { msg = 'Il faut encore réviser... 📚'; color = '#ef4444'; }
+
+        finalBox.innerHTML = `
+            <h3>📋 Résultat de l'Examen</h3>
+            <span class="big-score" style="color:${color}">${score} / ${total}</span>
+            <p style="font-size:1.3rem;">${msg}</p>
+            <p style="color:var(--texte-sec);">Durée choisie : ${selectedExamDuration} min · Questions répondues : ${Object.keys(examUserAnswers).length}/${total}</p>
+            <button class="nav-btn" style="--btn-color:var(--violet)" onclick="exitExamMode(true); window.scrollTo({top:0, behavior:'smooth'})">
+                Relire les corrections ↑
+            </button>
+        `;
+        finalBox.style.display = 'block';
+        
+        const submitBtn = document.getElementById('examSubmitBtn');
+        if (submitBtn) submitBtn.remove();
+        
+        const banner = document.getElementById('examBanner');
+        if (banner) banner.innerHTML = `<span>📝 Examen terminé</span><span style="font-weight:800;">${score} / ${total} (${percent}%)</span><span></span>`;
+
+        setTimeout(() => finalBox.scrollIntoView({ behavior: 'smooth' }), 200);
+        if (percent === 100) confetti({ particleCount: 150, spread: 90, origin: { y: 0.4 } });
+    }
+
     window.onload = () => loadData(sections[0].gid, menu.firstChild);
 window.onscroll = function() {
     const btn = document.getElementById("backToTop");

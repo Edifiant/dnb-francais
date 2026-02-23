@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script src="https://bernardo-castilho.github.io/dragdroptouch/DragDropTouch.js"></script>
     <style>
         /* --- NOUVEAUX TYPES DE QUIZ --- */
         /* Dropdown / Menu déroulant */
@@ -426,10 +425,10 @@ else if(siecle.includes("XX")) progress = 90;
                             Déposez la réponse ici
                         </div>
                         <div class="drag-container" id="drag-container-${i}">
-                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-A" data-val="A">${row.Réponse_A}</div>
-                            <div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-B" data-val="B">${row.Réponse_B}</div>
-                            ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-C" data-val="C">${row.Réponse_C}</div>` : ''}
-                            ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" id="drag-${i}-D" data-val="D">${row.Réponse_D}</div>` : ''}
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-A" data-val="A" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_A}</div>
+                            <div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-B" data-val="B" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_B}</div>
+                            ${row.Réponse_C ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-C" data-val="C" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_C}</div>` : ''}
+                            ${row.Réponse_D ? `<div class="drag-item" draggable="true" ondragstart="drag(event)" ontouchstart="touchDragStart(event)" ontouchmove="touchDragMove(event)" ontouchend="touchDragEnd(event)" id="drag-${i}-D" data-val="D" data-drop-id="${i}" data-correct="${bonne}">${row.Réponse_D}</div>` : ''}
                         </div>
                     `;
                 }
@@ -1007,6 +1006,146 @@ function shuffleFlashcards() {
 
         setTimeout(() => finalBox.scrollIntoView({ behavior: 'smooth' }), 200);
         if (percent === 100) confetti({ particleCount: 150, spread: 90, origin: { y: 0.4 } });
+    }
+
+
+    // ==========================================
+    // --- DRAG & DROP TACTILE (MOBILE) ---
+    // ==========================================
+    let touchDragEl = null;       // L'élément en cours de déplacement
+    let touchClone = null;        // Le clone visuel qui suit le doigt
+    let touchOffsetX = 0;
+    let touchOffsetY = 0;
+
+    function touchDragStart(ev) {
+        const el = ev.currentTarget;
+        const id = parseInt(el.getAttribute('data-drop-id'));
+        if (!examMode && answeredQuestions.has(id)) return;
+
+        touchDragEl = el;
+        const touch = ev.touches[0];
+        const rect = el.getBoundingClientRect();
+        touchOffsetX = touch.clientX - rect.left;
+        touchOffsetY = touch.clientY - rect.top;
+
+        // Créer un clone visuel flottant
+        touchClone = el.cloneNode(true);
+        touchClone.style.cssText = `
+            position: fixed;
+            left: ${rect.left}px;
+            top: ${rect.top}px;
+            width: ${rect.width}px;
+            z-index: 9999;
+            opacity: 0.85;
+            pointer-events: none;
+            transform: scale(1.05) rotate(-2deg);
+            transition: none;
+            margin: 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+        `;
+        document.body.appendChild(touchClone);
+        el.style.opacity = '0.35';
+        ev.preventDefault();
+    }
+
+    function touchDragMove(ev) {
+        if (!touchClone) return;
+        const touch = ev.touches[0];
+        touchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
+        touchClone.style.top  = (touch.clientY - touchOffsetY) + 'px';
+
+        // Mettre en valeur la drop zone survolée
+        document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('dragover'));
+        const elUnder = getElementUnderTouch(touch.clientX, touch.clientY);
+        if (elUnder?.classList.contains('drop-zone')) elUnder.classList.add('dragover');
+        ev.preventDefault();
+    }
+
+    function touchDragEnd(ev) {
+        if (!touchClone || !touchDragEl) return;
+        const touch = ev.changedTouches[0];
+
+        // Nettoyer le clone
+        touchClone.remove();
+        touchClone = null;
+        touchDragEl.style.opacity = '1';
+
+        // Trouver la drop zone sous le doigt
+        document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('dragover'));
+        const elUnder = getElementUnderTouch(touch.clientX, touch.clientY);
+
+        if (elUnder?.classList.contains('drop-zone')) {
+            const correct = touchDragEl.getAttribute('data-correct');
+            const val     = touchDragEl.getAttribute('data-val');
+            const id      = parseInt(touchDragEl.getAttribute('data-drop-id'));
+            const dropId  = elUnder.id.replace('dz-', '');
+
+            // Vérifier que c'est la bonne drop zone
+            if (parseInt(dropId) === id) {
+                // Simuler le drop
+                if (examMode) {
+                    // Remettre un éventuel élément précédent
+                    const prevEl = elUnder.querySelector('.drag-item');
+                    if (prevEl) {
+                        const container = document.getElementById('drag-container-' + id);
+                        if (container) { prevEl.classList.remove('selected-exam'); prevEl.style.opacity = '1'; container.appendChild(prevEl); }
+                    }
+                    elUnder.innerHTML = '';
+                    elUnder.appendChild(touchDragEl);
+                    elUnder.classList.add('selected-exam');
+                    touchDragEl.classList.add('selected-exam');
+                    examUserAnswers[id] = { type: 'dragdrop', value: val, correct: correct };
+                } else {
+                    if (answeredQuestions.has(id)) return;
+                    elUnder.innerHTML = '';
+                    elUnder.appendChild(touchDragEl);
+
+                    const container = document.getElementById('drag-container-' + id);
+                    if (container) {
+                        Array.from(container.children).forEach(child => {
+                            child.setAttribute('draggable', 'false');
+                            child.style.opacity = '0.5';
+                            child.style.cursor = 'not-allowed';
+                            child.ontouchstart = null;
+                        });
+                    }
+                    touchDragEl.setAttribute('draggable', 'false');
+                    touchDragEl.style.opacity = '1';
+                    touchDragEl.ontouchstart = null;
+
+                    if (val === correct) {
+                        currentScore++;
+                        elUnder.classList.add('success');
+                        touchDragEl.classList.add('success');
+                        confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } });
+                    } else {
+                        elUnder.classList.add('error');
+                        touchDragEl.classList.add('error');
+                        const correctEl = document.getElementById('drag-' + id + '-' + correct);
+                        if (correctEl) correctEl.classList.add('success');
+                    }
+                    answeredQuestions.add(id);
+                    const expli = document.getElementById('ex-' + id);
+                    if (expli) expli.style.display = 'block';
+                    updateScoreBoard();
+                }
+            }
+        }
+        touchDragEl = null;
+    }
+
+    function getElementUnderTouch(x, y) {
+        // Cacher le clone pour trouver l'élément en dessous
+        if (touchClone) touchClone.style.display = 'none';
+        const el = document.elementFromPoint(x, y);
+        if (touchClone) touchClone.style.display = '';
+        // Remonter dans le DOM pour trouver une drop-zone
+        let current = el;
+        while (current && current !== document.body) {
+            if (current.classList && current.classList.contains('drop-zone')) return current;
+            current = current.parentElement;
+        }
+        return el;
     }
 
     window.onload = () => loadData(sections[0].gid, menu.firstChild);

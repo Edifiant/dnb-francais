@@ -208,7 +208,34 @@
     50% { transform: scale(0.95); opacity: 0.5; }
     100% { transform: scale(1); opacity: 1; }
 }
-
+/* --- BARRE DE PROGRESSION GLOBALE --- */
+.global-progress-wrapper {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    text-align: center;
+}
+.global-progress-container {
+    background: var(--card-border);
+    height: 14px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+.global-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bleu), var(--violet));
+    width: 0%;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+}
+.global-progress-text {
+    font-size: 0.9rem;
+    color: var(--texte-sec);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 .is-shuffling {
     animation: shuffleAnim 0.4s ease-out;
 }    
@@ -228,6 +255,12 @@
 
 <div class="container">
     <h1 class="main-title">🎓 Objectif Brevet, collège Alain (3e 3) 🧑‍🎓</h1>
+    <div class="global-progress-wrapper">
+        <div class="global-progress-container">
+            <div class="global-progress-bar" id="globalProgressBar"></div>
+        </div>
+        <div class="global-progress-text" id="globalProgressText">Progression : 0%</div>
+    </div>
     <div class="nav-menu" id="menu"></div>
 
     <div class="trophy-shelf" id="trophyShelf">
@@ -288,7 +321,29 @@
         app.innerHTML = "<div style='text-align:center; padding: 50px;'>Préparation du cours...</div>";
         Papa.parse(spreadsheetUrl + gid, { download: true, header: true, skipEmptyLines: true, complete: (results) => render(results.data) });
     }
-
+function updateGlobalProgress() {
+    let completedSections = 0;
+    
+    // On vérifie combien de sections ont une trace dans la mémoire (localStorage)
+    sections.forEach(s => {
+        const score = localStorage.getItem(`score_${s.name}`);
+        if (score && score !== "Non effectué") {
+            completedSections++;
+        }
+    });
+    
+    // Calcul du pourcentage
+    const percentage = Math.round((completedSections / sections.length) * 100);
+    
+    // Mise à jour de l'affichage
+    const progressBar = document.getElementById('globalProgressBar');
+    const progressText = document.getElementById('globalProgressText');
+    
+    if (progressBar && progressText) {
+        progressBar.style.width = `${percentage}%`;
+        progressText.innerText = `Progression : ${percentage}%`;
+    }
+}
     function render(data) {
         let html = "";
         let hasQuiz = false;
@@ -416,7 +471,20 @@ else if(siecle.includes("XX")) progress = 90;
             app.prepend(downloadDiv);
         }
     }
+// ... fin de la fonction render
+    if (activeBtn && activeBtn.innerText === "📖 Fiches méthode") {
+        // ... (ton code pour le bouton de téléchargement des fiches)
+    }
 
+    // NOUVEAU : Si la section n'a pas de quiz, on la marque comme "Vue" dans la mémoire
+    const activeSectionName = document.querySelector('.nav-btn.active').innerText;
+    if (!hasQuiz) {
+        localStorage.setItem(`score_${activeSectionName}`, "Complété ✅");
+    }
+    
+    // NOUVEAU : On actualise la barre globale à chaque chargement de page
+    updateGlobalProgress();
+}
     // --- FONCTIONS DE VALIDATION (Séparées et propres) ---
 
     // 1. Validation QCM classique
@@ -543,7 +611,12 @@ else if(siecle.includes("XX")) progress = 90;
         }
         if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
     }
-
+// ... fin de la fonction updateScoreBoard
+    if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
+    
+    // NOUVEAU : On met à jour la jauge globale après chaque réponse
+    updateGlobalProgress(); 
+}
     function unlockTrophy(tid) {
         const t = document.getElementById(tid);
         if (t && !t.classList.contains('unlocked')) { t.classList.add('unlocked'); confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } }); }

@@ -488,25 +488,24 @@ else if(siecle.includes("XX")) progress = 90;
     // 1. Validation QCM classique
     function check(click, correct, id) {
         if (answeredQuestions.has(id)) return;
-        const btnClicked = document.getElementById();
+        const btnClicked = document.getElementById('btn-' + id + '-' + click);
         
         // --- MODE EXAMEN : on enregistre la réponse sans révéler ---
         if (examMode) {
-            // Désélectionner la réponse précédente si elle existe
             if (examUserAnswers[id]) {
-                const prevBtn = document.getElementById();
+                const prevBtn = document.getElementById('btn-' + id + '-' + examUserAnswers[id].value);
                 if (prevBtn) prevBtn.classList.remove('selected-exam');
             }
-            examUserAnswers[id] = { type: 'qcm', value: click, correct };
-            btnClicked.classList.add('selected-exam');
+            examUserAnswers[id] = { type: 'qcm', value: click, correct: correct };
+            if (btnClicked) btnClicked.classList.add('selected-exam');
             return;
         }
         
         answeredQuestions.add(id);
-        const expli = document.getElementById();
+        const expli = document.getElementById('ex-' + id);
         
-        ['A', 'B', 'C', 'D'].forEach(l => { 
-            const b = document.getElementById(); 
+        ['A', 'B', 'C', 'D'].forEach(function(l) { 
+            const b = document.getElementById('btn-' + id + '-' + l); 
             if(b) b.disabled = true; 
         });
         
@@ -516,7 +515,7 @@ else if(siecle.includes("XX")) progress = 90;
             confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 } }); 
         } else { 
             btnClicked.classList.add('error'); 
-            const btnCorrect = document.getElementById(); 
+            const btnCorrect = document.getElementById('btn-' + id + '-' + correct); 
             if(btnCorrect) btnCorrect.classList.add('success'); 
         }
         
@@ -735,43 +734,64 @@ function shuffleFlashcards() {
     }
 
     function startExamSetup() {
-        // Affiche un panneau de configuration avant de lancer le mode examen
-        const quizSections = ["🪧 Grammaire", "✒️​ Conjugaison", "🪶​ Figures de style", "✍️ Testez vos connaissances", "📝 Vocabulaire", "🖋️ Orthographe"];
+        // Supprimer le panneau s'il existe déjà
+        const existing = document.getElementById('examSetupPanel');
+        if (existing) { existing.remove(); return; }
+
+        // Construire les options de sections avec quiz
+        const quizSections = sections.filter(s => !['📖 Fiches méthode', '👤 Auteurs'].some(n => s.name.includes('Fiches') || s.name.includes('Auteurs')));
         const activeBtn = document.querySelector('.nav-btn.active');
-        const activeSection = activeBtn ? activeBtn.innerText : '';
-        const hasQuiz = maxQuizScore > 0;
+        const activeName = activeBtn ? activeBtn.innerText : sections[0].name;
         
-        if (!hasQuiz) {
-            alert('Ce chapitre ne contient pas de questions. Sélectionne un chapitre avec des quiz (Grammaire, Conjugaison, etc.) pour lancer le mode examen !');
-            return;
-        }
+        let sectionBtns = quizSections.map(s => {
+            const sel = s.name === activeName ? 'selected' : '';
+            return '<button class="timer-opt-btn ' + sel + '" onclick="selectExamSection(this, \'' + s.name + '\')">' + s.name + '</button>';
+        }).join('');
 
         const setupDiv = document.createElement('div');
         setupDiv.id = 'examSetupPanel';
         setupDiv.className = 'exam-timer-setup';
         setupDiv.innerHTML = `
-            <h3>⏱️ Mode Examen - Configuration</h3>
-            <p style="color:var(--texte-sec); margin-bottom:20px;">Choisissez la durée de l'examen. Les corrections s'afficheront uniquement à la fin.</p>
+            <h3>📝 Mode Examen</h3>
+            <p style="color:var(--texte-sec); margin-bottom:15px; font-size:0.95rem;">Les corrections s'afficheront <strong>uniquement à la fin</strong>. Vous pouvez changer vos réponses avant de valider.</p>
+            
+            <p style="font-weight:700; color:var(--texte); margin-bottom:10px;">📚 Chapitre :</p>
+            <div class="timer-options" id="sectionOptions" style="margin-bottom:20px;">
+                ${sectionBtns}
+            </div>
+
+            <p style="font-weight:700; color:var(--texte); margin-bottom:10px;">⏱️ Durée :</p>
             <div class="timer-options" id="timerOptions">
                 <button class="timer-opt-btn" onclick="selectDuration(this, 10)">10 min</button>
                 <button class="timer-opt-btn selected" onclick="selectDuration(this, 30)">30 min</button>
                 <button class="timer-opt-btn" onclick="selectDuration(this, 45)">45 min</button>
                 <button class="timer-opt-btn" onclick="selectDuration(this, 60)">1 heure</button>
             </div>
-            <button class="exam-submit-btn" onclick="launchExamMode()" style="max-width:300px; margin: 0 auto;">
+            <button class="exam-submit-btn" onclick="launchExamMode()" style="max-width:320px; margin: 20px auto 0;">
                 🚀 Lancer l'examen
             </button>
-            <button onclick="document.getElementById('examSetupPanel').remove()" 
-                style="margin-top:12px; background:none; border:none; color:var(--texte-sec); cursor:pointer; font-size:0.9rem;">
-                Annuler
-            </button>
+            <div style="margin-top:12px;">
+                <button onclick="document.getElementById('examSetupPanel').remove()" 
+                    style="background:none; border:none; color:var(--texte-sec); cursor:pointer; font-size:0.9rem; text-decoration:underline;">
+                    Annuler
+                </button>
+            </div>
         `;
-        app.prepend(setupDiv);
-        setupDiv.scrollIntoView({ behavior: 'smooth' });
+        // Insérer avant le contenu principal
+        document.querySelector('.nav-menu').after(setupDiv);
+        setupDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    let selectedExamSection = null;
+
+    function selectExamSection(btn, sectionName) {
+        document.querySelectorAll('#sectionOptions .timer-opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedExamSection = sectionName;
     }
 
     function selectDuration(btn, minutes) {
-        document.querySelectorAll('.timer-opt-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('#timerOptions .timer-opt-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         selectedExamDuration = minutes;
     }
@@ -789,11 +809,19 @@ function shuffleFlashcards() {
         // Reset les réponses déjà données
         currentScore = 0;
         answeredQuestions.clear();
-        // Rereload la section pour partir sur un état propre
-        const activeBtn = document.querySelector('.nav-btn.active');
-        if (activeBtn) {
-            const gid = sections.find(s => s.name === activeBtn.innerText)?.gid;
-            if (gid) loadData(gid, activeBtn);
+        // Charger la section choisie
+        const targetName = selectedExamSection || (document.querySelector('.nav-btn.active')?.innerText);
+        const targetSection = sections.find(s => s.name === targetName);
+        const targetBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.innerText === targetName);
+        if (targetSection && targetBtn) {
+            loadData(targetSection.gid, targetBtn);
+        } else {
+            // Fallback: recharger la section active
+            const activeBtn = document.querySelector('.nav-btn.active');
+            if (activeBtn) {
+                const found = sections.find(s => s.name.trim() === activeBtn.innerText.trim());
+                if (found) loadData(found.gid, activeBtn);
+            }
         }
         
         // Lance le timer après le chargement

@@ -670,7 +670,7 @@ else if(siecle.includes("XX")) progress = 90;
     function downloadStyledResults() {
         let scoresHtml = "";
         let hasData = false;
-        sections.forEach(s => {
+        sections.filter(s => !s.name.includes("Fiches") && !s.name.includes("Auteurs")).forEach(s => {
             const score = localStorage.getItem(`score_${s.name}`) || "Non évalué";
             if(score !== "Non évalué") hasData = true;
             scoresHtml += `<div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;"><span style="font-weight: bold; color: #475569;">${s.name}</span><span style="color: #7c3aed; font-weight: 800;">${score}</span></div>`;

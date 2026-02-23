@@ -225,48 +225,7 @@
         </button>
     </div>
 </div>
-<div class="top-bar">
-    <div class="score-display" id="scoreBoard">Score: 0 / 0</div>
-    <div id="timerDisplay" style="font-weight: 800; color: var(--marge); display: none; margin-left: 15px;">⏱️ 00:00</div>
-    <div style="display: flex; gap: 10px;">
-        ```
 
-### 2. Le JavaScript : Variables et fonctions du Chrono
-Ajoutez ces variables globales et ces fonctions à la fin de votre balise `<script>` (avant la fin de `render`) :
-
-```javascript
-let timerInterval;
-let timeLeft;
-let isExamMode = false;
-
-function startExamMode() {
-    isExamMode = true;
-    timeLeft = 60; // Temps en secondes (ex: 60s pour le test)
-    document.getElementById('timerDisplay').style.display = "block";
-    
-    // On réinitialise l'intervalle s'il existait
-    clearInterval(timerInterval);
-    
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        document.getElementById('timerDisplay').innerText = `⏱️ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            finishExam();
-        }
-    }, 1000);
-}
-
-function finishExam() {
-    // Désactive toutes les questions non répondues
-    const inputs = document.querySelectorAll('.opt-btn, .quiz-select, .drag-item');
-    inputs.forEach(i => i.disabled = true);
-    alert("Temps écoulé ! Vérifiez vos résultats.");
-    showFinalResult();
-}
 <div class="container">
     <h1 class="main-title">🎓 Objectif Brevet, collège Alain (3e 3) 🧑‍🎓</h1>
     <div class="nav-menu" id="menu"></div>
@@ -432,15 +391,7 @@ else if(siecle.includes("XX")) progress = 90;
         // On ajoute le bouton de mélange juste au-dessus de la grille
         html += `
         <div style="text-align: center; margin-bottom: 25px;">
-            // À insérer dans render(data) juste avant l'affichage du HTML final
-if (hasQuiz) {
-    html = `
-    <div style="text-align: center; margin-bottom: 20px;">
-        <button class="nav-btn" id="examBtn" style="--btn-color: var(--marge); background: var(--marge); color: white;" onclick="startExamMode()">
-            ⏱️ Lancer le Mode Examen (1 min)
-        </button>
-    </div>` + html;
-}<button class="nav-btn" style="--btn-color: var(--orange); background: var(--orange); color: white;" onclick="shuffleFlashcards()">
+            <button class="nav-btn" style="--btn-color: var(--orange); background: var(--orange); color: white;" onclick="shuffleFlashcards()">
                 🔀 Mélanger les auteurs
             </button>
         </div>`;
@@ -592,13 +543,7 @@ if (hasQuiz) {
         }
         if (answeredQuestions.size === maxQuizScore && maxQuizScore > 0) showFinalResult();
     }
-function updateScoreBoard() {
-    // ... votre code existant ...
-    if (answeredQuestions.size === maxQuizScore && isExamMode) {
-        clearInterval(timerInterval);
-        document.getElementById('timerDisplay').style.color = "var(--vert)";
-    }
-}
+
     function unlockTrophy(tid) {
         const t = document.getElementById(tid);
         if (t && !t.classList.contains('unlocked')) { t.classList.add('unlocked'); confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } }); }

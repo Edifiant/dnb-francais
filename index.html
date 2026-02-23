@@ -402,7 +402,7 @@ else if(siecle.includes("XX")) progress = 90;
             else if (row.Question || row.Type === "QUIZ") {
                 hasQuiz = true; maxQuizScore++;
                 const bonne = (row.Bonne_Réponse || "").trim().toUpperCase();
-                const format = (row.Format || "QCM").toUpperCase(); 
+                const format = (row.Format || row.Type || "QCM").toUpperCase(); 
                 let quizContent = "";
 
                 if (format === "DROPDOWN") {

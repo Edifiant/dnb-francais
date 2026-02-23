@@ -376,9 +376,17 @@ else if(siecle.includes("XX")) progress = 90;
             }
         });
 
-        if (authorHtml) {
-            html += `<div class="flashcards-grid">${authorHtml}</div>`;
-        }
+        // Insertion des flashcards dans la grille si des auteurs ont été trouvés
+    if (authorHtml) {
+        // On ajoute le bouton de mélange juste au-dessus de la grille
+        html += `
+        <div style="text-align: center; margin-bottom: 25px;">
+            <button class="nav-btn" style="--btn-color: var(--orange); background: var(--orange); color: white;" onclick="shuffleFlashcards()">
+                🔀 Mélanger les auteurs
+            </button>
+        </div>`;
+        html += `<div class="flashcards-grid">${authorHtml}</div>`;
+    }
 
         app.innerHTML = html || "<p style='text-align:center;'>Aucune donnée trouvée.</p>";
         scoreBoard.innerHTML = hasQuiz ? `Score: 0 / ${maxQuizScore}` : "";
@@ -568,7 +576,28 @@ else if(siecle.includes("XX")) progress = 90;
         const a = document.createElement('a');
         a.href = url; a.download = 'Fiches_Methode_Brevet.html'; a.click();
     }
+function shuffleFlashcards() {
+    const grid = document.querySelector('.flashcards-grid');
+    if (!grid) return; // Sécurité au cas où la grille n'existe pas
 
+    // On récupère toutes les cartes dans un tableau
+    let cards = Array.from(grid.children);
+
+    // Algorithme de mélange (Fisher-Yates)
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+
+    // On réinsère les cartes mélangées dans la grille
+    cards.forEach(card => {
+        // Optionnel mais pratique : on s'assure que toutes les cartes sont remises face "recto"
+        const innerCard = card.querySelector('.flashcard');
+        if (innerCard) innerCard.classList.remove('flipped');
+        
+        grid.appendChild(card);
+    });
+}
     window.onload = () => loadData(sections[0].gid, menu.firstChild);
 window.onscroll = function() {
     const btn = document.getElementById("backToTop");

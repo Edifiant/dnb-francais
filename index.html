@@ -670,13 +670,41 @@ else if(siecle.includes("XX")) progress = 90;
     function downloadStyledResults() {
         let scoresHtml = "";
         let hasData = false;
+        let totalCorrect = 0;
+        let totalQuestions = 0;
+
         sections.filter(s => !s.name.includes("Fiches") && !s.name.includes("Auteurs")).forEach(s => {
             const score = localStorage.getItem(`score_${s.name}`) || "Non évalué";
-            if(score !== "Non évalué") hasData = true;
+            if(score !== "Non évalué") {
+                hasData = true;
+                const parts = score.split(" / ");
+                if(parts.length === 2) {
+                    totalCorrect   += parseInt(parts[0]) || 0;
+                    totalQuestions += parseInt(parts[1]) || 0;
+                }
+            }
             scoresHtml += `<div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;"><span style="font-weight: bold; color: #475569;">${s.name}</span><span style="color: #7c3aed; font-weight: 800;">${score}</span></div>`;
         });
+
         if(!hasData) { alert("Complète au moins un quiz pour générer ton bilan !"); return; }
-        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }.diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }.subtitle { text-align: center; color: #64748b; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }.results-container { margin: 30px 0; background: #fafafa; border-radius: 8px; padding: 20px; }.footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }.stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }</style></head><body><div class="diploma"><h1>Objectif Brevet</h1><div class="subtitle">Bilan Officiel des Révisions</div><p>Félicitations ! Voici le récapitulatif de tes performances :</p><div class="results-container">${scoresHtml}</div><div class="footer">Document généré le ${new Date().toLocaleString('fr-FR')}<br>Continue tes efforts pour décrocher la mention !</div><div class="stamp">Validé par<br>Maître Tronc</div></div></body></html>`;
+
+        // Score ramené sur 200
+        const scoreSur200 = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 200) : 0;
+        const percent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+        let mention = "", mentionColor = "";
+        if(percent >= 90)      { mention = "Très Bien 🏆"; mentionColor = "#10b981"; }
+        else if(percent >= 75) { mention = "Bien ✨";       mentionColor = "#2563eb"; }
+        else if(percent >= 60) { mention = "Assez Bien 👍"; mentionColor = "#f59e0b"; }
+        else                   { mention = "À améliorer 📚"; mentionColor = "#ef4444"; }
+
+        const totalHtml = `<div style="text-align:center; margin: 25px 0; padding: 25px; background: linear-gradient(135deg, #7c3aed15, #2563eb15); border-radius: 16px; border: 3px solid #7c3aed;">
+            <div style="font-size: 0.9rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Score Global</div>
+            <div style="font-size: 4rem; font-weight: 900; color: #7c3aed; line-height: 1;">${scoreSur200}<span style="font-size: 2rem; color: #94a3b8;"> / 200</span></div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: ${mentionColor}; margin-top: 10px;">${mention}</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 6px;">${totalCorrect} bonnes réponses sur ${totalQuestions} questions</div>
+        </div>`;
+
+        const docContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 40px; display: flex; justify-content: center; }.diploma { background: white; width: 600px; padding: 50px; border: 10px double #7c3aed; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }h1 { color: #7c3aed; text-align: center; font-size: 2.5rem; margin-bottom: 5px; }.subtitle { text-align: center; color: #64748b; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }.results-container { margin: 20px 0; background: #fafafa; border-radius: 8px; padding: 20px; }.footer { margin-top: 40px; text-align: center; font-style: italic; color: #94a3b8; font-size: 0.8rem; }.stamp { position: absolute; bottom: 40px; right: 40px; width: 100px; height: 100px; border: 4px double #10b981; border-radius: 50%; color: #10b981; display: flex; align-items: center; text-align: center; transform: rotate(-15deg); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }</style></head><body><div class="diploma"><h1>Objectif Brevet</h1><div class="subtitle">Bilan Officiel des Révisions</div>${totalHtml}<p style="color:#475569; margin-bottom:10px;">Détail par matière :</p><div class="results-container">${scoresHtml}</div><div class="footer">Document généré le ${new Date().toLocaleString('fr-FR')}<br>Continue tes efforts pour décrocher la mention !</div><div class="stamp">Validé par<br>Maître Tronc</div></div></body></html>`;
         const blob = new Blob([docContent], { type: 'text/html' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

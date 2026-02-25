@@ -298,6 +298,47 @@
             border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;
         }
         .valider-trous-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- MODALE ENVOI SCORES --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            padding: 20px; backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: var(--bristol); border-radius: 20px; padding: 35px;
+            max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 2px solid var(--card-border);
+        }
+        .modal-box h3 { margin: 0 0 8px; color: var(--violet); font-size: 1.5rem; }
+        .modal-box p  { color: var(--texte-sec); margin: 0 0 20px; font-size: 0.95rem; }
+        .modal-input {
+            width: 100%; padding: 14px 18px; font-size: 1.1rem;
+            border: 2px solid var(--card-border); border-radius: 12px;
+            background: var(--opt-bg); color: var(--texte);
+            font-family: 'Inter', sans-serif; box-sizing: border-box; margin-bottom: 15px;
+        }
+        .modal-input:focus { outline: none; border-color: var(--violet); }
+        .modal-scores-preview {
+            background: var(--highlight-bg); border-radius: 12px; padding: 15px;
+            margin-bottom: 20px; font-size: 0.9rem; line-height: 1.8;
+        }
+        .modal-scores-preview .score-line { display: flex; justify-content: space-between; }
+        .modal-scores-preview .score-val  { font-weight: 800; color: var(--violet); }
+        .modal-scores-preview .score-total { font-weight: 900; color: var(--bleu); font-size: 1rem; border-top: 2px solid var(--card-border); margin-top: 8px; padding-top: 8px; }
+        .modal-btn-row { display: flex; gap: 10px; }
+        .modal-btn-primary {
+            flex: 1; padding: 14px; background: var(--violet); color: white;
+            border: none; border-radius: 12px; font-weight: 800; font-size: 1rem;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .modal-btn-primary:hover { opacity: 0.85; }
+        .modal-btn-secondary {
+            padding: 14px 20px; background: none; color: var(--texte-sec);
+            border: 2px solid var(--card-border); border-radius: 12px;
+            font-weight: 700; cursor: pointer; font-size: 1rem;
+        }
+        .copy-confirm { color: #10b981; font-size: 0.85rem; text-align: center; margin-top: 10px; display: none; font-weight: 700; }
     /* --- ANIMATION DE MÉLANGE --- */
 @keyframes shuffleAnim {
     0% { transform: scale(1); opacity: 1; }
@@ -321,6 +362,9 @@
         </button>
         <button class="theme-toggle" onclick="downloadStyledResults()" style="border-color: var(--violet); color: var(--violet); font-weight: bold;">
             🎓 Bilan
+        </button>
+        <button class="theme-toggle" onclick="openSendModal()" style="border-color: #10b981; color: #10b981; font-weight: bold;">
+            📤 Envoyer
         </button>
     </div>
 </div>
@@ -1393,6 +1437,101 @@ function shuffleFlashcards() {
         }
         if (expli) expli.style.display = 'block';
         updateScoreBoard();
+    }
+
+
+    // ==========================================
+    // --- ENVOI DES SCORES AU PROFESSEUR ---
+    // ==========================================
+
+    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScqveB_OJm2cVN-ULHIGhlEdlQT2UtmnY3KQWLfr_rdQPJegg/viewform';
+    const QUIZ_SECTIONS = ['🪧 Grammaire','✒️​ Conjugaison','🪶​ Figures de style','✍️ Testez vos connaissances','📝 Vocabulaire','🖋️ Orthographe'];
+
+    function openSendModal() {
+        // Vérifier qu'il y a des scores
+        const hasScores = QUIZ_SECTIONS.some(s => localStorage.getItem('score_' + s));
+        
+        // Construire l'aperçu des scores
+        let scoresHtml = '';
+        let totalCorrect = 0, totalQuestions = 0;
+        QUIZ_SECTIONS.forEach(s => {
+            const score = localStorage.getItem('score_' + s) || '—';
+            const done  = score !== '—';
+            const parts = done ? score.split(' / ') : [];
+            if (parts.length === 2) {
+                totalCorrect   += parseInt(parts[0]) || 0;
+                totalQuestions += parseInt(parts[1]) || 0;
+            }
+            scoresHtml += '<div class="score-line"><span>' + s + '</span><span class="score-val">' + score + '</span></div>';
+        });
+        const sur200 = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 200) : 0;
+        scoresHtml += '<div class="score-line score-total"><span>Score global</span><span>' + sur200 + ' / 200</span></div>';
+
+        // Créer la modale
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'sendModal';
+        overlay.innerHTML = `
+            <div class="modal-box">
+                <h3>📤 Envoyer mes scores</h3>
+                <p>Ton professeur recevra tes résultats dans son tableau de suivi.</p>
+                <input type="text" class="modal-input" id="studentName" 
+                    placeholder="Ton prénom et ton nom (ex : Marie Dupont)"
+                    onkeydown="if(event.key==='Enter') sendScores()">
+                <div class="modal-scores-preview">${scoresHtml}</div>
+                <div class="modal-btn-row">
+                    <button class="modal-btn-primary" onclick="sendScores()">Envoyer au prof 🚀</button>
+                    <button class="modal-btn-secondary" onclick="document.getElementById('sendModal').remove()">Annuler</button>
+                </div>
+                <div class="copy-confirm" id="copyConfirm">✅ Scores copiés ! Colle-les dans le formulaire.</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        // Fermer en cliquant en dehors
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+        document.getElementById('studentName').focus();
+    }
+
+    function sendScores() {
+        const name = (document.getElementById('studentName')?.value || '').trim();
+        if (!name) {
+            document.getElementById('studentName').focus();
+            document.getElementById('studentName').style.borderColor = '#ef4444';
+            return;
+        }
+
+        // Construire le texte à copier
+        let totalCorrect = 0, totalQuestions = 0;
+        let scoreText = 'Élève : ' + name + '\n';
+        QUIZ_SECTIONS.forEach(s => {
+            const score = localStorage.getItem('score_' + s) || 'Non fait';
+            scoreText += s + ' : ' + score + '\n';
+            if (score !== 'Non fait') {
+                const parts = score.split(' / ');
+                if (parts.length === 2) {
+                    totalCorrect   += parseInt(parts[0]) || 0;
+                    totalQuestions += parseInt(parts[1]) || 0;
+                }
+            }
+        });
+        const sur200 = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 200) : 0;
+        scoreText += 'Score global : ' + sur200 + ' / 200';
+
+        // Copier dans le presse-papiers
+        navigator.clipboard.writeText(scoreText).catch(() => {});
+
+        // Ouvrir le Google Form
+        window.open(FORM_URL, '_blank');
+
+        // Confirmer
+        const confirm = document.getElementById('copyConfirm');
+        if (confirm) confirm.style.display = 'block';
+
+        // Fermer la modale après 2s
+        setTimeout(() => {
+            const modal = document.getElementById('sendModal');
+            if (modal) modal.remove();
+        }, 2500);
     }
 
     window.onload = () => loadData(sections[0].gid, menu.firstChild);

@@ -1546,7 +1546,9 @@ function shuffleFlashcards() {
         score200:     '373576292'
     };
 
-    function sendScores() {
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwDs3T0uyxy6sdZFFRopDyU4lsJSqA99cqNjOPEwDRnk2_RxYCVJykbhBBmVOgup1po/exec';
+
+    async function sendScores() {
         const name = (document.getElementById('studentName')?.value || '').trim();
         if (!name) {
             const inp = document.getElementById('studentName');
@@ -1570,50 +1572,47 @@ function shuffleFlashcards() {
         });
         const sur200 = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 200) : 0;
 
-        // Construire l'URL pré-remplie
-        const base = FORM_URL + '?usp=pp_url';
-        const enc  = encodeURIComponent;
-        const sectionKeys = [
-            ['🪧 Grammaire',                  ENTRY_IDS.grammaire],
-            ['✒️​ Conjugaison',          ENTRY_IDS.conjugaison],
-            ['🪶​ Figures de style',     ENTRY_IDS.figures],
-            ['✍️ Testez vos connaissances',   ENTRY_IDS.testez],
-            ['📝 Vocabulaire',                ENTRY_IDS.vocabulaire],
-            ['🖋️ Orthographe',               ENTRY_IDS.orthographe]
-        ];
+        // Désactiver le bouton pendant l'envoi
+        const btn = document.querySelector('#sendModal .modal-btn-primary');
+        if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
 
-        let url = base
-            + '&entry.' + ENTRY_IDS.nom    + '=' + enc(name)
-            + '&entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200');
+        const payload = {
+            nom:          name,
+            grammaire:    scores['🪧 Grammaire']                || '—',
+            conjugaison:  scores['✒️​ Conjugaison']        || '—',
+            figures:      scores['🪶​ Figures de style']   || '—',
+            testez:       scores['✍️ Testez vos connaissances'] || '—',
+            vocabulaire:  scores['📝 Vocabulaire']              || '—',
+            orthographe:  scores['🖋️ Orthographe']             || '—',
+            score200:     sur200 + ' / 200'
+        };
 
-        sectionKeys.forEach(([sName, entryId]) => {
-            const val = scores[sName] || 'Non fait';
-            url += '&entry.' + entryId + '=' + enc(val);
-        });
-
-        // Générer le code de vérification
-        const code = genCodeVerif(name, scores, sur200);
-
-        // Ajouter le code au score global dans l'URL
-        url = url.replace(
-            'entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200'),
-            'entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200  [CODE: ' + code + ']')
-        );
-
-        // Ouvrir le form pré-rempli
-        window.open(url, '_blank');
-
-        // Afficher le code dans la modale
-        const confirm = document.getElementById('copyConfirm');
-        if (confirm) {
-            confirm.innerHTML = '✅ Formulaire ouvert !<br>🔐 Code de vérification : <strong style="font-size:1.4rem;letter-spacing:4px;color:var(--violet);">' + code + '</strong><br><span style="font-size:0.8rem;color:var(--texte-sec);">Ce code apparaît aussi dans le formulaire.</span>';
-            confirm.style.display = 'block';
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            // no-cors = pas de réponse lisible, on suppose que ça a marché
+            const confirm = document.getElementById('copyConfirm');
+            if (confirm) {
+                confirm.innerHTML = '✅ Scores envoyés au professeur !<br><span style="font-size:0.85rem;color:var(--texte-sec);">Score : <strong>' + sur200 + ' / 200</strong></span>';
+                confirm.style.display = 'block';
+            }
+        } catch(err) {
+            const confirm = document.getElementById('copyConfirm');
+            if (confirm) {
+                confirm.innerHTML = "❌ Erreur d'envoi. Réessaie plus tard.";
+                confirm.style.color = '#ef4444';
+                confirm.style.display = 'block';
+            }
         }
 
         setTimeout(() => {
             const modal = document.getElementById('sendModal');
             if (modal) modal.remove();
-        }, 2500);
+        }, 3000);
     }
 
 

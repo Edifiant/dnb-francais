@@ -1492,20 +1492,32 @@ function shuffleFlashcards() {
         document.getElementById('studentName').focus();
     }
 
+    // Entry IDs Google Form
+    const ENTRY_IDS = {
+        nom:          '2140588367',
+        grammaire:    '2141846843',
+        conjugaison:  '228254180',
+        figures:      '1475679166',
+        testez:       '1646497964',
+        vocabulaire:  '101646096',
+        orthographe:  '1687943415',
+        score200:     '373576292'
+    };
+
     function sendScores() {
         const name = (document.getElementById('studentName')?.value || '').trim();
         if (!name) {
-            document.getElementById('studentName').focus();
-            document.getElementById('studentName').style.borderColor = '#ef4444';
+            const inp = document.getElementById('studentName');
+            inp.focus(); inp.style.borderColor = '#ef4444';
             return;
         }
 
-        // Construire le texte à copier
+        // Calcul des scores
         let totalCorrect = 0, totalQuestions = 0;
-        let scoreText = 'Élève : ' + name + '\n';
+        const scores = {};
         QUIZ_SECTIONS.forEach(s => {
             const score = localStorage.getItem('score_' + s) || 'Non fait';
-            scoreText += s + ' : ' + score + '\n';
+            scores[s] = score;
             if (score !== 'Non fait') {
                 const parts = score.split(' / ');
                 if (parts.length === 2) {
@@ -1515,19 +1527,38 @@ function shuffleFlashcards() {
             }
         });
         const sur200 = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 200) : 0;
-        scoreText += 'Score global : ' + sur200 + ' / 200';
 
-        // Copier dans le presse-papiers
-        navigator.clipboard.writeText(scoreText).catch(() => {});
+        // Construire l'URL pré-remplie
+        const base = FORM_URL + '?usp=pp_url';
+        const enc  = encodeURIComponent;
+        const sectionKeys = [
+            ['🪧 Grammaire',                  ENTRY_IDS.grammaire],
+            ['✒️​ Conjugaison',          ENTRY_IDS.conjugaison],
+            ['🪶​ Figures de style',     ENTRY_IDS.figures],
+            ['✍️ Testez vos connaissances',   ENTRY_IDS.testez],
+            ['📝 Vocabulaire',                ENTRY_IDS.vocabulaire],
+            ['🖋️ Orthographe',               ENTRY_IDS.orthographe]
+        ];
 
-        // Ouvrir le Google Form
-        window.open(FORM_URL, '_blank');
+        let url = base
+            + '&entry.' + ENTRY_IDS.nom    + '=' + enc(name)
+            + '&entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200');
 
-        // Confirmer
+        sectionKeys.forEach(([sName, entryId]) => {
+            const val = scores[sName] || 'Non fait';
+            url += '&entry.' + entryId + '=' + enc(val);
+        });
+
+        // Ouvrir le form pré-rempli
+        window.open(url, '_blank');
+
+        // Feedback visuel
         const confirm = document.getElementById('copyConfirm');
-        if (confirm) confirm.style.display = 'block';
+        if (confirm) {
+            confirm.textContent = '✅ Formulaire ouvert et pré-rempli automatiquement !';
+            confirm.style.display = 'block';
+        }
 
-        // Fermer la modale après 2s
         setTimeout(() => {
             const modal = document.getElementById('sendModal');
             if (modal) modal.remove();

@@ -339,6 +339,18 @@
             font-weight: 700; cursor: pointer; font-size: 1rem;
         }
         .copy-confirm { color: #10b981; font-size: 0.85rem; text-align: center; margin-top: 10px; display: none; font-weight: 700; }
+        /* --- MODALE VÉRIFICATION CODE --- */
+        .verif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .verif-field { display: flex; flex-direction: column; gap: 4px; }
+        .verif-label { font-size: 0.75rem; color: var(--texte-sec); font-weight: 600; text-transform: uppercase; }
+        .verif-input { padding: 10px 12px; border: 2px solid var(--card-border); border-radius: 10px;
+                       background: var(--opt-bg); color: var(--texte); font-size: 0.9rem; font-family: 'Inter', sans-serif; }
+        .verif-input:focus { outline: none; border-color: var(--violet); }
+        .verif-result { text-align: center; padding: 20px; border-radius: 14px; margin-top: 10px;
+                        font-weight: 800; font-size: 1.1rem; display: none; }
+        .verif-ok   { background: #dcfce7; color: #166534; }
+        .verif-fail { background: #fee2e2; color: #991b1b; }
+
     /* --- ANIMATION DE MÉLANGE --- */
 @keyframes shuffleAnim {
     0% { transform: scale(1); opacity: 1; }
@@ -365,6 +377,9 @@
         </button>
         <button class="theme-toggle" onclick="openSendModal()" style="border-color: #10b981; color: #10b981; font-weight: bold;">
             📤 Envoyer
+        </button>
+        <button class="theme-toggle" onclick="openVerifModal()" style="border-color: #f59e0b; color: #f59e0b; font-weight: bold;" title="Vérifier un code élève">
+            🔐
         </button>
     </div>
 </div>
@@ -1492,6 +1507,33 @@ function shuffleFlashcards() {
         document.getElementById('studentName').focus();
     }
 
+    // --- GÉNÉRATION DU CODE DE VÉRIFICATION ---
+    function genCodeVerif(name, scoresMap, sur200) {
+        // Clé secrète connue uniquement du prof (embarquée dans le fichier)
+        const SECRET = 7331;
+        let str = name.trim().toUpperCase() + String(sur200);
+        const keys = ['🪧 Grammaire','✒️​ Conjugaison','🪶​ Figures de style',
+                      '✍️ Testez vos connaissances','📝 Vocabulaire','🖋️ Orthographe'];
+        keys.forEach(k => { str += (scoresMap[k] || '').replace(/\s/g, ''); });
+        let h = SECRET;
+        for (let i = 0; i < str.length; i++) {
+            h = Math.imul(h ^ str.charCodeAt(i), 0x9e3779b9) >>> 0;
+            h ^= (h >>> 16);
+        }
+        h = (h * 0x85ebca6b) >>> 0;
+        h ^= (h >>> 13);
+        h = (h * 0xc2b2ae35) >>> 0;
+        h ^= (h >>> 16);
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        let n = h;
+        for (let i = 0; i < 5; i++) {
+            code += chars[n % chars.length];
+            n = Math.floor(n / chars.length);
+        }
+        return code;
+    }
+
     // Entry IDs Google Form
     const ENTRY_IDS = {
         nom:          '2140588367',
@@ -1549,13 +1591,22 @@ function shuffleFlashcards() {
             url += '&entry.' + entryId + '=' + enc(val);
         });
 
+        // Générer le code de vérification
+        const code = genCodeVerif(name, scores, sur200);
+
+        // Ajouter le code au score global dans l'URL
+        url = url.replace(
+            'entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200'),
+            'entry.' + ENTRY_IDS.score200 + '=' + enc(sur200 + ' / 200  [CODE: ' + code + ']')
+        );
+
         // Ouvrir le form pré-rempli
         window.open(url, '_blank');
 
-        // Feedback visuel
+        // Afficher le code dans la modale
         const confirm = document.getElementById('copyConfirm');
         if (confirm) {
-            confirm.textContent = '✅ Formulaire ouvert et pré-rempli automatiquement !';
+            confirm.innerHTML = '✅ Formulaire ouvert !<br>🔐 Code de vérification : <strong style="font-size:1.4rem;letter-spacing:4px;color:var(--violet);">' + code + '</strong><br><span style="font-size:0.8rem;color:var(--texte-sec);">Ce code apparaît aussi dans le formulaire.</span>';
             confirm.style.display = 'block';
         }
 
@@ -1563,6 +1614,86 @@ function shuffleFlashcards() {
             const modal = document.getElementById('sendModal');
             if (modal) modal.remove();
         }, 2500);
+    }
+
+
+    // --- MODALE VÉRIFICATION CODE PROFESSEUR ---
+    function openVerifModal() {
+        const sections = [
+            { label: '🪧 Grammaire',               key: 'grammaire' },
+            { label: '✒️ Conjugaison',             key: 'conjugaison' },
+            { label: '🪶 Figures de style',        key: 'figures' },
+            { label: '✍️ Testez vos conn.',        key: 'testez' },
+            { label: '📝 Vocabulaire',             key: 'vocabulaire' },
+            { label: '🖋️ Orthographe',            key: 'orthographe' }
+        ];
+
+        let fieldsHtml = sections.map(s =>
+            '<div class="verif-field">'
+            + '<label class="verif-label">' + s.label + '</label>'
+            + '<input class="verif-input" id="vf-' + s.key + '" placeholder="ex: 5 / 8" />'
+            + '</div>'
+        ).join('');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'verifModal';
+        overlay.innerHTML = `
+            <div class="modal-box">
+                <h3>🔐 Vérifier un code élève</h3>
+                <p>Entrez le nom de l'élève, ses scores et le code — l'appli vous dit si c'est authentique.</p>
+                <div class="verif-field" style="margin-bottom:12px;">
+                    <label class="verif-label">Prénom et Nom</label>
+                    <input class="verif-input" id="vf-nom" placeholder="ex: Marie Dupont" style="font-size:1rem;">
+                </div>
+                <div class="verif-grid">${fieldsHtml}</div>
+                <div class="verif-field" style="margin-bottom:15px;">
+                    <label class="verif-label">Score /200</label>
+                    <input class="verif-input" id="vf-score200" placeholder="ex: 156">
+                </div>
+                <div class="verif-field" style="margin-bottom:15px;">
+                    <label class="verif-label">Code reçu (5 lettres/chiffres)</label>
+                    <input class="verif-input" id="vf-code" placeholder="ex: AX3KP" style="font-size:1.3rem;font-weight:800;letter-spacing:4px;text-transform:uppercase;">
+                </div>
+                <div class="modal-btn-row">
+                    <button class="modal-btn-primary" onclick="verifierCode()">Vérifier ✓</button>
+                    <button class="modal-btn-secondary" onclick="document.getElementById('verifModal').remove()">Fermer</button>
+                </div>
+                <div class="verif-result verif-ok"  id="verif-ok">✅ Code authentique — les scores n'ont pas été modifiés.</div>
+                <div class="verif-result verif-fail" id="verif-fail">❌ Code invalide — les scores ont peut-être été modifiés !</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        document.getElementById('vf-nom').focus();
+    }
+
+    function verifierCode() {
+        const name   = (document.getElementById('vf-nom')?.value || '').trim();
+        const score200 = parseInt(document.getElementById('vf-score200')?.value || '0');
+        const codeRecu = (document.getElementById('vf-code')?.value || '').trim().toUpperCase();
+
+        const scoresMap = {
+            '🪧 Grammaire':                  document.getElementById('vf-grammaire')?.value || '',
+            '✒️​ Conjugaison':          document.getElementById('vf-conjugaison')?.value || '',
+            '🪶​ Figures de style':     document.getElementById('vf-figures')?.value || '',
+            '✍️ Testez vos connaissances':   document.getElementById('vf-testez')?.value || '',
+            '📝 Vocabulaire':                document.getElementById('vf-vocabulaire')?.value || '',
+            '🖋️ Orthographe':               document.getElementById('vf-orthographe')?.value || ''
+        };
+
+        const codeAttendu = genCodeVerif(name, scoresMap, score200);
+        const ok  = document.getElementById('verif-ok');
+        const nok = document.getElementById('verif-fail');
+
+        if (codeRecu === codeAttendu) {
+            ok.style.display  = 'block';
+            nok.style.display = 'none';
+        } else {
+            ok.style.display  = 'none';
+            nok.style.display = 'block';
+            nok.innerHTML = '❌ Code invalide — scores peut-être modifiés !<br><span style="font-size:0.85rem;font-weight:400;">Code attendu : <strong>' + codeAttendu + '</strong> | Reçu : <strong>' + codeRecu + '</strong></span>';
+        }
     }
 
     window.onload = () => loadData(sections[0].gid, menu.firstChild);
